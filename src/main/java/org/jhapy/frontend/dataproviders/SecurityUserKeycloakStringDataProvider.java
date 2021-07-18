@@ -19,9 +19,13 @@
 package org.jhapy.frontend.dataproviders;
 
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.security.SecurityKeycloakUser;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
@@ -29,6 +33,7 @@ import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
 import org.jhapy.dto.utils.Page;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
+import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
 import org.jhapy.frontend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,55 +44,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @SpringComponent
 @UIScope
-public class SecurityUserKeycloakDataProvider extends
-    DefaultDataProvider<SecurityKeycloakUser, DefaultFilter> implements
+public class SecurityUserKeycloakStringDataProvider extends
+    PageableDataProvider<SecurityKeycloakUser, String> implements
     Serializable {
-
-  protected boolean allowEmptyFilter = false;
-
-  @Autowired
-  public SecurityUserKeycloakDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION,
-        AppConst.DEFAULT_USER_SORT_FIELDS);
-  }
 
   @Override
   protected Page<SecurityKeycloakUser> fetchFromBackEnd(
-      Query<SecurityKeycloakUser, DefaultFilter> query,
+      Query<SecurityKeycloakUser, String> query,
       Pageable pageable) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
-
-    Page<SecurityKeycloakUser> page = SecurityServices.getKeycloakClient().findUsers(
-        new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable)).getData();
-    if (getPageObserver() != null) {
-      getPageObserver().accept(page);
-    }
-    return page;
+    return SecurityServices.getKeycloakClient().findUsers(
+        new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable)).getData();
   }
-
 
   @Override
-  protected int sizeInBackEnd(Query<SecurityKeycloakUser, DefaultFilter> query) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
+  protected List<QuerySortOrder> getDefaultSortOrders() {
+    return Collections.singletonList(new QuerySortOrder(AppConst.DEFAULT_USER_SORT_FIELDS[0], SortDirection.ASCENDING));
+  }
 
-    if (!isAllowEmptyFilter() && (StringUtils.isBlank(filterStr) || filterStr.length() < 3)) {
-      return 0;
-    }
-
+  @Override
+  protected int sizeInBackEnd(Query<SecurityKeycloakUser, String> query) {
     return SecurityServices.getKeycloakClient()
-        .countUsers(new CountAnyMatchingQuery(filterStr, true))
+        .countUsers(new CountAnyMatchingQuery(query.getFilter().orElse(null), true))
         .getData().intValue();
-  }
-
-  public boolean isAllowEmptyFilter() {
-    return allowEmptyFilter;
-  }
-
-  public void setAllowEmptyFilter(boolean allowEmptyFilter) {
-    this.allowEmptyFilter = allowEmptyFilter;
   }
 }

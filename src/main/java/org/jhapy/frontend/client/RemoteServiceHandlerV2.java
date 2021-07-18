@@ -30,7 +30,47 @@ import org.zalando.problem.ProblemModule;
  * @version 1.0
  * @since 08/05/2021
  */
-public interface RemoteServiceHandler {
+public interface RemoteServiceHandlerV2<T extends BaseEntity> {
+
+  @PostMapping(value = "/findAnyMatching")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
+  ServiceResult<Page<T>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+
+  default ServiceResult<Page<T>> findAnyMatchingFallback(FindAnyMatchingQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new Page<>());
+  }
+
+  @PostMapping(value = "/countAnyMatching")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "countAnyMatchingFallback")
+  ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
+
+  default ServiceResult<Long> countAnyMatchingFallback(CountAnyMatchingQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("countAnyMatchingFallback"), e, 0);
+  }
+
+  @PostMapping(value = "/getById")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getByIdFallback")
+  ServiceResult<T> getById(@RequestBody GetByIdQuery query);
+
+  default ServiceResult<T> getByIdFallback(GetByIdQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("getByIdFallback"), e, null);
+  }
+
+  @PostMapping(value = "/save")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "saveFallback")
+  ServiceResult<T> save(@RequestBody SaveQuery<T> query);
+
+  default ServiceResult<T> saveFallback(SaveQuery<T> query, Exception e) {
+    return defaultFallback(getLoggerPrefix("saveFallback"), e, null);
+  }
+
+  @PostMapping(value = "/delete")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "deleteFallback")
+  ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
+
+  default ServiceResult<Void> deleteFallback(DeleteByIdQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("deleteFallback"), e, null);
+  }
 
   default ServiceResult defaultFallback(String loggerPrefix, Exception e, Object defaultResult) {
     error(loggerPrefix, "An error has occurred {0}", e.getLocalizedMessage());

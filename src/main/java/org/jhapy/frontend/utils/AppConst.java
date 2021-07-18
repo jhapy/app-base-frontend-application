@@ -138,7 +138,7 @@ public interface AppConst {
   String[] DEFAULT_SORT_FIELDS = {"name", "id"};
   String[] DEFAULT_EXECUTIONS_SORT_FIELDS = {"created"};
   String[] DEFAULT_ASSET_TYPE_FIELDS = {"displayName"};
-  String[] DEFAULT_USER_SORT_FIELDS = {"u.lastName"};
+  String[] DEFAULT_USER_SORT_FIELDS = {"lastName"};
   String[] DEFAULT_GROUP_SORT_FIELDS = {"n.name"};
   String[] DEFAULT_RECORD_STATUS_SORT_FIELDS = {"seq"};
   String[] DEFAULT_SESSION_SORT_FIELDS = {"sessionStart"};
