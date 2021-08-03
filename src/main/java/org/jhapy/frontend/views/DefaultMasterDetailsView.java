@@ -45,10 +45,6 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import dev.mett.vaadin.tooltip.Tooltips;
 import dev.mett.vaadin.tooltip.config.TC_HIDE_ON_CLICK;
 import dev.mett.vaadin.tooltip.config.TooltipConfiguration;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -73,6 +69,11 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.DateTimeFormatter;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author jHapy Lead Dev.
@@ -193,6 +194,10 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     appBar.addActionItem(refreshButton);
   }
 
+  protected void setTitle( String title ) {
+    AppBar appBar = JHapyMainView3.get().getAppBar();
+    appBar.setTitle(title);
+  }
   protected void showDetails() {
     try {
       showDetails(entityType.getDeclaredConstructor().newInstance());
