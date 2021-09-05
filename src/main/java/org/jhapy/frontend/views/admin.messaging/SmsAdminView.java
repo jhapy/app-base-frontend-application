@@ -45,8 +45,8 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SMS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SmsAdminView extends
-    DefaultMasterDetailsView<Sms, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class SmsAdminView
+    extends DefaultMasterDetailsView<Sms, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public SmsAdminView(MyI18NProvider myI18NProvider) {
     super("sms.", Sms.class, new SmsDataProvider(), myI18NProvider);
@@ -56,30 +56,33 @@ public class SmsAdminView extends
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
 
     grid.addColumn(Sms::getCreated).setKey("created");
-    //grid.addColumn(Sms::getSmsAction).setKey("action");
+    // grid.addColumn(Sms::getSmsAction).setKey("action");
     grid.addColumn(Sms::getPhoneNumber).setKey("phoneNumber");
     grid.addColumn(Sms::getSmsStatus).setKey("smsStatus");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
     return grid;
   }
 
   protected Component createDetails(Sms sms) {
     boolean isNew = sms.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + sms.getPhoneNumber());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + sms.getPhoneNumber());
 
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
@@ -102,25 +105,20 @@ public class SmsAdminView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem phoneNumberFieldItem = editingForm
-        .addFormItem(phoneNumberField,
-            getTranslation("element." + I18N_PREFIX + "phoneNumber"));
-    FormLayout.FormItem bodyFieldItem = editingForm
-        .addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
-    editingForm
-        .addFormItem(smsActionField, getTranslation("element." + I18N_PREFIX + "smsAction"));
-    editingForm
-        .addFormItem(smsStatusField, getTranslation("element." + I18N_PREFIX + "smsStatus"));
-    editingForm
-        .addFormItem(errorMessageField,
-            getTranslation("element." + I18N_PREFIX + "errorMessage"));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    FormLayout.FormItem phoneNumberFieldItem =
+        editingForm.addFormItem(
+            phoneNumberField, getTranslation("element." + I18N_PREFIX + "phoneNumber"));
+    FormLayout.FormItem bodyFieldItem =
+        editingForm.addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
+    editingForm.addFormItem(smsActionField, getTranslation("element." + I18N_PREFIX + "smsAction"));
+    editingForm.addFormItem(smsStatusField, getTranslation("element." + I18N_PREFIX + "smsStatus"));
+    editingForm.addFormItem(
+        errorMessageField, getTranslation("element." + I18N_PREFIX + "errorMessage"));
 
     UIUtils.setColSpan(2, phoneNumberField, bodyFieldItem);
 
@@ -128,7 +126,7 @@ public class SmsAdminView extends
 
     binder.bind(phoneNumberField, Sms::getPhoneNumber, null);
     binder.bind(bodyField, Sms::getBody, null);
-    //binder.bind(smsActionField, Sms::getSmsAction, null);
+    // binder.bind(smsActionField, Sms::getSmsAction, null);
     binder.bind(smsStatusField, Sms::getSmsStatus, null);
     binder.bind(errorMessageField, Sms::getErrorMessage, null);
 
@@ -136,9 +134,7 @@ public class SmsAdminView extends
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : "*" + filter + "*",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", Boolean.TRUE));
   }
 }

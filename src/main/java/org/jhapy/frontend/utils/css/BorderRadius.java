@@ -19,9 +19,9 @@
 package org.jhapy.frontend.utils.css;
 
 public enum BorderRadius {
-
-  S("var(--lumo-border-radius-s)"), M("var(--lumo-border-radius-m)"), L(
-      "var(--lumo-border-radius-l)"),
+  S("var(--lumo-border-radius-s)"),
+  M("var(--lumo-border-radius-m)"),
+  L("var(--lumo-border-radius-l)"),
 
   _50("50%");
 

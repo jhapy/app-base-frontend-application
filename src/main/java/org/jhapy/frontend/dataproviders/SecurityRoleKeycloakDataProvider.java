@@ -21,7 +21,6 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
 import org.jhapy.dto.domain.security.SecurityKeycloakRole;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
@@ -31,6 +30,8 @@ import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.Serializable;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -38,41 +39,38 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @SpringComponent
 @UIScope
-public class SecurityRoleKeycloakDataProvider extends
-    DefaultDataProvider<SecurityKeycloakRole, DefaultFilter> implements
-    Serializable {
+public class SecurityRoleKeycloakDataProvider
+    extends DefaultDataProvider<SecurityKeycloakRole, DefaultFilter> implements Serializable {
 
   @Autowired
   public SecurityRoleKeycloakDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION,
-        AppConst.DEFAULT_SORT_FIELDS);
+    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
   }
 
   @Override
   protected Page<SecurityKeycloakRole> fetchFromBackEnd(
-      Query<SecurityKeycloakRole, DefaultFilter> query,
-      Pageable pageable) {
+      Query<SecurityKeycloakRole, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
+    String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
-    Page<SecurityKeycloakRole> page = SecurityServices.getKeycloakClient().findRoles(
-        new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable)).getData();
+    Page<SecurityKeycloakRole> page =
+        SecurityServices.getKeycloakClient()
+            .findRoles(new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable))
+            .getData();
     if (getPageObserver() != null) {
       getPageObserver().accept(page);
     }
     return page;
   }
 
-
   @Override
   protected int sizeInBackEnd(Query<SecurityKeycloakRole, DefaultFilter> query) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
+    String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
     return SecurityServices.getKeycloakClient()
         .countRoles(new CountAnyMatchingQuery(filterStr, true))
-        .getData().intValue();
+        .getData()
+        .intValue();
   }
 }

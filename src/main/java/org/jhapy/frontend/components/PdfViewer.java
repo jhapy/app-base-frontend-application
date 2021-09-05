@@ -27,6 +27,7 @@ import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
+
 import java.net.URI;
 
 /**
@@ -43,8 +44,8 @@ public class PdfViewer extends Component {
   private final StreamRegistration streamRegistration;
 
   public PdfViewer(StreamResource streamResource) {
-    streamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-        .registerResource(streamResource);
+    streamRegistration =
+        VaadinSession.getCurrent().getResourceRegistry().registerResource(streamResource);
     URI uri = StreamResourceRegistry.getURI(streamResource);
     setFile(uri.toASCIIString());
   }

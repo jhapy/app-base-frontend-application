@@ -32,7 +32,6 @@ import org.jhapy.frontend.layout.size.Vertical;
 import org.jhapy.frontend.utils.BoxShadowBorders;
 import org.jhapy.frontend.utils.UIUtils;
 
-
 public class DetailsDrawerHeader extends FlexBoxLayout {
 
   private Button close;
@@ -90,5 +89,4 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
   public void addCloseListener(ComponentEventListener<ClickEvent<Button>> listener) {
     this.close.addClickListener(listener);
   }
-
 }

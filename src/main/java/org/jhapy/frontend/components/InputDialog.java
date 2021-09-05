@@ -5,13 +5,7 @@ package org.jhapy.frontend.components;
  * @version 1.0
  * @since 26/07/2020
  */
-
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -20,8 +14,8 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.IconFactory;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import java.util.function.Consumer;
 
+import java.util.function.Consumer;
 
 public class InputDialog extends Dialog {
 
@@ -59,7 +53,6 @@ public class InputDialog extends Dialog {
 
     footer.add(buttonBar);
   }
-
 
   /**
    * Sets the given text as title in the header area. Previous content of the header area is
@@ -129,7 +122,6 @@ public class InputDialog extends Dialog {
 
     return this;
   }
-
 
   /**
    * Adds the header area and returns it.
@@ -206,13 +198,11 @@ public class InputDialog extends Dialog {
     return getButtonBar().addButtonToMiddle();
   }
 
-  public class ButtonBar
-      extends Composite<FlexBoxLayout> {
+  public class ButtonBar extends Composite<FlexBoxLayout> {
 
     private final Div leftSpacer = new Div();
 
     private final Div rightSpacer = new Div();
-
 
     @Override
     protected FlexBoxLayout initContent() {
@@ -227,7 +217,6 @@ public class InputDialog extends Dialog {
       return content;
     }
 
-
     /**
      * Adds the component to the right side of the button bar.
      *
@@ -239,7 +228,6 @@ public class InputDialog extends Dialog {
       getContent().add(component);
       return component;
     }
-
 
     /**
      * Adds the component to the left side of the button bar.
@@ -264,7 +252,6 @@ public class InputDialog extends Dialog {
       getContent().addComponentAtIndex(getContent().indexOf(rightSpacer), component);
       return component;
     }
-
 
     /**
      * Adds a button to the right side of the button bar and returns it.
@@ -292,23 +279,19 @@ public class InputDialog extends Dialog {
     public InputDialog.FluentButton addButtonToMiddle() {
       return new InputDialog.FluentButton(addToMiddle(new Button()));
     }
-
   }
 
   public class FluentButton {
 
     private final Button button;
 
-
     public FluentButton(Button button) {
       this.button = button;
     }
 
-
     public Button getButton() {
       return button;
     }
-
 
     public InputDialog.FluentButton text(String text) {
       button.setText(text);
@@ -329,7 +312,6 @@ public class InputDialog extends Dialog {
       button.getElement().setAttribute("title", title);
       return this;
     }
-
 
     public InputDialog.FluentButton variant(ButtonVariant variant) {
       button.addThemeVariants(variant);
@@ -355,7 +337,6 @@ public class InputDialog extends Dialog {
     public InputDialog.FluentButton contrast() {
       return variant(ButtonVariant.LUMO_CONTRAST);
     }
-
 
     public InputDialog.FluentButton onClick(
         ComponentEventListener<ClickEvent<Button>> clickListener) {
@@ -385,7 +366,5 @@ public class InputDialog extends Dialog {
       configurator.accept(button);
       return this;
     }
-
   }
-
 }

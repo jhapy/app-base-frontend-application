@@ -21,28 +21,28 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
-import java.io.Serializable;
-import java.util.List;
-import java.util.function.Consumer;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.utils.DirectionEnum;
 import org.jhapy.dto.utils.Slice;
 import org.jhapy.frontend.dataproviders.utils.FilterableSliceDataProvider;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class DefaultSliceDataProvider<T extends BaseEntity, F extends DefaultFilter> extends
-    FilterableSliceDataProvider<T, F> implements Serializable {
+public abstract class DefaultSliceDataProvider<T extends BaseEntity, F extends DefaultFilter>
+    extends FilterableSliceDataProvider<T, F> implements Serializable {
 
   private List<QuerySortOrder> defaultSortOrder;
   private Consumer<Slice<T>> pageObserver;
   private Query<T, F> currentQuery;
 
-  public DefaultSliceDataProvider(DirectionEnum defaultSortDirection,
-      String[] defaultSortFields) {
+  public DefaultSliceDataProvider(DirectionEnum defaultSortDirection, String[] defaultSortFields) {
     setSortOrder(defaultSortDirection, defaultSortFields);
   }
 
@@ -62,8 +62,7 @@ public abstract class DefaultSliceDataProvider<T extends BaseEntity, F extends D
     return currentQuery;
   }
 
-  public void setCurrentQuery(
-      Query<T, F> currentQuery) {
+  public void setCurrentQuery(Query<T, F> currentQuery) {
     this.currentQuery = currentQuery;
   }
 

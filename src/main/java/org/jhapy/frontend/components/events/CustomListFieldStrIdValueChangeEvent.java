@@ -19,19 +19,20 @@
 package org.jhapy.frontend.components.events;
 
 import com.vaadin.flow.component.HasValue;
-import java.util.List;
 import org.jhapy.dto.domain.BaseEntityStrId;
 import org.jhapy.frontend.customFields.DefaultCustomListFieldStrId;
 
-public class CustomListFieldStrIdValueChangeEvent<C extends BaseEntityStrId> implements
-    HasValue.ValueChangeEvent<List<C>> {
+import java.util.List;
+
+public class CustomListFieldStrIdValueChangeEvent<C extends BaseEntityStrId>
+    implements HasValue.ValueChangeEvent<List<C>> {
 
   private final List<C> oldValues;
   private final List<C> newValues;
   private final DefaultCustomListFieldStrId src;
 
-  public CustomListFieldStrIdValueChangeEvent(List<C> oldValues, List<C> newValues,
-      DefaultCustomListFieldStrId src) {
+  public CustomListFieldStrIdValueChangeEvent(
+      List<C> oldValues, List<C> newValues, DefaultCustomListFieldStrId src) {
     this.oldValues = oldValues;
     this.newValues = newValues;
     this.src = src;

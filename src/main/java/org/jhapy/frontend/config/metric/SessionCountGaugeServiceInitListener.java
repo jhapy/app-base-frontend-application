@@ -23,8 +23,9 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.jhapy.commons.utils.HasLogger;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jHapy Lead Dev.
@@ -33,7 +34,6 @@ import org.jhapy.commons.utils.HasLogger;
  */
 @SpringComponent
 public class SessionCountGaugeServiceInitListener implements VaadinServiceInitListener, HasLogger {
-
 
   private final MeterRegistry meterRegistry;
 
@@ -44,25 +44,29 @@ public class SessionCountGaugeServiceInitListener implements VaadinServiceInitLi
   @Override
   public void serviceInit(ServiceInitEvent event) {
 
-    final AtomicInteger sessionsCount = meterRegistry
-        .gauge("vaadin.sessions", new AtomicInteger(0));
+    final AtomicInteger sessionsCount =
+        meterRegistry.gauge("vaadin.sessions", new AtomicInteger(0));
 
     final VaadinService vaadinService = event.getSource();
-    vaadinService.addSessionInitListener(e -> {
-      var loggerPrefix = getLoggerPrefix("sessionInit");
-      if (!e.getRequest().getPathInfo().startsWith("/management") && !e.getRequest().getPathInfo()
-          .startsWith("/sw.js")) {
-        trace(
-            loggerPrefix, "New Vaadin session created, path {0}, current count is: {1}",
-            e.getRequest().getPathInfo(), sessionsCount
-                .incrementAndGet());
-      }
-    });
-    vaadinService.addSessionDestroyListener(e -> {
-      var loggerPrefix = getLoggerPrefix("sessionDestroy");
-      trace(loggerPrefix, "Vaadin session destroyed. Current count is: {0}", sessionsCount
-          .decrementAndGet());
-    });
+    vaadinService.addSessionInitListener(
+        e -> {
+          var loggerPrefix = getLoggerPrefix("sessionInit");
+          if (!e.getRequest().getPathInfo().startsWith("/management")
+              && !e.getRequest().getPathInfo().startsWith("/sw.js")) {
+            trace(
+                loggerPrefix,
+                "New Vaadin session created, path {0}, current count is: {1}",
+                e.getRequest().getPathInfo(),
+                sessionsCount.incrementAndGet());
+          }
+        });
+    vaadinService.addSessionDestroyListener(
+        e -> {
+          var loggerPrefix = getLoggerPrefix("sessionDestroy");
+          trace(
+              loggerPrefix,
+              "Vaadin session destroyed. Current count is: {0}",
+              sessionsCount.decrementAndGet());
+        });
   }
 }
-

@@ -20,7 +20,6 @@ package org.jhapy.frontend.views.admin.swagger;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
@@ -31,8 +30,6 @@ import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.registry.RegistryServices;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
-import org.jhapy.frontend.components.navigation.bar.AppBar.NaviMode;
 import org.jhapy.frontend.layout.ViewFrame;
 import org.jhapy.frontend.layout.size.Horizontal;
 import org.jhapy.frontend.layout.size.Top;
@@ -40,7 +37,6 @@ import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.views.JHapyMainView3;
-
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SWAGGERS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_SWAGGER)
@@ -50,31 +46,22 @@ public class SwaggersAdminView extends ViewFrame {
   protected Grid<EurekaApplication> grid;
   private EurekaInfo eurekaInfo;
 
-  public SwaggersAdminView() {
-  }
+  public SwaggersAdminView() {}
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    initHeader();
     setViewContent(createContent());
 
-    ServiceResult<EurekaInfo> applicationServiceResult = RegistryServices.getEurekaService()
-        .getApplications(new BaseRemoteQuery());
+    ServiceResult<EurekaInfo> applicationServiceResult =
+        RegistryServices.getEurekaService().getApplications(new BaseRemoteQuery());
 
     if (applicationServiceResult.getIsSuccess() && applicationServiceResult.getData() != null) {
       eurekaInfo = applicationServiceResult.getData();
       grid.setItems(eurekaInfo.getApplicationList());
     }
   }
-
-  protected void initHeader() {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
-    appBar.setNaviMode(NaviMode.MENU);
-    appBar.setTitle(getTranslation(AppConst.TITLE_SWAGGERS_ADMIN));
-  }
-
 
   private Component createContent() {
     FlexBoxLayout content = new FlexBoxLayout(createGrid());
@@ -85,27 +72,29 @@ public class SwaggersAdminView extends ViewFrame {
   }
 
   protected void showDetails(EurekaApplication app) {
-    UI.getCurrent().navigate(SwaggerAdminView.class, app.getName().toLowerCase());
+    JHapyMainView3.get()
+        .displayView(this, getParameter(), SwaggerAdminView.class, app.getName().toLowerCase());
   }
 
   protected Grid createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setHeight("100%");
 
     grid.addColumn(EurekaApplication::getName).setKey("name");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-        column.setSortable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+                column.setSortable(true);
+              }
+            });
     return grid;
   }
 }

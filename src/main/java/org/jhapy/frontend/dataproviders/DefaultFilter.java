@@ -12,8 +12,7 @@ public class DefaultFilter implements Serializable {
   private String filter;
   private Boolean showInactive;
 
-  public DefaultFilter() {
-  }
+  public DefaultFilter() {}
 
   public DefaultFilter(String filter) {
     this(filter, null);

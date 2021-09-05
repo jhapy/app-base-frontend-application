@@ -20,11 +20,8 @@ package org.jhapy.frontend.views.admin.messaging;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.RouterLayout;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +29,6 @@ import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.notification.MailTemplate;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
-import org.jhapy.frontend.components.navigation.bar.AppBar.NaviMode;
 import org.jhapy.frontend.dataproviders.DefaultDataProvider;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.MailTemplateDataProvider;
@@ -41,7 +36,6 @@ import org.jhapy.frontend.layout.ViewFrame;
 import org.jhapy.frontend.layout.size.Horizontal;
 import org.jhapy.frontend.layout.size.Top;
 import org.jhapy.frontend.utils.AppConst;
-import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.views.JHapyMainView3;
@@ -55,7 +49,7 @@ import org.jhapy.frontend.views.JHapyMainView3;
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, HasLogger {
 
-  private final static String I18N_PREFIX = "mailTemplate.";
+  private static final String I18N_PREFIX = "mailTemplate.";
 
   private DefaultDataProvider<MailTemplate, DefaultFilter> dataProvider;
 
@@ -71,6 +65,7 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
   }
 
   private void initHeader() {
+    /*
     AppBar appBar = JHapyMainView3.get().getAppBar();
     appBar.setNaviMode(NaviMode.MENU);
     appBar.disableGlobalSearch();
@@ -85,6 +80,8 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
         viewDetails(new MailTemplate())
     );
     appBar.addActionItem(newPlaceButton);
+
+     */
   }
 
   private Component createContent() {
@@ -100,8 +97,7 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
 
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::viewDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::viewDetails));
     dataProvider = new MailTemplateDataProvider();
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
@@ -109,26 +105,29 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
     grid.addColumn(MailTemplate::getName).setKey("name");
     grid.addColumn(MailTemplate::getMailAction).setKey("mailAction");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
     return grid;
   }
 
   private void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null
-                : "(?i).*" + filter + ".*",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(
+            StringUtils.isBlank(filter) ? null : "(?i).*" + filter + ".*", Boolean.TRUE));
   }
 
   private void viewDetails(MailTemplate mailTemplate) {
-    UI.getCurrent()
-        .navigate(MailTemplateAdminView.class,
+    JHapyMainView3.get()
+        .displayView(
+            this,
+            getParameter(),
+            MailTemplateAdminView.class,
             mailTemplate.getId() == null ? "-1" : mailTemplate.getId());
   }
 }

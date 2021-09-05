@@ -23,6 +23,4 @@ package org.jhapy.frontend.utils;
  * @version 1.0
  * @since 2019-06-30
  */
-public class StreamImage {
-
-}
+public class StreamImage {}

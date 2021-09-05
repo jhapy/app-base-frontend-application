@@ -19,9 +19,11 @@
 package org.jhapy.frontend.utils.css;
 
 public enum AlignSelf {
-
-  BASLINE("baseline"), CENTER("center"), END("end"), START("start"), STRETCH(
-      "stretch");
+  BASLINE("baseline"),
+  CENTER("center"),
+  END("end"),
+  START("start"),
+  STRETCH("stretch");
 
   private final String value;
 

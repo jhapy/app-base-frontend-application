@@ -32,13 +32,6 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.EurekaStatus;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
@@ -50,12 +43,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.vaadin.tabs.PagedTabs;
+
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jHapy Lead Dev.
@@ -78,27 +71,27 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
   protected TextField profileTextField;
   protected TextField labelTextField;
 
-  public CloudConfigurationTabContent(Environment env, UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public CloudConfigurationTabContent(
+      Environment env, UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(env, ui, I18N_PREFIX + "cloudConfiguration.", authorizationHeaderUtil);
   }
 
   @Override
   public void refresh() {
-    getDetails(applicationTextField.getValue(), profileTextField.getValue(),
-        labelTextField.getValue());
+    getDetails(
+        applicationTextField.getValue(), profileTextField.getValue(), labelTextField.getValue());
   }
 
   public Component getContent() {
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getMenu()));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH, getTranslation("element." + I18N_PREFIX + "title"), getMenu()));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
 
-    applicationTextField = new TextField(
-        getTranslation("element." + I18N_PREFIX + "application"));
+    applicationTextField = new TextField(getTranslation("element." + I18N_PREFIX + "application"));
     applicationTextField.setValue("application");
     applicationTextField.setWidthFull();
     applicationTextField.addValueChangeListener(event -> refresh());
@@ -118,8 +111,8 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
 
     content.add(applicationTextField, profileTextField, labelTextField);
 
-    Label configurationSourcesLabel = UIUtils
-        .createH2Label(getTranslation("element." + I18N_PREFIX + "configurationSources"));
+    Label configurationSourcesLabel =
+        UIUtils.createH2Label(getTranslation("element." + I18N_PREFIX + "configurationSources"));
     content.add(configurationSourcesLabel, getConfigurationSources());
 
     FlexBoxLayout configs = new FlexBoxLayout();
@@ -128,13 +121,13 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
     configs.setSizeFull();
 
     PagedTabs tabs = new PagedTabs(configs);
-    Label configContentLabel = UIUtils
-        .createH2Label(getTranslation("element." + I18N_PREFIX + "configuration"));
+    Label configContentLabel =
+        UIUtils.createH2Label(getTranslation("element." + I18N_PREFIX + "configuration"));
     configs.add(configContentLabel, tabs);
 
     tabs.add(getTranslation("element." + I18N_PREFIX + "tab.yaml"), getYamlConfig(), false);
-    tabs.add(getTranslation("element." + I18N_PREFIX + "tab.properties"), getPropertiesConfig(),
-        false);
+    tabs.add(
+        getTranslation("element." + I18N_PREFIX + "tab.properties"), getPropertiesConfig(), false);
     tabs.add(getTranslation("element." + I18N_PREFIX + "tab.json"), getJsonConfig(), false);
     tabs.add(getTranslation("element." + I18N_PREFIX + "tab.table"), getTableConfig(), false);
 
@@ -178,18 +171,22 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
     tableConfigurationGrid.setWidthFull();
 
     tableConfigurationGrid.addColumn(property -> property[0]).setKey("property");
-    tableConfigurationGrid.addColumn(property -> property.length > 1 ? property[1] : "")
+    tableConfigurationGrid
+        .addColumn(property -> property.length > 1 ? property[1] : "")
         .setKey("value");
 
     tableConfigurationGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-    tableConfigurationGrid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-        column.setSortable(true);
-      }
-    });
+    tableConfigurationGrid
+        .getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+                column.setSortable(true);
+              }
+            });
 
     return tableConfigurationGrid;
   }
@@ -199,41 +196,44 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
     configurationSourcesGrid.setMinHeight("150px");
     configurationSourcesGrid.setWidthFull();
 
-    configurationSourcesGrid.addColumn(property -> property[0]).setWidth("50px")
-        .setKey("index");
-    configurationSourcesGrid.addColumn(property -> property[1]).setWidth("100px")
-        .setKey("type");
-    configurationSourcesGrid.addColumn(property -> property[2]).setAutoWidth(true)
-        .setKey("search");
+    configurationSourcesGrid.addColumn(property -> property[0]).setWidth("50px").setKey("index");
+    configurationSourcesGrid.addColumn(property -> property[1]).setWidth("100px").setKey("type");
+    configurationSourcesGrid.addColumn(property -> property[2]).setAutoWidth(true).setKey("search");
 
     configurationSourcesGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-    configurationSourcesGrid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-        column.setSortable(true);
-      }
-    });
+    configurationSourcesGrid
+        .getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+                column.setSortable(true);
+              }
+            });
 
     return configurationSourcesGrid;
   }
 
   protected void getDetails(String application, String profile, String label) {
     try {
-      final HttpHeaders httpHeaders = new HttpHeaders() {{
-        set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
-        setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-      }};
+      final HttpHeaders httpHeaders =
+          new HttpHeaders() {
+            {
+              set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
+              setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            }
+          };
 
-      ServiceResult<EurekaStatus> statusResult = RegistryServices.getEurekaService()
-          .status(new BaseRemoteQuery());
+      ServiceResult<EurekaStatus> statusResult =
+          RegistryServices.getEurekaService().status(new BaseRemoteQuery());
       if (statusResult.getIsSuccess() && statusResult.getData() != null) {
         String infoUrl = statusResult.getData().getManagementUrl() + "/info";
         logger().debug("Info Url = " + infoUrl);
-        ResponseEntity<String> info = restTemplate.exchange(URI.create(infoUrl),
-            HttpMethod.GET,
-            new HttpEntity<>(httpHeaders), String.class);
+        ResponseEntity<String> info =
+            restTemplate.exchange(
+                URI.create(infoUrl), HttpMethod.GET, new HttpEntity<>(httpHeaders), String.class);
 
         JSONParser jsonParser = new JSONParser();
         String infoBody = info.getBody();
@@ -241,65 +241,83 @@ public class CloudConfigurationTabContent extends CloudConfigBaseView {
 
         JSONObject infoJsonObject = (JSONObject) jsonParser.parse(infoBody);
 
-        JSONArray cloudConfigServerConfiguration = (JSONArray) infoJsonObject
-            .get("cloud-config-server-configuration-sources");
+        JSONArray cloudConfigServerConfiguration =
+            (JSONArray) infoJsonObject.get("cloud-config-server-configuration-sources");
 
         List<String[]> cloudConfigServer = new ArrayList<>();
         AtomicInteger idx = new AtomicInteger(1);
-        cloudConfigServerConfiguration.forEach(o -> {
-          JSONObject jo = ((JSONObject) o);
-          cloudConfigServer.add(new String[]{Integer.toString(idx.getAndIncrement()),
-              jo.get("type").toString(),
-              jo.get("search") != null ? jo.get("search").toString()
-                  : jo.get("uri").toString()});
-        });
+        cloudConfigServerConfiguration.forEach(
+            o -> {
+              JSONObject jo = ((JSONObject) o);
+              cloudConfigServer.add(
+                  new String[] {
+                    Integer.toString(idx.getAndIncrement()),
+                    jo.get("type").toString(),
+                    jo.get("search") != null
+                        ? jo.get("search").toString()
+                        : jo.get("uri").toString()
+                  });
+            });
 
         configurationSourcesGrid.setItems(cloudConfigServer);
 
         String url =
-            env.getProperty("spring.cloud.config.uri") + "/" + label + "/" + application
+            env.getProperty("spring.cloud.config.uri")
+                + "/"
+                + label
+                + "/"
+                + application
                 + "-"
-                + profile + ".yml";
+                + profile
+                + ".yml";
         logger().debug("Config YAML Url = " + url);
-        ResponseEntity<String> configprops = restTemplate.exchange(URI.create(url),
-            HttpMethod.GET,
-            new HttpEntity<>(httpHeaders), String.class);
+        ResponseEntity<String> configprops =
+            restTemplate.exchange(
+                URI.create(url), HttpMethod.GET, new HttpEntity<>(httpHeaders), String.class);
         String configpropsBody = configprops.getBody();
         logger().debug("Config YAML = " + configpropsBody);
 
         yamlConfigurationTextArea.setValue(configpropsBody);
 
-        url = env.getProperty("spring.cloud.config.uri") + "/" + label + "/" + application
-            + "-"
-            + profile
-            + ".properties";
+        url =
+            env.getProperty("spring.cloud.config.uri")
+                + "/"
+                + label
+                + "/"
+                + application
+                + "-"
+                + profile
+                + ".properties";
         logger().debug("Config Properties Url = " + url);
-        configprops = restTemplate.exchange(URI.create(url),
-            HttpMethod.GET,
-            new HttpEntity<>(httpHeaders), String.class);
+        configprops =
+            restTemplate.exchange(
+                URI.create(url), HttpMethod.GET, new HttpEntity<>(httpHeaders), String.class);
         configpropsBody = configprops.getBody();
         logger().debug("Config Properties = " + configpropsBody);
 
         propertiesConfigurationTextArea.setValue(configpropsBody);
 
         List<String[]> tableConfig = new ArrayList<>();
-        Arrays.asList(configpropsBody.split("\n"))
-            .forEach(s -> tableConfig.add(s.split(": ")));
+        Arrays.asList(configpropsBody.split("\n")).forEach(s -> tableConfig.add(s.split(": ")));
         tableConfigurationGrid.setItems(tableConfig);
 
-        url = env.getProperty("spring.cloud.config.uri") + "/" + label + "/" + application
-            + "-"
-            + profile
-            + ".json";
+        url =
+            env.getProperty("spring.cloud.config.uri")
+                + "/"
+                + label
+                + "/"
+                + application
+                + "-"
+                + profile
+                + ".json";
         logger().debug("Config JSON Url = " + url);
-        configprops = restTemplate.exchange(URI.create(url),
-            HttpMethod.GET,
-            new HttpEntity<>(httpHeaders), String.class);
+        configprops =
+            restTemplate.exchange(
+                URI.create(url), HttpMethod.GET, new HttpEntity<>(httpHeaders), String.class);
         configpropsBody = configprops.getBody();
         logger().debug("Config JSON = " + configpropsBody);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        jsonConfigurationTextArea
-            .setValue(gson.toJson(gson.fromJson(configpropsBody, Map.class)));
+        jsonConfigurationTextArea.setValue(gson.toJson(gson.fromJson(configpropsBody, Map.class)));
       }
     } catch (Throwable t) {
       t.printStackTrace();

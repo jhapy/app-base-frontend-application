@@ -21,7 +21,6 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
 import org.jhapy.dto.domain.notification.Mail;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
@@ -31,6 +30,8 @@ import org.jhapy.frontend.client.notification.NotificationServices;
 import org.jhapy.frontend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.Serializable;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -38,36 +39,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @SpringComponent
 @UIScope
-public class MailDataProvider extends DefaultDataProvider<Mail, DefaultFilter> implements
-    Serializable {
+public class MailDataProvider extends DefaultDataProvider<Mail, DefaultFilter>
+    implements Serializable {
 
   @Autowired
   public MailDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION,
-        AppConst.DEFAULT_SORT_FIELDS);
+    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
   }
 
   @Override
-  protected Page<Mail> fetchFromBackEnd(Query<Mail, DefaultFilter> query,
-      Pageable pageable) {
+  protected Page<Mail> fetchFromBackEnd(Query<Mail, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<Mail> page = NotificationServices.getMailService()
-        .findAnyMatching(
-            new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))
-        .getData();
+    Page<Mail> page =
+        NotificationServices.getMailService()
+            .findAnyMatching(
+                new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))
+            .getData();
     if (getPageObserver() != null) {
       getPageObserver().accept(page);
     }
     return page;
   }
 
-
   @Override
   protected int sizeInBackEnd(Query<Mail, DefaultFilter> query) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
     return NotificationServices.getMailService()
-        .countAnyMatching(
-            new CountAnyMatchingQuery(filter.getFilter(), filter.isShowInactive()))
-        .getData().intValue();
+        .countAnyMatching(new CountAnyMatchingQuery(filter.getFilter(), filter.isShowInactive()))
+        .getData()
+        .intValue();
   }
 }

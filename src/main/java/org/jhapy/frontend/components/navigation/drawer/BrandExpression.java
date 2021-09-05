@@ -44,5 +44,4 @@ public class BrandExpression extends Div {
 
     add(logo, title);
   }
-
 }

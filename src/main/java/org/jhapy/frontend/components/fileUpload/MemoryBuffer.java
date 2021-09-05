@@ -19,23 +19,21 @@
 package org.jhapy.frontend.components.fileUpload;
 
 import com.vaadin.flow.component.upload.Receiver;
-import java.io.OutputStream;
-import java.util.Arrays;
 import lombok.Data;
 
-/**
- * Basic in memory file receiver implementation.
- */
+import java.io.OutputStream;
+import java.util.Arrays;
+
+/** Basic in memory file receiver implementation. */
 @Data
 public class MemoryBuffer implements Receiver {
 
   private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
   protected byte[] buf = new byte[32];
 
-  /**
-   * The number of valid bytes in the buffer.
-   */
+  /** The number of valid bytes in the buffer. */
   protected int count;
+
   private String fileName, mimeType;
 
   @Override
@@ -74,9 +72,7 @@ public class MemoryBuffer implements Receiver {
         {
           throw new OutOfMemoryError();
         }
-        return (minCapacity > MAX_ARRAY_SIZE) ?
-            Integer.MAX_VALUE :
-            MAX_ARRAY_SIZE;
+        return (minCapacity > MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;
       }
     };
   }

@@ -36,7 +36,10 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-04-16
  */
-@FeignClient(name = "${jhapy.remote-services.audit-server.name:null}", url = "${jhapy.remote-services.audit-server.url:}", path = "/api/sessionService")
+@FeignClient(
+    name = "${jhapy.remote-services.audit-server.name:null}",
+    url = "${jhapy.remote-services.audit-server.url:}",
+    path = "/api/sessionService")
 @Primary
 public interface SessionService extends RemoteServiceHandler {
 
@@ -44,13 +47,15 @@ public interface SessionService extends RemoteServiceHandler {
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
   ServiceResult<Page<Session>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
-  default ServiceResult<Page<Session>> findAnyMatchingFallback(FindAnyMatchingQuery query,
-      Exception e) {
+  default ServiceResult<Page<Session>> findAnyMatchingFallback(
+      FindAnyMatchingQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new Page<>());
   }
 
   @PostMapping(value = "/countAnyMatching")
-  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "countAnyMatchingFallback")
+  @CircuitBreaker(
+      name = "defaultServiceCircuitBreaker",
+      fallbackMethod = "countAnyMatchingFallback")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
 
   default ServiceResult<Long> countAnyMatchingFallback(CountAnyMatchingQuery query, Exception e) {

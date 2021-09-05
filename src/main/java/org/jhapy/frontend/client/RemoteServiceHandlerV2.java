@@ -3,8 +3,6 @@ package org.jhapy.frontend.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,17 +11,18 @@ import org.jhapy.commons.exception.ErrorConstants;
 import org.jhapy.commons.exception.JHapyProblem;
 import org.jhapy.commons.security.SecurityUtils;
 import org.jhapy.dto.domain.BaseEntity;
+import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.utils.AppContextThread;
 import org.jhapy.dto.utils.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.zalando.problem.ProblemModule;
+
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Alexandre Clavaud.
@@ -41,11 +40,13 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
   }
 
   @PostMapping(value = "/countAnyMatching")
-  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "countAnyMatchingFallback")
+  @CircuitBreaker(
+      name = "defaultServiceCircuitBreaker",
+      fallbackMethod = "countAnyMatchingFallback")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
 
   default ServiceResult<Long> countAnyMatchingFallback(CountAnyMatchingQuery query, Exception e) {
-    return defaultFallback(getLoggerPrefix("countAnyMatchingFallback"), e, 0);
+    return defaultFallback(getLoggerPrefix("countAnyMatchingFallback"), e, 0L);
   }
 
   @PostMapping(value = "/getById")
@@ -64,6 +65,22 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
     return defaultFallback(getLoggerPrefix("saveFallback"), e, null);
   }
 
+  @PostMapping(value = "/saveAll")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "saveAllFallback")
+  ServiceResult<List<T>> saveAll(@RequestBody SaveAllQuery<T> query);
+
+  default ServiceResult<List<T>> saveAllFallback(SaveAllQuery<T> query, Exception e) {
+    return defaultFallback(getLoggerPrefix("saveAllFallback"), e, null);
+  }
+
+  @PostMapping(value = "/getAll")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getAllFallback")
+  ServiceResult<List<T>> getAll(@RequestBody BaseRemoteQuery query);
+
+  default ServiceResult<List<T>> getAllFallback(BaseRemoteQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("getAllFallback"), e, null);
+  }
+
   @PostMapping(value = "/delete")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "deleteFallback")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
@@ -78,8 +95,12 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
     objectMapper.registerModule(new ProblemModule());
     try {
       if (e instanceof FeignException) {
-        var responseBody = new String(((FeignException) e).responseBody()
-            .orElseThrow(() -> new Exception("Cannot decode body")).array());
+        var responseBody =
+            new String(
+                ((FeignException) e)
+                    .responseBody()
+                    .orElseThrow(() -> new Exception("Cannot decode body"))
+                    .array());
         JHapyProblem problem = objectMapper.readValue(responseBody, JHapyProblem.class);
 
         ServiceResult result;
@@ -92,11 +113,17 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
           result = new ServiceResult<>(false, message, defaultResult);
           result.setMessageTitle(serviceName);
         } else {
-          result = new ServiceResult<>(false,
-              StringUtils.isNotBlank(problem.getDetail()) ? problem.getDetail()
-                  : problem.getMessage(), defaultResult);
-          result.setMessageTitle(StringUtils.isNotBlank(problem.getTitle()) ? problem.getTitle()
-              : problem.getStatus().getReasonPhrase());
+          result =
+              new ServiceResult<>(
+                  false,
+                  StringUtils.isNotBlank(problem.getDetail())
+                      ? problem.getDetail()
+                      : problem.getMessage(),
+                  defaultResult);
+          result.setMessageTitle(
+              StringUtils.isNotBlank(problem.getTitle())
+                  ? problem.getTitle()
+                  : problem.getStatus().getReasonPhrase());
         }
 
         if (problem.getStacktrace() != null) {
@@ -107,17 +134,21 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
         return new ServiceResult<>(false, e.getLocalizedMessage(), defaultResult);
       }
     } catch (Exception exception) {
-      error(loggerPrefix, "Unexpected error {0} while decoding remote exception",
+      error(
+          loggerPrefix,
+          "Unexpected error {0} while decoding remote exception",
           exception.getLocalizedMessage());
       return new ServiceResult<>(false, e.getLocalizedMessage(), defaultResult);
     }
   }
 
   default String getLoggerPrefix(final String methodName) {
-    String username = SecurityUtils.getCurrentUserLogin()
-        .orElse(AppContextThread.getCurrentUsername());
-    String sessionId = AppContextThread.getCurrentSessionId() == null ? "local"
-        : AppContextThread.getCurrentSessionId();
+    String username =
+        SecurityUtils.getCurrentUserLogin().orElse(AppContextThread.getCurrentUsername());
+    String sessionId =
+        AppContextThread.getCurrentSessionId() == null
+            ? "local"
+            : AppContextThread.getCurrentSessionId();
     ThreadContext.put("jhapy.username", username);
     ThreadContext.put("jhapy.sessionId", sessionId);
     var params = "";
@@ -129,10 +160,12 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
   }
 
   default String getLoggerPrefix(final String methodName, Object... params) {
-    String username = SecurityUtils.getCurrentUserLogin()
-        .orElse(AppContextThread.getCurrentUsername());
-    String sessionId = AppContextThread.getCurrentSessionId() == null ? "local"
-        : AppContextThread.getCurrentSessionId();
+    String username =
+        SecurityUtils.getCurrentUserLogin().orElse(AppContextThread.getCurrentUsername());
+    String sessionId =
+        AppContextThread.getCurrentSessionId() == null
+            ? "local"
+            : AppContextThread.getCurrentSessionId();
     ThreadContext.put("jhapy.username", username);
     ThreadContext.put("jhapy.sessionId", sessionId);
     var paramsStr = new StringBuilder();
@@ -181,7 +214,8 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
 
   default void warn(String prefix, Throwable exception, String message, Object... params) {
     logger()
-        .warn(() -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
+        .warn(
+            () -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
             exception);
   }
 
@@ -192,7 +226,8 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
 
   default void error(String prefix, Throwable exception, String message, Object... params) {
     logger()
-        .error(() -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
+        .error(
+            () -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
             exception);
   }
 

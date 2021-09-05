@@ -1,12 +1,7 @@
 package org.jhapy.frontend.receiver;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.messageQueue.I18NActionTrlUpdate;
-import org.jhapy.dto.messageQueue.I18NActionUpdate;
-import org.jhapy.dto.messageQueue.I18NElementTrlUpdate;
-import org.jhapy.dto.messageQueue.I18NElementUpdate;
-import org.jhapy.dto.messageQueue.I18NMessageTrlUpdate;
-import org.jhapy.dto.messageQueue.I18NMessageUpdate;
+import org.jhapy.dto.messageQueue.*;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -21,8 +16,7 @@ public class I18NReceiver implements HasLogger {
 
   private final MyI18NProvider i18NService;
 
-  public I18NReceiver(
-      MyI18NProvider i18NService) {
+  public I18NReceiver(MyI18NProvider i18NService) {
     this.i18NService = i18NService;
   }
 

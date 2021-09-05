@@ -19,6 +19,7 @@
 package org.jhapy.frontend.dataproviders.utils;
 
 import com.vaadin.flow.data.provider.Query;
+
 import java.io.Serializable;
 import java.util.stream.Stream;
 
@@ -27,8 +28,8 @@ import java.util.stream.Stream;
  * @version 1.0
  * @since 2019-06-03
  */
-public abstract class FilterablePageableDataProvider<T extends Serializable, F> extends
-    PageableDataProvider<T, F> {
+public abstract class FilterablePageableDataProvider<T extends Serializable, F>
+    extends PageableDataProvider<T, F> {
 
   private F filter = null;
 
@@ -51,7 +52,7 @@ public abstract class FilterablePageableDataProvider<T extends Serializable, F> 
   }
 
   private Query<T, F> getFilterQuery(Query<T, F> t) {
-    return new Query<>(t.getOffset(), t.getLimit(), t.getSortOrders(),
-        t.getInMemorySorting(), filter);
+    return new Query<>(
+        t.getOffset(), t.getLimit(), t.getSortOrders(), t.getInMemorySorting(), filter);
   }
 }

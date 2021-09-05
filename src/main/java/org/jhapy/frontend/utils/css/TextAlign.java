@@ -19,8 +19,10 @@
 package org.jhapy.frontend.utils.css;
 
 public enum TextAlign {
-
-  CENTER("center"), JUSTIFY("justify"), LEFT("left"), RIGHT("right");
+  CENTER("center"),
+  JUSTIFY("justify"),
+  LEFT("left"),
+  RIGHT("right");
 
   private final String value;
 
@@ -31,5 +33,4 @@ public enum TextAlign {
   public String getValue() {
     return value;
   }
-
 }

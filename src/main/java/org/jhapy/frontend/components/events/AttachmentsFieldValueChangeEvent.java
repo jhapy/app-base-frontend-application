@@ -28,8 +28,8 @@ public class AttachmentsFieldValueChangeEvent implements HasValue.ValueChangeEve
   private final StoredFile[] value;
   private final AttachmentField src;
 
-  public AttachmentsFieldValueChangeEvent(StoredFile[] oldValue, StoredFile[] value,
-      AttachmentField src) {
+  public AttachmentsFieldValueChangeEvent(
+      StoredFile[] oldValue, StoredFile[] value, AttachmentField src) {
     this.oldValue = oldValue;
     this.value = value;
     this.src = src;

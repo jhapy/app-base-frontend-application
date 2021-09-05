@@ -18,13 +18,7 @@
 
 package org.jhapy.frontend.customFields;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
@@ -36,11 +30,6 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.utils.StoredFile;
@@ -59,26 +48,38 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BorderRadius;
 import org.jhapy.frontend.utils.css.Shadow;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-05-13
  */
-public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
-    HasValue<AttachmentsFieldValueChangeEvent, StoredFile[]>, HasLogger {
+public class AttachmentField extends FlexBoxLayout
+    implements HasStyle,
+        HasSize,
+        HasValue<AttachmentsFieldValueChangeEvent, StoredFile[]>,
+        HasLogger {
 
   private List<StoredFile> storedFiles = new ArrayList<>();
   private final Upload upload;
   private final Div documentList;
-  private final List<ValueChangeListener<? super AttachmentsFieldValueChangeEvent>> changeListeners = new ArrayList<>();
+  private final List<ValueChangeListener<? super AttachmentsFieldValueChangeEvent>>
+      changeListeners = new ArrayList<>();
 
   public AttachmentField() {
-    this(null, new String[]{"image/jpeg", "image/png", "image/gif", "image/tiff",
-        "application/pdf"}, 10, 10);
+    this(
+        null,
+        new String[] {"image/jpeg", "image/png", "image/gif", "image/tiff", "application/pdf"},
+        10,
+        10);
   }
 
-  public AttachmentField(String label, String[] acceptedFileType, int maxFileSizeMb,
-      int maxFiles) {
+  public AttachmentField(String label, String[] acceptedFileType, int maxFileSizeMb, int maxFiles) {
     setFlexDirection(FlexDirection.COLUMN);
 
     documentList = new Div();
@@ -90,9 +91,9 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
     UIUtils.setShadow(Shadow.XS, documentList);
 
     FlexBoxLayout documents = new FlexBoxLayout(documentList);
-    //reports.addClassName(CLASS_NAME + "__reports");
+    // reports.addClassName(CLASS_NAME + "__reports");
     documents.setFlexDirection(FlexDirection.COLUMN);
-    //reports.setPadding(Bottom.XL, Left.RESPONSIVE_L);
+    // reports.setPadding(Bottom.XL, Left.RESPONSIVE_L);
 
     MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
     upload = new Upload(buffer);
@@ -103,70 +104,71 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
     upload.setMaxFileSize(maxFileSizeMb * 1024 * 124);
     upload.setMaxFiles(maxFiles);
 
-    upload.addSucceededListener(event -> {
-      var loggerPrefix = getLoggerPrefix("upload.succeeded");
-      logger().debug(loggerPrefix + "Start");
+    upload.addSucceededListener(
+        event -> {
+          var loggerPrefix = getLoggerPrefix("upload.succeeded");
+          logger().debug(loggerPrefix + "Start");
 
-      StoredFile storedFile = new StoredFile();
-      storedFile.setMimeType(event.getMIMEType());
-      try {
-        storedFile
-            .setContent(IOUtils.toByteArray(buffer.getInputStream(event.getFileName())));
-      } catch (IOException e) {
-        Notification.show(e.getLocalizedMessage());
-      }
-      if (event.getMIMEType().contains("image")) {
-        storedFile.setOrginalContent(storedFile.getContent());
-      }
-      storedFile.setFilesize((long) storedFile.getContent().length);
-      storedFile.setFilename(event.getFileName());
+          StoredFile storedFile = new StoredFile();
+          storedFile.setMimeType(event.getMIMEType());
+          try {
+            storedFile.setContent(IOUtils.toByteArray(buffer.getInputStream(event.getFileName())));
+          } catch (IOException e) {
+            Notification.show(e.getLocalizedMessage());
+          }
+          if (event.getMIMEType().contains("image")) {
+            storedFile.setOrginalContent(storedFile.getContent());
+          }
+          storedFile.setFilesize((long) storedFile.getContent().length);
+          storedFile.setFilename(event.getFileName());
 
-      List<StoredFile> oldValues = new ArrayList<>(storedFiles);
-      storedFiles.add(storedFile);
+          List<StoredFile> oldValues = new ArrayList<>(storedFiles);
+          storedFiles.add(storedFile);
 
-      logger()
-          .debug(loggerPrefix + "Notify listeners, " + changeListeners.size() + " listeners");
+          logger()
+              .debug(loggerPrefix + "Notify listeners, " + changeListeners.size() + " listeners");
 
-      changeListeners.forEach(listener -> listener
-          .valueChanged(
-              new AttachmentsFieldValueChangeEvent(oldValues.toArray(new StoredFile[0]),
-                  storedFiles.toArray(new StoredFile[0]), this)));
+          changeListeners.forEach(
+              listener ->
+                  listener.valueChanged(
+                      new AttachmentsFieldValueChangeEvent(
+                          oldValues.toArray(new StoredFile[0]),
+                          storedFiles.toArray(new StoredFile[0]),
+                          this)));
 
-      logger().debug(loggerPrefix + "End");
-    });
+          logger().debug(loggerPrefix + "End");
+        });
 
     add(upload);
     add(documentList);
-
   }
 
   protected void addDocumentInList(StoredFile file) {
-    String iconFile = file.getFilename()
-        .substring(file.getFilename().lastIndexOf(".") + 1) + "-icon-48x48.png";
+    String iconFile =
+        file.getFilename().substring(file.getFilename().lastIndexOf(".") + 1) + "-icon-48x48.png";
     if (!FileExtLookup.getInstance().doesExtExists(iconFile)) {
       iconFile = "unknown-48x48.png";
     }
-    Image fileIcon = new Image("images/filesExt/" + iconFile,
-        file.getFilename());
+    Image fileIcon = new Image("images/filesExt/" + iconFile, file.getFilename());
 
     fileIcon.addClassName(IconSize.M.getClassName());
 
     ListItem item = new ListItem(fileIcon, file.getFilename());
-    item.setSuffix(createDownloadButton(file), createViewButton(file),
-        createRemoveButton(file, item));
+    item.setSuffix(
+        createDownloadButton(file), createViewButton(file), createRemoveButton(file, item));
 
     documentList.add(item);
   }
 
   private Component createDownloadButton(StoredFile item) {
     Button downloadButton = UIUtils.createSmallButton(VaadinIcon.DOWNLOAD);
-    downloadButton.addClickListener(event -> {
-    });
+    downloadButton.addClickListener(event -> {});
 
-    Anchor downloadLink = new Anchor(
-        new StreamResource(item.getFilename(),
-            () -> new ByteArrayInputStream(item.getContent())),
-        "");
+    Anchor downloadLink =
+        new Anchor(
+            new StreamResource(
+                item.getFilename(), () -> new ByteArrayInputStream(item.getContent())),
+            "");
     downloadLink.getElement().setAttribute("download", true);
 
     downloadLink.add(downloadButton);
@@ -202,10 +204,13 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
           storedFiles.remove(item);
           documentList.remove(listItem);
 
-          changeListeners.forEach(listener -> listener
-              .valueChanged(
-                  new AttachmentsFieldValueChangeEvent(oldValues.toArray(new StoredFile[0]),
-                      storedFiles.toArray(new StoredFile[0]), this)));
+          changeListeners.forEach(
+              listener ->
+                  listener.valueChanged(
+                      new AttachmentsFieldValueChangeEvent(
+                          oldValues.toArray(new StoredFile[0]),
+                          storedFiles.toArray(new StoredFile[0]),
+                          this)));
         });
     return infoButton;
   }
@@ -223,7 +228,8 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
       return;
     } else {
       storedFiles = new ArrayList<>(Arrays.asList(value));
-      storedFiles.stream().filter(storedFile -> storedFile.getId() != null)
+      storedFiles.stream()
+          .filter(storedFile -> storedFile.getId() != null)
           .forEach(this::addDocumentInList);
     }
   }
@@ -241,8 +247,7 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
   }
 
   @Override
-  public void setReadOnly(boolean b) {
-  }
+  public void setReadOnly(boolean b) {}
 
   @Override
   public boolean isRequiredIndicatorVisible() {
@@ -250,8 +255,7 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
   }
 
   @Override
-  public void setRequiredIndicatorVisible(boolean b) {
-  }
+  public void setRequiredIndicatorVisible(boolean b) {}
 
   static class CustomDetailsDrawerFooter extends FlexBoxLayout {
 
@@ -284,13 +288,11 @@ public class AttachmentField extends FlexBoxLayout implements HasStyle, HasSize,
       add(leftButton, rightButtons);
     }
 
-    public Registration addDownloadListener(
-        ComponentEventListener<ClickEvent<Button>> listener) {
+    public Registration addDownloadListener(ComponentEventListener<ClickEvent<Button>> listener) {
       return download.addClickListener(listener);
     }
 
-    public Registration addCloseListener(
-        ComponentEventListener<ClickEvent<Button>> listener) {
+    public Registration addCloseListener(ComponentEventListener<ClickEvent<Button>> listener) {
       return close.addClickListener(listener);
     }
   }

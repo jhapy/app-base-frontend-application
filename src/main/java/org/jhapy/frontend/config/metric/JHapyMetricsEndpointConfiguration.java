@@ -29,24 +29,20 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * <p>JHapyMetricsEndpointConfiguration class.</p>
- *
- * From JHipster Project https://www.jhipster.tech/
- */
+/** JHapyMetricsEndpointConfiguration class. From JHipster Project https://www.jhipster.tech/ */
 @Configuration
 @ConditionalOnClass(Timed.class)
 @AutoConfigureAfter(MetricsEndpointAutoConfiguration.class)
 public class JHapyMetricsEndpointConfiguration {
 
   /**
-   * <p>jHapyMetricsEndpoint.</p>
+   * jHapyMetricsEndpoint.
    *
    * @param meterRegistry a {@link MeterRegistry} object.
    * @return a {@link JHapyMetricsEndpoint} object.
    */
   @Bean
-  //@ConditionalOnBean({MeterRegistry.class})
+  // @ConditionalOnBean({MeterRegistry.class})
   @ConditionalOnMissingBean
   @ConditionalOnAvailableEndpoint
   public JHapyMetricsEndpoint jHapyMetricsEndpoint(MeterRegistry meterRegistry) {

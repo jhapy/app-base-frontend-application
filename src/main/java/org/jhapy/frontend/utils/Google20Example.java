@@ -25,6 +25,7 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -36,23 +37,25 @@ import java.util.concurrent.ExecutionException;
 public class Google20Example {
 
   private static final String NETWORK_NAME = "Google";
-  private static final String PROTECTED_RESOURCE_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+  private static final String PROTECTED_RESOURCE_URL =
+      "https://www.googleapis.com/oauth2/v3/userinfo";
 
-  private Google20Example() {
-  }
+  private Google20Example() {}
 
   @SuppressWarnings("PMD.SystemPrintln")
   public static void main(String... args)
       throws IOException, InterruptedException, ExecutionException {
     // Replace these with your client id and secret
-    final String clientId = "522878527467-0jr9v8mbis4ud9l592pcp7psusq62vfa.apps.googleusercontent.com";
+    final String clientId =
+        "522878527467-0jr9v8mbis4ud9l592pcp7psusq62vfa.apps.googleusercontent.com";
     final String clientSecret = "rjwKy0f17NMkls80uvD3hkRZ";
     final String secretState = "secret" + new Random().nextInt(999_999);
-    final OAuth20Service service = new ServiceBuilder(clientId)
-        .apiSecret(clientSecret)
-        .defaultScope("email") // replace with desired scope
-        .callback("http://localhost:9002/frontend/oauth2/popupCallback.html")
-        .build(GoogleApi20.instance());
+    final OAuth20Service service =
+        new ServiceBuilder(clientId)
+            .apiSecret(clientSecret)
+            .defaultScope("email") // replace with desired scope
+            .callback("http://localhost:9002/frontend/oauth2/popupCallback.html")
+            .build(GoogleApi20.instance());
     final Scanner in = new Scanner(System.in, StandardCharsets.UTF_8);
 
     System.out.println("=== " + NETWORK_NAME + "'s OAuth Workflow ===");
@@ -60,16 +63,18 @@ public class Google20Example {
 
     // Obtain the Authorization URL
     System.out.println("Fetching the Authorization URL...");
-    //pass access_type=offline to get refresh token
-    //https://developers.google.com/identity/protocols/OAuth2WebServer#preparing-to-start-the-oauth-20-flow
+    // pass access_type=offline to get refresh token
+    // https://developers.google.com/identity/protocols/OAuth2WebServer#preparing-to-start-the-oauth-20-flow
     final Map<String, String> additionalParams = new HashMap<>();
     additionalParams.put("access_type", "offline");
-    //force to reget refresh token (if user are asked not the first time)
+    // force to reget refresh token (if user are asked not the first time)
     additionalParams.put("prompt", "consent");
-    final String authorizationUrl = service.createAuthorizationUrlBuilder()
-        .state(secretState)
-        .additionalParams(additionalParams)
-        .build();
+    final String authorizationUrl =
+        service
+            .createAuthorizationUrlBuilder()
+            .state(secretState)
+            .additionalParams(additionalParams)
+            .build();
     System.out.println("Got the Authorization URL!");
     System.out.println("Now go and authorize ScribeJava here:");
     System.out.println(authorizationUrl);
@@ -79,8 +84,7 @@ public class Google20Example {
     System.out.println();
 
     System.out.println(
-        "And paste the state from server here. We have set 'secretState'='" + secretState
-            + "'.");
+        "And paste the state from server here. We have set 'secretState'='" + secretState + "'.");
     System.out.print(">>");
     final String value = in.nextLine();
     if (secretState.equals(value)) {
@@ -95,14 +99,12 @@ public class Google20Example {
     System.out.println("Trading the Authorization Code for an Access Token...");
     OAuth2AccessToken accessToken = service.getAccessToken(code);
     System.out.println("Got the Access Token!");
-    System.out
-        .println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
+    System.out.println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
 
     System.out.println("Refreshing the Access Token...");
     accessToken = service.refreshAccessToken(accessToken.getRefreshToken());
     System.out.println("Refreshed the Access Token!");
-    System.out
-        .println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
+    System.out.println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
     System.out.println();
 
     // Now let's go and ask for a protected resource!

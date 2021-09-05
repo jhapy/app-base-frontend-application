@@ -9,8 +9,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.server.StreamResource;
-import java.io.ByteArrayInputStream;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.serviceQuery.ServiceResult;
@@ -23,6 +21,9 @@ import org.jhapy.frontend.component.cropperjs.model.Data;
 import org.jhapy.frontend.component.cropperjs.model.DragMode;
 import org.jhapy.frontend.component.cropperjs.model.ViewMode;
 import org.jhapy.frontend.utils.UIUtils;
+
+import java.io.ByteArrayInputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Alexandre Clavaud.

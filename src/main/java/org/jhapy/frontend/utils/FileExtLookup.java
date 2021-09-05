@@ -11,8 +11,7 @@ public class FileExtLookup {
 
   private static FileExtLookup instance;
 
-  private FileExtLookup() {
-  }
+  private FileExtLookup() {}
 
   public static FileExtLookup getInstance() {
     if (instance == null) {
@@ -24,8 +23,8 @@ public class FileExtLookup {
   public boolean doesExtExists(String ext) {
     ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     try {
-      InputStream found = classLoader
-          .getResourceAsStream("META-INF/resources/images/filesExt/" + ext);
+      InputStream found =
+          classLoader.getResourceAsStream("META-INF/resources/images/filesExt/" + ext);
       return found != null;
     } catch (Exception e) {
       return false;

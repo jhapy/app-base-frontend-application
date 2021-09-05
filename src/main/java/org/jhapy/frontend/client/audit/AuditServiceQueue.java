@@ -31,8 +31,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuditServiceQueue {
 
-  final
-  AmqpTemplate jmsTemplate;
+  final AmqpTemplate jmsTemplate;
 
   public AuditServiceQueue(AmqpTemplate jmsTemplate) {
     this.jmsTemplate = jmsTemplate;

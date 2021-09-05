@@ -19,11 +19,11 @@
 package org.jhapy.frontend.layout.size;
 
 public enum Tall implements Size {
-
-  XS("var(--lumo-space-xs)", "spacing-tall-xs"), S("var(--lumo-space-s)",
-      "spacing-tall-s"), M("var(--lumo-space-m)", "spacing-tall-m"), L(
-      "var(--lumo-space-l)", "spacing-tall-l"), XL(
-      "var(--lumo-space-xl)", "spacing-tall-xl");
+  XS("var(--lumo-space-xs)", "spacing-tall-xs"),
+  S("var(--lumo-space-s)", "spacing-tall-s"),
+  M("var(--lumo-space-m)", "spacing-tall-m"),
+  L("var(--lumo-space-l)", "spacing-tall-l"),
+  XL("var(--lumo-space-xl)", "spacing-tall-xl");
 
   private final String variable;
   private final String spacingClassName;
@@ -35,12 +35,12 @@ public enum Tall implements Size {
 
   @Override
   public String[] getMarginAttributes() {
-    return new String[]{"margin"};
+    return new String[] {"margin"};
   }
 
   @Override
   public String[] getPaddingAttributes() {
-    return new String[]{"padding"};
+    return new String[] {"padding"};
   }
 
   @Override

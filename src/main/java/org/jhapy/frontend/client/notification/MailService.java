@@ -35,7 +35,11 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-04-16
  */
-@FeignClient(name = "${jhapy.remote-services.notification-server.name:null}", url = "${jhapy.remote-services.notification-server.url:}", path = "/api/mailService", fallbackFactory = MailServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.notification-server.name:null}",
+    url = "${jhapy.remote-services.notification-server.url:}",
+    path = "/api/mailService",
+    fallbackFactory = MailServiceFallback.class)
 @Primary
 public interface MailService {
 

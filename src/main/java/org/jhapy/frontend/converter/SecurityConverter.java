@@ -18,11 +18,6 @@
 
 package org.jhapy.frontend.converter;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MimeType;
@@ -34,11 +29,9 @@ import org.jhapy.dto.utils.StoredFile;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
+
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
@@ -83,16 +76,19 @@ public abstract class SecurityConverter {
       Iterable<SecurityKeycloakUser> dtos);
 
   @AfterMapping
-  protected void afterConvert(SecurityKeycloakUser dto,
+  protected void afterConvert(
+      SecurityKeycloakUser dto,
       @MappingTarget UserRepresentation domain,
       @Context Map<String, Object> context) {
     domain.setEnabled(dto.getIsActivated());
-    domain.getAttributes().forEach(
-        (s, o) -> dto.getAttributes().put(s, Collections.singletonList(o.toString())));
+    domain
+        .getAttributes()
+        .forEach((s, o) -> dto.getAttributes().put(s, Collections.singletonList(o.toString())));
   }
 
   @AfterMapping
-  protected void afterConvert(UserRepresentation domain,
+  protected void afterConvert(
+      UserRepresentation domain,
       @MappingTarget SecurityKeycloakUser dto,
       @Context Map<String, Object> context) {
     if (domain.getAttributes() != null && domain.getAttributes().get("title") != null) {
@@ -104,8 +100,9 @@ public abstract class SecurityConverter {
     if (domain.getAttributes() != null && domain.getAttributes().get("locale") != null) {
       dto.setLocale(domain.getAttributes().get("locale").get(0));
     }
-    dto.setIsLocal(domain.getFederationLink() != null || (domain.getSocialLinks() != null
-        && domain.getSocialLinks().size() > 0));
+    dto.setIsLocal(
+        domain.getFederationLink() != null
+            || (domain.getSocialLinks() != null && domain.getSocialLinks().size() > 0));
     if (domain.getAttributes() != null && domain.getAttributes().get("picture") != null) {
       String pictureStr = domain.getAttributes().get("picture").get(0);
       if (pictureStr.startsWith("http")) {
@@ -113,8 +110,10 @@ public abstract class SecurityConverter {
       } else {
         byte[] pictureDecoded = java.util.Base64.getDecoder().decode(pictureStr);
         try {
-          MimeType mimeType = TikaConfig.getDefaultConfig().getMimeRepository()
-              .forName((new Tika()).detect(pictureDecoded));
+          MimeType mimeType =
+              TikaConfig.getDefaultConfig()
+                  .getMimeRepository()
+                  .forName((new Tika()).detect(pictureDecoded));
           String fileExt = mimeType.getExtension();
 
           StoredFile storedFile = new StoredFile();
@@ -130,10 +129,13 @@ public abstract class SecurityConverter {
         }
       }
     }
-    Objects.requireNonNull(domain.getAttributes())
-        .keySet().stream()
-        .filter(s -> !s.equalsIgnoreCase("title") && !s.equalsIgnoreCase("phone") &&
-            !s.equalsIgnoreCase("locale") && !s.equalsIgnoreCase("picture"))
+    Objects.requireNonNull(domain.getAttributes()).keySet().stream()
+        .filter(
+            s ->
+                !s.equalsIgnoreCase("title")
+                    && !s.equalsIgnoreCase("phone")
+                    && !s.equalsIgnoreCase("locale")
+                    && !s.equalsIgnoreCase("picture"))
         .forEach(s -> dto.getAttributes().put(s, domain.getAttributes().get(s).get(0)));
 
     dto.setIsActivated(domain.isEnabled());

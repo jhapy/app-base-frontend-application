@@ -27,8 +27,8 @@ import com.vaadin.flow.component.Component;
  * @version 1.0
  * @since 2019-07-13
  */
-public class PostItem extends
-    HorizontalCardComponentContainer<com.github.appreciated.card.content.Item> {
+public class PostItem
+    extends HorizontalCardComponentContainer<com.github.appreciated.card.content.Item> {
 
   private final Component component;
 
@@ -46,5 +46,4 @@ public class PostItem extends
     }
     return this;
   }
-
 }

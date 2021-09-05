@@ -25,16 +25,15 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.textfield.TextField;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.i18n.Message;
-import org.jhapy.dto.domain.i18n.MessageTrl;
+import org.jhapy.dto.domain.i18n.MessageDTO;
+import org.jhapy.dto.domain.i18n.MessageTrlDTO;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
-import org.jhapy.dto.serviceQuery.i18n.messageTrl.FindByMessageQuery;
+import org.jhapy.dto.serviceQuery.i18n.messageTrl.GetMessageTrlQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.components.CheckboxColumnComponent;
@@ -49,22 +48,26 @@ import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
 import org.jhapy.frontend.views.JHapyMainView3;
 
+import java.util.List;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-04-21
  */
-
 @I18NPageTitle(messageKey = AppConst.TITLE_MESSAGES)
 @RequiresRole({SecurityConst.ROLE_I18N_WRITE, SecurityConst.ROLE_ADMIN})
-public class MessagesView extends
-    DefaultMasterDetailsView<Message, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class MessagesView
+    extends DefaultMasterDetailsView<MessageDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public MessagesView(MyI18NProvider myI18NProvider) {
-    super("message.", Message.class, new MessageDataProvider(),
+    super(
+        "message.",
+        MessageDTO.class,
+        new MessageDataProvider(),
         (e) -> {
-          ServiceResult<Message> _elt = I18NServices.getMessageService()
-              .save(new SaveQuery<>(e));
+          ServiceResult<MessageDTO> _elt =
+              I18NServices.getMessageService().save(new SaveQuery<>(e));
           if (_elt.getIsSuccess()) {
             myI18NProvider.reloadMessages();
           }
@@ -75,21 +78,20 @@ public class MessagesView extends
   }
 
   @Override
-  protected boolean beforeSave(Message entity) {
+  protected boolean beforeSave(MessageDTO entity) {
     long hasDefault = 0;
-    List<MessageTrl> messageTrls = entity.getTranslations();
-    for (MessageTrl messageTrl : messageTrls) {
-      if (messageTrl != null && messageTrl.getIsDefault() != null && messageTrl
-          .getIsDefault()) {
+    List<MessageTrlDTO> messageTrls = entity.getTranslations();
+    for (MessageTrlDTO messageTrl : messageTrls) {
+      if (messageTrl != null && messageTrl.getIsDefault() != null && messageTrl.getIsDefault()) {
         hasDefault++;
       }
     }
     if (hasDefault == 0) {
-      JHapyMainView3.get().displayErrorMessage(getTranslation(
-          "message.global.translationNeedsDefault"));
+      JHapyMainView3.get()
+          .displayErrorMessage(getTranslation("message.global.translationNeedsDefault"));
     } else if (hasDefault > 1) {
-      JHapyMainView3.get().displayErrorMessage(getTranslation(
-          "message.global.translationMaxDefault"));
+      JHapyMainView3.get()
+          .displayErrorMessage(getTranslation("message.global.translationMaxDefault"));
     }
     return hasDefault == 1;
   }
@@ -98,30 +100,34 @@ public class MessagesView extends
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
 
-    grid.addColumn(Message::getCategory).setKey("category").setSortable(true);
-    grid.addColumn(Message::getName).setKey("name").setSortable(true);
+    grid.addColumn(MessageDTO::getCategory).setKey("category").setSortable(true);
+    grid.addColumn(MessageDTO::getName).setKey("name").setSortable(true);
     grid.addComponentColumn(message -> new CheckboxColumnComponent(message.getIsTranslated()))
-        .setKey("isTranslated").setSortable(true);
+        .setKey("isTranslated")
+        .setSortable(true);
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
     return grid;
   }
 
-  protected Component createDetails(Message message) {
+  protected Component createDetails(MessageDTO message) {
     boolean isNew = message.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + message.getName());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + message.getName());
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
@@ -141,48 +147,45 @@ public class MessagesView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem nameItem = editingForm
-        .addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
-    FormLayout.FormItem categoryItem = editingForm
-        .addFormItem(categoryField, getTranslation("element." + I18N_PREFIX + "category"));
-    FormLayout.FormItem translationsItem = editingForm
-        .addFormItem(messageTrl, getTranslation("element." + I18N_PREFIX + "translations"));
-    editingForm
-        .addFormItem(isTranslated, getTranslation("element." + I18N_PREFIX + "isTranslated"));
-    editingForm
-        .addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    FormLayout.FormItem nameItem =
+        editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
+    FormLayout.FormItem categoryItem =
+        editingForm.addFormItem(
+            categoryField, getTranslation("element." + I18N_PREFIX + "category"));
+    FormLayout.FormItem translationsItem =
+        editingForm.addFormItem(
+            messageTrl, getTranslation("element." + I18N_PREFIX + "translations"));
+    editingForm.addFormItem(
+        isTranslated, getTranslation("element." + I18N_PREFIX + "isTranslated"));
+    editingForm.addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
 
     UIUtils.setColSpan(2, nameItem, categoryItem, translationsItem);
 
     if (message.getTranslations().size() == 0) {
       message.setTranslations(
-          I18NServices.getMessageTrlService()
-              .findByMessage(new FindByMessageQuery(message.getId()))
+          I18NServices.getMessageService()
+              .getMessageTrls(new GetMessageTrlQuery(message.getId()))
               .getData());
     }
 
     binder.setBean(message);
 
-    binder.bind(name, Message::getName, Message::setName);
-    binder.bind(categoryField, Message::getCategory, Message::setCategory);
-    binder.bind(isActive, Message::getIsActive, Message::setIsActive);
-    binder.bind(isTranslated, Message::getIsTranslated, Message::setIsTranslated);
-    binder.bind(messageTrl, Message::getTranslations, Message::setTranslations);
+    binder.bind(name, MessageDTO::getName, MessageDTO::setName);
+    binder.bind(categoryField, MessageDTO::getCategory, MessageDTO::setCategory);
+    binder.bind(isActive, MessageDTO::getIsActive, MessageDTO::setIsActive);
+    binder.bind(isTranslated, MessageDTO::getIsTranslated, MessageDTO::setIsTranslated);
+    binder.bind(messageTrl, MessageDTO::getTranslations, MessageDTO::setTranslations);
 
     return editingForm;
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : "%" + filter + "%",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "%" + filter + "%", Boolean.TRUE));
   }
 }

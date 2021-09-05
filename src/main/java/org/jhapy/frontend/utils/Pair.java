@@ -18,15 +18,12 @@
 
 package org.jhapy.frontend.utils;
 
+import lombok.*;
+
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 /**
  * A tuple of things.
@@ -56,23 +53,17 @@ public final class Pair<S, T> {
     return new Pair<>(first, second);
   }
 
-  /**
-   * A collector to create a {@link Map} from a {@link Stream} of {@link Pair}s.
-   */
+  /** A collector to create a {@link Map} from a {@link Stream} of {@link Pair}s. */
   public static <S, T> Collector<Pair<S, T>, ?, Map<S, T>> toMap() {
     return Collectors.toMap(Pair::getFirst, Pair::getSecond);
   }
 
-  /**
-   * Returns the first element of the {@link Pair}.
-   */
+  /** Returns the first element of the {@link Pair}. */
   public S getFirst() {
     return first;
   }
 
-  /**
-   * Returns the second element of the {@link Pair}.
-   */
+  /** Returns the second element of the {@link Pair}. */
   public T getSecond() {
     return second;
   }

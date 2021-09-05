@@ -32,34 +32,26 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.theme.lumo.Lumo;
+import org.jhapy.frontend.components.FlexBoxLayout;
+import org.jhapy.frontend.layout.size.Right;
+import org.jhapy.frontend.utils.css.*;
+import org.vaadin.textfieldformatter.NumeralFieldFormatter;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.layout.size.Right;
-import org.jhapy.frontend.utils.css.AlignSelf;
-import org.jhapy.frontend.utils.css.BorderRadius;
-import org.jhapy.frontend.utils.css.BoxSizing;
-import org.jhapy.frontend.utils.css.Overflow;
-import org.jhapy.frontend.utils.css.PointerEvents;
-import org.jhapy.frontend.utils.css.Shadow;
-import org.jhapy.frontend.utils.css.TextAlign;
-import org.jhapy.frontend.utils.css.TextOverflow;
-import org.jhapy.frontend.utils.css.WhiteSpace;
-import org.vaadin.textfieldformatter.NumeralFieldFormatter;
 
 public class UIUtils {
 
   public static final String IMG_PATH = "/images/";
 
-  /**
-   * Thread-unsafe formatters.
-   */
-  private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal
-      .withInitial(() -> new DecimalFormat("###,###,##0.00"));
-  private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
-      .withInitial(() -> DateTimeFormatter.ofPattern("MMM dd, YYYY"));
+  /** Thread-unsafe formatters. */
+  private static final ThreadLocal<DecimalFormat> decimalFormat =
+      ThreadLocal.withInitial(() -> new DecimalFormat("###,###,##0.00"));
+
+  private static final ThreadLocal<DateTimeFormatter> dateFormat =
+      ThreadLocal.withInitial(() -> DateTimeFormatter.ofPattern("MMM dd, YYYY"));
   /* ==== BUTTONS ==== */
 
   // Styles
@@ -96,8 +88,7 @@ public class UIUtils {
     return createButton(icon, ButtonVariant.LUMO_TERTIARY_INLINE);
   }
 
-  public static Button createTertiaryInlineButton(String text,
-      VaadinIcon icon) {
+  public static Button createTertiaryInlineButton(String text, VaadinIcon icon) {
     return createButton(text, icon, ButtonVariant.LUMO_TERTIARY_INLINE);
   }
 
@@ -114,19 +105,15 @@ public class UIUtils {
   }
 
   public static Button createSuccessPrimaryButton(String text) {
-    return createButton(text, ButtonVariant.LUMO_SUCCESS,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(text, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
   }
 
   public static Button createSuccessPrimaryButton(VaadinIcon icon) {
-    return createButton(icon, ButtonVariant.LUMO_SUCCESS,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(icon, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
   }
 
-  public static Button createSuccessPrimaryButton(String text,
-      VaadinIcon icon) {
-    return createButton(text, icon, ButtonVariant.LUMO_SUCCESS,
-        ButtonVariant.LUMO_PRIMARY);
+  public static Button createSuccessPrimaryButton(String text, VaadinIcon icon) {
+    return createButton(text, icon, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
   }
 
   public static Button createErrorButton(String text) {
@@ -142,19 +129,15 @@ public class UIUtils {
   }
 
   public static Button createErrorPrimaryButton(String text) {
-    return createButton(text, ButtonVariant.LUMO_ERROR,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(text, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
   }
 
   public static Button createErrorPrimaryButton(VaadinIcon icon) {
-    return createButton(icon, ButtonVariant.LUMO_ERROR,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(icon, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
   }
 
-  public static Button createErrorPrimaryButton(String text,
-      VaadinIcon icon) {
-    return createButton(text, icon, ButtonVariant.LUMO_ERROR,
-        ButtonVariant.LUMO_PRIMARY);
+  public static Button createErrorPrimaryButton(String text, VaadinIcon icon) {
+    return createButton(text, icon, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
   }
 
   public static Button createContrastButton(String text) {
@@ -170,19 +153,15 @@ public class UIUtils {
   }
 
   public static Button createContrastPrimaryButton(String text) {
-    return createButton(text, ButtonVariant.LUMO_CONTRAST,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(text, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
   }
 
   public static Button createContrastPrimaryButton(VaadinIcon icon) {
-    return createButton(icon, ButtonVariant.LUMO_CONTRAST,
-        ButtonVariant.LUMO_PRIMARY);
+    return createButton(icon, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
   }
 
-  public static Button createContrastPrimaryButton(String text,
-      VaadinIcon icon) {
-    return createButton(text, icon, ButtonVariant.LUMO_CONTRAST,
-        ButtonVariant.LUMO_PRIMARY);
+  public static Button createContrastPrimaryButton(String text, VaadinIcon icon) {
+    return createButton(text, icon, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
   }
 
   // Size
@@ -232,8 +211,7 @@ public class UIUtils {
 
   // Icon
 
-  public static Button createButton(VaadinIcon icon,
-      ButtonVariant... variants) {
+  public static Button createButton(VaadinIcon icon, ButtonVariant... variants) {
     Button button = new Button(new Icon(icon));
     button.addThemeVariants(variants);
     return button;
@@ -241,11 +219,17 @@ public class UIUtils {
 
   // Text and icon
 
-  public static Button createButton(String text, VaadinIcon icon,
-      ButtonVariant... variants) {
+  public static Button createButton(String text, VaadinIcon icon, ButtonVariant... variants) {
     Icon i = new Icon(icon);
     i.getElement().setAttribute("slot", "prefix");
     Button button = new Button(text, i);
+    button.addThemeVariants(variants);
+    return button;
+  }
+
+  public static Button createButton(String text, Image image, ButtonVariant... variants) {
+    image.getElement().setAttribute("slot", "prefix");
+    Button button = new Button(text, image);
     button.addThemeVariants(variants);
     return button;
   }
@@ -260,8 +244,7 @@ public class UIUtils {
 
   /* ==== LABELS ==== */
 
-  public static Label createLabel(FontSize size, TextColor color,
-      String text) {
+  public static Label createLabel(FontSize size, TextColor color, String text) {
     Label label = new Label(text);
     setFontSize(size, label);
     setTextColor(color, label);
@@ -340,7 +323,7 @@ public class UIUtils {
     prefix.setWidth("80px");
 
     TextField number = new TextField();
-    //number.setValue(DummyData.getPhoneNumber());
+    // number.setValue(DummyData.getPhoneNumber());
 
     FlexBoxLayout layout = new FlexBoxLayout(prefix, number);
     layout.setFlexGrow(1, number);
@@ -433,8 +416,7 @@ public class UIUtils {
 
   // Combinations
 
-  public static Icon createIcon(IconSize size, TextColor color,
-      VaadinIcon icon) {
+  public static Icon createIcon(IconSize size, TextColor color, VaadinIcon icon) {
     Icon i = new Icon(icon);
     i.addClassNames(size.getClassName());
     setTextColor(color, i);
@@ -455,81 +437,63 @@ public class UIUtils {
 
   /* === CSS UTILITIES === */
 
-  public static void setAlignSelf(AlignSelf alignSelf,
-      Component... components) {
+  public static void setAlignSelf(AlignSelf alignSelf, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("align-self",
-          alignSelf.getValue());
+      component.getElement().getStyle().set("align-self", alignSelf.getValue());
     }
   }
 
-  public static void setBackgroundColor(String backgroundColor,
-      Component... components) {
+  public static void setBackgroundColor(String backgroundColor, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("background-color",
-          backgroundColor);
+      component.getElement().getStyle().set("background-color", backgroundColor);
     }
   }
 
-  public static void setBorderRadius(BorderRadius borderRadius,
-      Component... components) {
+  public static void setBorderRadius(BorderRadius borderRadius, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("border-radius",
-          borderRadius.getValue());
+      component.getElement().getStyle().set("border-radius", borderRadius.getValue());
     }
   }
 
-  public static void setBoxSizing(BoxSizing boxSizing,
-      Component... components) {
+  public static void setBoxSizing(BoxSizing boxSizing, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("box-sizing",
-          boxSizing.getValue());
+      component.getElement().getStyle().set("box-sizing", boxSizing.getValue());
     }
   }
 
   public static void setColSpan(int span, Component... components) {
     for (Component component : components) {
-      component.getElement().setAttribute("colspan",
-          Integer.toString(span));
+      component.getElement().setAttribute("colspan", Integer.toString(span));
     }
   }
 
   public static void setRowSpan(int span, Component... components) {
     for (Component component : components) {
-      component.getElement().setAttribute("rowspan",
-          Integer.toString(span));
+      component.getElement().setAttribute("rowspan", Integer.toString(span));
     }
   }
 
-  public static void setFontSize(FontSize fontSize,
-      Component... components) {
+  public static void setFontSize(FontSize fontSize, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("font-size",
-          fontSize.getValue());
+      component.getElement().getStyle().set("font-size", fontSize.getValue());
     }
   }
 
-  public static void setFontWeight(FontWeight fontWeight,
-      Component... components) {
+  public static void setFontWeight(FontWeight fontWeight, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("font-weight",
-          fontWeight.getValue());
+      component.getElement().getStyle().set("font-weight", fontWeight.getValue());
     }
   }
 
-  public static void setLineHeight(LineHeight lineHeight,
-      Component... components) {
+  public static void setLineHeight(LineHeight lineHeight, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("line-height",
-          lineHeight.getValue());
+      component.getElement().getStyle().set("line-height", lineHeight.getValue());
     }
   }
 
-  public static void setLineHeight(String value,
-      Component... components) {
+  public static void setLineHeight(String value, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("line-height",
-          value);
+      component.getElement().getStyle().set("line-height", value);
     }
   }
 
@@ -541,30 +505,25 @@ public class UIUtils {
 
   public static void setOverflow(Overflow overflow, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("overflow",
-          overflow.getValue());
+      component.getElement().getStyle().set("overflow", overflow.getValue());
     }
   }
 
   public static void setPointerEvents(PointerEvents pointerEvents, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("pointer-events",
-          pointerEvents.getValue());
+      component.getElement().getStyle().set("pointer-events", pointerEvents.getValue());
     }
   }
 
   public static void setShadow(Shadow shadow, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("box-shadow",
-          shadow.getValue());
+      component.getElement().getStyle().set("box-shadow", shadow.getValue());
     }
   }
 
-  public static void setTextAlign(TextAlign textAlign,
-      Component... components) {
+  public static void setTextAlign(TextAlign textAlign, Component... components) {
     for (Component component : components) {
-      component.getElement().getStyle().set("text-align",
-          textAlign.getValue());
+      component.getElement().getStyle().set("text-align", textAlign.getValue());
     }
   }
 
@@ -592,11 +551,9 @@ public class UIUtils {
     }
   }
 
-  public static void setWhiteSpace(WhiteSpace whiteSpace,
-      Component... components) {
+  public static void setWhiteSpace(WhiteSpace whiteSpace, Component... components) {
     for (Component component : components) {
-      component.getElement().setProperty("white-space",
-          whiteSpace.getValue());
+      component.getElement().setProperty("white-space", whiteSpace.getValue());
     }
   }
 
@@ -606,7 +563,6 @@ public class UIUtils {
     }
   }
 
-
   /* === ACCESSIBILITY === */
 
   public static void setAriaLabel(String value, Component... components) {
@@ -614,5 +570,4 @@ public class UIUtils {
       component.getElement().setAttribute("aria-label", value);
     }
   }
-
 }

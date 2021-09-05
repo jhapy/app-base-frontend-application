@@ -20,25 +20,20 @@ package org.jhapy.frontend.views;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import java.lang.reflect.InvocationTargetException;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawer;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawerFooter;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawerHeader;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
-import org.jhapy.frontend.components.navigation.bar.AppBar.NaviMode;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.layout.SplitViewFrame;
 import org.jhapy.frontend.layout.size.Horizontal;
 import org.jhapy.frontend.layout.size.Top;
-import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BoxSizing;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author jHapy Lead Dev.
@@ -86,9 +81,6 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
   }
 
   protected void initHeader() {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
-    appBar.setNaviMode(NaviMode.MENU);
-
     initSearchBar();
   }
 
@@ -96,11 +88,15 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
     try {
       showDetails(entityType.getDeclaredConstructor().newInstance());
 
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+    } catch (InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException ignored) {
     }
   }
 
   protected void initSearchBar() {
+    /*
     AppBar appBar = JHapyMainView3.get().getAppBar();
     appBar.disableGlobalSearch();
     Button searchButton = UIUtils.createTertiaryButton(VaadinIcon.SEARCH);
@@ -108,6 +104,8 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
     appBar.addSearchListener(event -> filter((String) event.getValue()));
     appBar.setSearchPlaceholder(getTranslation("element.global.search"));
     appBar.addActionItem(searchButton);
+
+     */
   }
 
   private Component createContent() {
@@ -143,12 +141,13 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
     setViewDetailsPosition(getSplitViewFramePosition());
     // Header
 
-    detailsDrawerHeader = new DetailsDrawerHeader(
-        getTranslation("element." + I18N_PREFIX + "className"));
-    detailsDrawerHeader.addCloseListener(e -> {
-      detailsDrawer.hide();
-      currentEditing = null;
-    });
+    detailsDrawerHeader =
+        new DetailsDrawerHeader(getTranslation("element." + I18N_PREFIX + "className"));
+    detailsDrawerHeader.addCloseListener(
+        e -> {
+          detailsDrawer.hide();
+          currentEditing = null;
+        });
     detailsDrawer.setHeader(detailsDrawerHeader);
 
     // Footer
@@ -157,10 +156,11 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
     detailsDrawerFooter.setSaveAndNewButtonVisible(false);
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
-    detailsDrawerFooter.addCancelListener(e -> {
-      detailsDrawer.hide();
-      currentEditing = null;
-    });
+    detailsDrawerFooter.addCancelListener(
+        e -> {
+          detailsDrawer.hide();
+          currentEditing = null;
+        });
     detailsDrawer.setFooter(detailsDrawerFooter);
 
     return detailsDrawer;
@@ -176,6 +176,5 @@ public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends 
 
   protected abstract Component createDetails(T entity);
 
-  protected void filter(String filter) {
-  }
+  protected void filter(String filter) {}
 }

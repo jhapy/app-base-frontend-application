@@ -25,18 +25,15 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.component.textfield.TextArea;
-import java.net.URI;
-import java.util.Collections;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.EurekaApplication;
 import org.jhapy.dto.registry.EurekaApplicationInstance;
 import org.jhapy.dto.registry.EurekaInfo;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+
+import java.net.URI;
+import java.util.Collections;
 
 /**
  * @author jHapy Lead Dev.
@@ -49,15 +46,18 @@ public class LogsTabContent extends ActuatorBaseView {
   protected FlexBoxLayout content;
   protected Component component;
 
-  public LogsTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public LogsTabContent(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX + "logs.", authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -72,8 +72,7 @@ public class LogsTabContent extends ActuatorBaseView {
       logger().debug(loggerPrefix + "Refresh content");
       getDetails(currentEurekaApplication, currentEurekaApplicationInstance);
     } else {
-      logger()
-          .warn(loggerPrefix + "No application or application instance set, nothing to do");
+      logger().warn(loggerPrefix + "No application or application instance set, nothing to do");
     }
   }
 
@@ -85,24 +84,35 @@ public class LogsTabContent extends ActuatorBaseView {
     return loggerArea;
   }
 
-  protected void getDetails(EurekaApplication eurekaApplication,
-      EurekaApplicationInstance eurekaApplicationInstance) {
+  protected void getDetails(
+      EurekaApplication eurekaApplication, EurekaApplicationInstance eurekaApplicationInstance) {
     titleLabel.setText(
-        getTranslation("element." + I18N_PREFIX + "title") + " - " + eurekaApplicationInstance
-            .getInstanceId());
+        getTranslation("element." + I18N_PREFIX + "title")
+            + " - "
+            + eurekaApplicationInstance.getInstanceId());
     try {
-      final HttpHeaders httpHeaders = new HttpHeaders() {{
-        set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
-        setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
-      }};
+      final HttpHeaders httpHeaders =
+          new HttpHeaders() {
+            {
+              set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
+              setAccept(Collections.singletonList(MediaType.TEXT_PLAIN));
+            }
+          };
 
-      logger().debug(
-          "Application : " + eurekaApplication.getName() + ", Loggers Url = "
-              + eurekaApplicationInstance.getMetadata().get("management.url") + "/logfile");
-      ResponseEntity<String> aa = restTemplate.exchange(URI.create(
-          eurekaApplicationInstance.getMetadata().get("management.url") + "/logfile"),
-          HttpMethod.GET,
-          new HttpEntity<>(httpHeaders), String.class);
+      logger()
+          .debug(
+              "Application : "
+                  + eurekaApplication.getName()
+                  + ", Loggers Url = "
+                  + eurekaApplicationInstance.getMetadata().get("management.url")
+                  + "/logfile");
+      ResponseEntity<String> aa =
+          restTemplate.exchange(
+              URI.create(
+                  eurekaApplicationInstance.getMetadata().get("management.url") + "/logfile"),
+              HttpMethod.GET,
+              new HttpEntity<>(httpHeaders),
+              String.class);
       String logFile = aa.getBody();
 
       logger().debug("Logs = " + logFile);
@@ -119,7 +129,5 @@ public class LogsTabContent extends ActuatorBaseView {
     } catch (Throwable t) {
       t.printStackTrace();
     }
-
   }
-
 }

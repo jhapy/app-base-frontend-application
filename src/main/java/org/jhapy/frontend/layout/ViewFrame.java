@@ -18,26 +18,25 @@
 
 package org.jhapy.frontend.layout;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import org.jhapy.frontend.views.JHapyMainView3;
+import org.jhapy.frontend.components.navigation.menubar.View;
 
 /**
  * A view frame that establishes app design guidelines. It consists of three parts:
+ *
  * <ul>
- * <li>Topmost {@link #setViewHeader(Component...) header}</li>
- * <li>Center {@link #setViewContent(Component...) content}</li>
- * <li>Bottom {@link #setViewFooter(Component...) footer}</li>
+ *   <li>Topmost {@link #setViewHeader(Component...) header}
+ *   <li>Center {@link #setViewContent(Component...) content}
+ *   <li>Bottom {@link #setViewFooter(Component...) footer}
  * </ul>
  */
 @CssImport("./styles/components/view-frame.css")
 @SpringComponent
-public class ViewFrame extends Composite<Div> implements HasStyle {
+public abstract class ViewFrame extends View implements HasStyle {
 
   private final String CLASS_NAME = "view-frame";
   private final Div header;
@@ -54,37 +53,24 @@ public class ViewFrame extends Composite<Div> implements HasStyle {
     footer = new Div();
     footer.setClassName(CLASS_NAME + "__footer");
 
-    getContent().add(header, content, footer);
+    add(header, content, footer);
   }
 
-  /**
-   * Sets the header slot's components.
-   */
+  /** Sets the header slot's components. */
   public void setViewHeader(Component... components) {
     header.removeAll();
     header.add(components);
   }
 
-  /**
-   * Sets the content slot's components.
-   */
+  /** Sets the content slot's components. */
   public void setViewContent(Component... components) {
     content.removeAll();
     content.add(components);
   }
 
-  /**
-   * Sets the footer slot's components.
-   */
+  /** Sets the footer slot's components. */
   public void setViewFooter(Component... components) {
     footer.removeAll();
     footer.add(components);
   }
-
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
-    JHapyMainView3.get().getAppBar().reset();
-  }
-
 }

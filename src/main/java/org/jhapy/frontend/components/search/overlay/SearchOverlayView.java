@@ -21,12 +21,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import java.io.Serial;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.serviceQuery.SearchQuery;
@@ -44,12 +38,18 @@ import org.jhapy.frontend.utils.css.BorderRadius;
 import org.jhapy.frontend.utils.css.Overflow;
 import org.vaadin.gatanaso.MultiselectComboBox;
 
-@CssImport("./styles/components/search.css")
-public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuery> extends
-    IronOverlay {
+import java.io.Serial;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+@CssImport("./styles/components/search.css")
+public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuery>
+    extends IronOverlay {
+
+  @Serial private static final long serialVersionUID = 1L;
   private final TextField searchField = new TextField();
   private final IconButton closeButton = new IconButton(VaadinIcon.ARROW_LEFT.create());
   private final VerticalLayout results = new VerticalLayout();
@@ -70,8 +70,8 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
     VaadinIcon search = VaadinIcon.SEARCH;
     search.create().addClassNames("size-l");
 
-    Button searchIcon = new Button(
-        UIUtils.createIcon(IconSize.M, TextColor.PRIMARY, VaadinIcon.SEARCH));
+    Button searchIcon =
+        new Button(UIUtils.createIcon(IconSize.M, TextColor.PRIMARY, VaadinIcon.SEARCH));
     searchIcon.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 
     filter = new MultiselectComboBox<>();
@@ -82,12 +82,12 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
 
     searchField.setPlaceholder(getTranslation("element.search.placeholder"));
     searchField.setValueChangeMode(ValueChangeMode.LAZY);
-    Button closeButton = new Button(
-        UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
+    Button closeButton =
+        new Button(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
     closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 
-    FlexBoxLayout searchFieldWrapper = new FlexBoxLayout(searchIcon, filter, searchField,
-        closeButton);
+    FlexBoxLayout searchFieldWrapper =
+        new FlexBoxLayout(searchIcon, filter, searchField, closeButton);
     searchFieldWrapper.setClassName("search-layout");
     searchFieldWrapper.setFlex("1", searchField);
     searchFieldWrapper.setPadding(Horizontal.RESPONSIVE_L, Vertical.S);
@@ -105,10 +105,11 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
     searchField.addValueChangeListener(event -> doSearch(event.getValue(), filter.getValue()));
     searchField.setMinWidth("50%");
 
-    closeButton.addClickListener(event -> {
-      searchField.clear();
-      close();
-    });
+    closeButton.addClickListener(
+        event -> {
+          searchField.clear();
+          close();
+        });
 
     VerticalLayout wrapper = new VerticalLayout(searchFieldWrapper, searchResult);
 
@@ -117,9 +118,7 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
     wrapper.setMargin(false);
     wrapper.setPadding(false);
     wrapper.setSpacing(false);
-    wrapper.getStyle()
-        .set("max-width", "100vw")
-        .set("height", "100vh");
+    wrapper.getStyle().set("max-width", "100vw").set("height", "100vh");
 
     /*
     results.setSizeFull();
@@ -141,22 +140,27 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
   private void doSearch(String filter, Set<SearchFilter> searchFilters) {
     searchResult.removeAll();
     if (StringUtils.isNotBlank(filter)) {
-      List<T> result = dataProvider
-          .fetch(queryProvider.apply(new SearchQuery(filter, searchFilters)))
-          .collect(Collectors.toList());
+      List<T> result =
+          dataProvider
+              .fetch(queryProvider.apply(new SearchQuery(filter, searchFilters)))
+              .collect(Collectors.toList());
       result.stream()
           .map(t -> new QueryPair<>(t, dataViewProvider.apply(t)))
-          .forEach(clickNotifier -> {
-            searchResult.add((Component) clickNotifier.getNotifier());
-            clickNotifier.getNotifier().addClickListener(clickEvent -> {
-              if (closeOnQueryResult) {
-                this.close();
-              }
-              if (queryResultListener != null) {
-                queryResultListener.accept(clickNotifier.getQuery());
-              }
-            });
-          });
+          .forEach(
+              clickNotifier -> {
+                searchResult.add((Component) clickNotifier.getNotifier());
+                clickNotifier
+                    .getNotifier()
+                    .addClickListener(
+                        clickEvent -> {
+                          if (closeOnQueryResult) {
+                            this.close();
+                          }
+                          if (queryResultListener != null) {
+                            queryResultListener.accept(clickNotifier.getQuery());
+                          }
+                        });
+              });
     }
   }
 
@@ -206,8 +210,7 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
     return closeButton;
   }
 
-  public void setTargetComponent(Div content) {
-  }
+  public void setTargetComponent(Div content) {}
 
   public MultiselectComboBox<SearchFilter> getFilter() {
     return filter;

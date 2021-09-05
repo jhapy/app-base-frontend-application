@@ -52,8 +52,9 @@ public class Dragger extends Component implements HasLogger, HasStyle {
 
   public void onDraggerEvent(DraggerEvent draggerEvent) {
     var loggerPrefix = getLoggerPrefix("onDraggerEvent", draggerEvent);
-    logger().debug(
-        loggerPrefix + "Event received, set parent width to " + draggerEvent.getWidth() + "px");
+    logger()
+        .debug(
+            loggerPrefix + "Event received, set parent width to " + draggerEvent.getWidth() + "px");
     drawer.getStyle().set("--navi-drawer-width", draggerEvent.getWidth() + "px");
     getStyle().set("--navi-drawer-width", draggerEvent.getWidth() + "px");
   }

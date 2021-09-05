@@ -11,23 +11,24 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+
 import java.io.Serial;
 
 public class SearchView extends IronOverlay {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private final TextField searchField = new TextField();
   private final Button closeButton = new Button(VaadinIcon.ARROW_LEFT.create());
-  private final HorizontalLayout searchFieldWrapper = new HorizontalLayout(closeButton,
-      searchField);
+  private final HorizontalLayout searchFieldWrapper =
+      new HorizontalLayout(closeButton, searchField);
 
   public SearchView() {
     getElement().getStyle().set("width", "100%");
     setVerticalAlign(VerticalOrientation.TOP);
     setWithBackdrop(false);
-    searchFieldWrapper.getStyle()
+    searchFieldWrapper
+        .getStyle()
         .set("background", "var(--app-layout-bar-background-base-color)")
         .set("height", "var(--app-bar-height)")
         .set("box-shadow", "var(--app-layout-bar-shadow)")
@@ -42,10 +43,11 @@ public class SearchView extends IronOverlay {
     closeButton.setWidth("var(--app-bar-height)");
     closeButton.setHeight("var(--app-bar-height)");
     closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-    closeButton.addClickListener(event -> {
-      searchField.clear();
-      close();
-    });
+    closeButton.addClickListener(
+        event -> {
+          searchField.clear();
+          close();
+        });
     add(searchFieldWrapper);
   }
 
@@ -60,7 +62,9 @@ public class SearchView extends IronOverlay {
   }
 
   public void addValueChangeListener(
-      HasValue.ValueChangeListener<? super AbstractField.ComponentValueChangeEvent<TextField, String>> listener) {
+      HasValue.ValueChangeListener<
+              ? super AbstractField.ComponentValueChangeEvent<TextField, String>>
+          listener) {
     searchField.addValueChangeListener(listener);
   }
 }

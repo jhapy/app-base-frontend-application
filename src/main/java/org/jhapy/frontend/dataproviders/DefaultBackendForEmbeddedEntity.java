@@ -22,51 +22,41 @@ import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.SerializablePredicate;
+import org.jhapy.dto.domain.BaseEmbeddableEntityDTO;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jhapy.dto.domain.BaseRelationshipEntity;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class DefaultBackendForRelationship<C extends BaseRelationshipEntity> extends
-    AbstractBackEndDataProvider<C, CrudFilter> implements
-    Serializable {
+public abstract class DefaultBackendForEmbeddedEntity<C extends BaseEmbeddableEntityDTO>
+    extends AbstractBackEndDataProvider<C, CrudFilter> implements Serializable {
 
-  protected final List<C> fieldsMap = new ArrayList<>();
+  protected final Map<String, C> fieldsMap = new HashMap<>();
   protected final AtomicLong uniqueLong = new AtomicLong();
   private Comparator<C> comparator;
   private SerializablePredicate<C> filter;
 
-  public DefaultBackendForRelationship() {
-  }
+  public DefaultBackendForEmbeddedEntity() {}
 
-  public DefaultBackendForRelationship(Comparator<C> comparator) {
+  public DefaultBackendForEmbeddedEntity(Comparator<C> comparator) {
     this.comparator = comparator;
   }
 
   @Override
   public abstract Object getId(C value);
 
-  public Collection<C> getValues() {
-    if (comparator != null) {
-      return fieldsMap.stream().sorted(comparator).collect(Collectors.toList());
-    } else {
-      return fieldsMap;
-    }
+  public Map<String, C> getValues() {
+    return fieldsMap;
   }
 
-  public abstract void setValues(Collection<C> values);
+  public abstract void setValues(Map<String, C> values);
 
   public abstract void persist(C value);
 
@@ -89,7 +79,6 @@ public abstract class DefaultBackendForRelationship<C extends BaseRelationshipEn
       SerializablePredicate<C> oldFilter = this.getFilter();
       this.setFilter((item) -> oldFilter.test(item) && filter.test(item));
     }
-
   }
 
   @Override
@@ -99,17 +88,19 @@ public abstract class DefaultBackendForRelationship<C extends BaseRelationshipEn
 
   @Override
   protected Stream<C> fetchFromBackEnd(Query<C, CrudFilter> query) {
-    Stream<C> stream = fieldsMap.stream();
+    Stream<C> stream = fieldsMap.values().stream();
 
-    Optional<Comparator<C>> comparing = Stream.of(query.getInMemorySorting(), comparator)
-        .filter(Objects::nonNull).reduce(Comparator::thenComparing);
+    Optional<Comparator<C>> comparing =
+        Stream.of(query.getInMemorySorting(), comparator)
+            .filter(Objects::nonNull)
+            .reduce(Comparator::thenComparing);
     if (comparing.isPresent()) {
       stream = stream.sorted();
     }
     long maxId = 0;
     List<C> result = stream.collect(Collectors.toList());
     for (C c : result) {
-      if (c.getId() > maxId) {
+      if (c.getId() != null && c.getId() > maxId) {
         maxId = c.getId();
       }
     }

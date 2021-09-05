@@ -33,12 +33,6 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.IOUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.utils.StoredFile;
@@ -51,6 +45,13 @@ import org.jhapy.frontend.components.AbstractDialog;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.UIUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jHapy Lead Dev.

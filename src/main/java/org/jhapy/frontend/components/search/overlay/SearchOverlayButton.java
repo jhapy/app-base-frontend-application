@@ -7,20 +7,20 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.Query;
-import java.io.Serial;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.frontend.components.search.overlay.SearchOverlayView.SearchFilter;
 import org.jhapy.frontend.dataproviders.DefaultSearchDataProvider;
 import org.vaadin.gatanaso.MultiselectComboBox;
 
-public class SearchOverlayButton<T extends SearchQueryResult, F extends SearchQuery> extends
-    IconButton {
+import java.io.Serial;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+public class SearchOverlayButton<T extends SearchQueryResult, F extends SearchQuery>
+    extends IconButton {
+
+  @Serial private static final long serialVersionUID = 1L;
 
   private final SearchOverlayView<T, F> searchView;
 

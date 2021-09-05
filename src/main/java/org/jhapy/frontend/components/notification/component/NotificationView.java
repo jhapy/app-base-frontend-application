@@ -9,15 +9,15 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import java.io.Serial;
 import org.jhapy.frontend.components.notification.NotificationHolder;
 import org.jhapy.frontend.components.notification.interfaces.Notification;
 import org.jhapy.frontend.components.notification.interfaces.NotificationListener;
 
+import java.io.Serial;
+
 public class NotificationView<T extends Notification> extends HorizontalLayout {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private final VerticalLayout wrapper;
   private final T info;
@@ -26,31 +26,32 @@ public class NotificationView<T extends Notification> extends HorizontalLayout {
   private IconButton dismissButton;
   private DomListenerRegistration registration;
 
-  public NotificationView(T info, NotificationHolder<T> holder, NotificationListener listener,
-      boolean isNotification) {
+  public NotificationView(
+      T info, NotificationHolder<T> holder, NotificationListener listener, boolean isNotification) {
     this.info = info;
     this.holder = holder;
     this.isNotification = isNotification;
     setWidth("100%");
     setAlignItems(Alignment.CENTER);
     Label title = new Label(info.getTitle());
-    title.getElement().getStyle()
-        .set("font-size", "15px")
-        .set("font-weight", "500");
+    title.getElement().getStyle().set("font-size", "15px").set("font-weight", "500");
 
     Label dot = new Label("·");
-    dot.getElement().getStyle()
-        .set("margin-left", "5px");
+    dot.getElement().getStyle().set("margin-left", "5px");
 
     Label timeAgo = new Label(holder.getDateTimeFormatter().apply(info));
-    timeAgo.getElement().getStyle()
+    timeAgo
+        .getElement()
+        .getStyle()
         .set("font-size", "13px")
         .set("margin-left", "5px")
         .set("font-weight", "300");
 
     Label description = new Label(info.getDescription());
     description.setWidth("100%");
-    description.getElement().getStyle()
+    description
+        .getElement()
+        .getStyle()
         .set("font-size", "15px")
         .set("font-weight", "400")
         .set("white-space", "nowrap")
@@ -81,12 +82,14 @@ public class NotificationView<T extends Notification> extends HorizontalLayout {
     setNotificationListener(listener);
     if (!isNotification) {
       if (info.isDismissable()) {
-        dismissButton = new IconButton(VaadinIcon.CLOSE_SMALL.create(),
-            paperIconButtonClickEvent -> {
-              if (listener != null) {
-                listener.onDismiss();
-              }
-            });
+        dismissButton =
+            new IconButton(
+                VaadinIcon.CLOSE_SMALL.create(),
+                paperIconButtonClickEvent -> {
+                  if (listener != null) {
+                    listener.onDismiss();
+                  }
+                });
         dismissButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         dismissButton.setSizeUndefined();
         add(dismissButton);
@@ -96,8 +99,10 @@ public class NotificationView<T extends Notification> extends HorizontalLayout {
   }
 
   public void setHighlightBorder(boolean highlight) {
-    getStyle().set("border-left",
-        "3px solid " + (highlight ? info.getPriority().getStyle() : "transparent"));
+    getStyle()
+        .set(
+            "border-left",
+            "3px solid " + (highlight ? info.getPriority().getStyle() : "transparent"));
   }
 
   public void setNotificationListener(NotificationListener listener) {

@@ -19,19 +19,9 @@
 package org.jhapy.frontend;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.*;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.SpringVaadinServletService;
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
-import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.config.AppProperties;
 import org.jhapy.commons.utils.HasLogger;
@@ -41,6 +31,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
 
 
 /**
@@ -118,31 +115,6 @@ public abstract class BaseApplication implements InitializingBean, HasLogger {
     }
   }
 
-  /*
-    @RequestMapping("/")
-    public String forward(@Value("${vaadin.url}") String vaadinUrl) {
-      return "redirect:" + vaadinUrl;
-    }
-
-    @RequestMapping("/sw.js")
-    public String forwardSW(@Value("${vaadin.url}") String vaadinUrl) {
-      return "forward:" + vaadinUrl + "sw.js";
-    }
-
-    @Bean
-    public ServletRegistrationBean<SpringServlet> springServlet(
-        ApplicationContext applicationContext,
-        @Value("${vaadin.urlMapping}") String vaadinUrlMapping) {
-
-      SpringServlet servlet = buildSpringServlet(applicationContext);
-      ServletRegistrationBean<SpringServlet> registrationBean =
-          new ServletRegistrationBean<>(servlet, vaadinUrlMapping, "/frontend/*");
-      registrationBean.setLoadOnStartup(1);
-      //registrationBean.addInitParameter(Constants.SERVLET_PARAMETER_SYNC_ID_CHECK, "false");
-
-      return registrationBean;
-    }
-  */
   private SpringServlet buildSpringServlet(ApplicationContext applicationContext) {
     return new SpringServlet(applicationContext, true) {
       @Override
@@ -167,20 +139,6 @@ public abstract class BaseApplication implements InitializingBean, HasLogger {
       @Override
       public void requestStart(VaadinRequest request, VaadinResponse response) {
         super.requestStart(request, response);
-
-        /*
-        //logger().debug("Current Locale = " + request.getLocale().getLanguage());
-        AppContext.setCurrentIso3Language(request.getLocale().getLanguage());
-        AppContext.setCurrentSessionId(request.getWrappedSession().getId());
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication();
-        if (principal instanceof SecurityUser) {
-          AppContext.setCurrentUsername(((SecurityUser) principal).getUsername());
-        } else if (principal instanceof UsernamePasswordAuthenticationToken) {
-          AppContext
-              .setCurrentUsername(((UsernamePasswordAuthenticationToken) principal).getName());
-        }
-         */
       }
 
       @Override

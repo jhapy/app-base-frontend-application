@@ -26,11 +26,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.EurekaApplication;
@@ -42,6 +37,12 @@ import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.frontend.client.registry.RegistryServices;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.vaadin.tabs.PagedTabs;
+
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author jHapy Lead Dev.
@@ -59,16 +60,19 @@ public class EurekaHistoryTabContent extends ActuatorBaseView {
   protected Grid<InstanceLeases> lastRegisteredLeasesGrid;
   protected Grid<InstanceLeases> cancelledLeasesGrid;
 
-  public EurekaHistoryTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public EurekaHistoryTabContent(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX + "eurekaHistory.", authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
     this.eurekaInfo = eurekaInfo;
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(false, eurekaInfo.getApplicationList(), this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(false, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -76,8 +80,8 @@ public class EurekaHistoryTabContent extends ActuatorBaseView {
     PagedTabs tabs = new PagedTabs(content);
     content.add(tabs);
 
-    tabs.add(getTranslation(I18N_PREFIX + "lastRegisteredLeases"), getLastRegisteredLeases(),
-        false);
+    tabs.add(
+        getTranslation(I18N_PREFIX + "lastRegisteredLeases"), getLastRegisteredLeases(), false);
     tabs.add(getTranslation(I18N_PREFIX + "cancelledLeases"), getCancelledLeases(), false);
 
     getDetails(null, null);
@@ -85,20 +89,20 @@ public class EurekaHistoryTabContent extends ActuatorBaseView {
     return content;
   }
 
-  protected void getDetails(EurekaApplication eurekaApplication,
-      EurekaApplicationInstance eurekaApplicationInstance) {
-    ServiceResult<Map<String, List<String[]>>> lastnResult = RegistryServices.getEurekaService()
-        .lastn(new BaseRemoteQuery());
+  protected void getDetails(
+      EurekaApplication eurekaApplication, EurekaApplicationInstance eurekaApplicationInstance) {
+    ServiceResult<Map<String, List<String[]>>> lastnResult =
+        RegistryServices.getEurekaService().lastn(new BaseRemoteQuery());
     if (lastnResult.getIsSuccess() && lastnResult.getData() != null) {
       List<String[]> canceledMap = lastnResult.getData().get("canceled");
       cancelledLeases = new ArrayList<>();
       canceledMap.forEach(
-          strings -> cancelledLeases
-              .add(new InstanceLeases(Long.valueOf(strings[0]), strings[1])));
+          strings -> cancelledLeases.add(new InstanceLeases(Long.valueOf(strings[0]), strings[1])));
       List<String[]> registeredMap = lastnResult.getData().get("registered");
       lastRegisteredLeases = new ArrayList<>();
-      registeredMap.forEach(strings -> lastRegisteredLeases
-          .add(new InstanceLeases(Long.valueOf(strings[0]), strings[1])));
+      registeredMap.forEach(
+          strings ->
+              lastRegisteredLeases.add(new InstanceLeases(Long.valueOf(strings[0]), strings[1])));
       cancelledLeasesGrid.setItems(cancelledLeases);
       lastRegisteredLeasesGrid.setItems(lastRegisteredLeases);
     }
@@ -108,20 +112,29 @@ public class EurekaHistoryTabContent extends ActuatorBaseView {
     lastRegisteredLeasesGrid = new Grid<>();
     lastRegisteredLeasesGrid.setWidthFull();
 
-    lastRegisteredLeasesGrid.addColumn(instanceLeases -> FastDateFormat
-        .getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
-        .format(new Date(instanceLeases.getTime()))).setWidth("200px").setKey("time");
-    lastRegisteredLeasesGrid.addColumn(InstanceLeases::getInstance).setKey("instance")
+    lastRegisteredLeasesGrid
+        .addColumn(
+            instanceLeases ->
+                FastDateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
+                    .format(new Date(instanceLeases.getTime())))
+        .setWidth("200px")
+        .setKey("time");
+    lastRegisteredLeasesGrid
+        .addColumn(InstanceLeases::getInstance)
+        .setKey("instance")
         .setAutoWidth(true);
 
     lastRegisteredLeasesGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-    lastRegisteredLeasesGrid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    lastRegisteredLeasesGrid
+        .getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
 
     return lastRegisteredLeasesGrid;
   }
@@ -130,20 +143,29 @@ public class EurekaHistoryTabContent extends ActuatorBaseView {
     cancelledLeasesGrid = new Grid<>();
     cancelledLeasesGrid.setWidthFull();
 
-    cancelledLeasesGrid.addColumn(instanceLeases -> FastDateFormat
-        .getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
-        .format(new Date(instanceLeases.getTime()))).setWidth("200px").setKey("time");
-    cancelledLeasesGrid.addColumn(InstanceLeases::getInstance).setKey("instance")
+    cancelledLeasesGrid
+        .addColumn(
+            instanceLeases ->
+                FastDateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
+                    .format(new Date(instanceLeases.getTime())))
+        .setWidth("200px")
+        .setKey("time");
+    cancelledLeasesGrid
+        .addColumn(InstanceLeases::getInstance)
+        .setKey("instance")
         .setAutoWidth(true);
 
     cancelledLeasesGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-    cancelledLeasesGrid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    cancelledLeasesGrid
+        .getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
 
     return cancelledLeasesGrid;
   }

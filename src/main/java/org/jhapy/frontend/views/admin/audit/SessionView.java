@@ -41,8 +41,8 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SESSIONS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SessionView extends
-    DefaultMasterDetailsView<Session, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class SessionView
+    extends DefaultMasterDetailsView<Session, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public SessionView(MyI18NProvider myI18NProvider) {
     super("session.", Session.class, new SessionDataProvider(), myI18NProvider);
@@ -52,37 +52,38 @@ public class SessionView extends
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
 
     grid.addColumn(Session::getUsername).setKey("username");
     grid.addColumn(Session::getSourceIp).setKey("sourceIp");
-    grid.addColumn(
-        session -> DateTimeFormatter.format(session.getSessionStart(), getLocale()))
+    grid.addColumn(session -> DateTimeFormatter.format(session.getSessionStart(), getLocale()))
         .setKey("sessionStart");
-    grid.addColumn(
-        session -> DateTimeFormatter.format(session.getSessionEnd(), getLocale()))
+    grid.addColumn(session -> DateTimeFormatter.format(session.getSessionEnd(), getLocale()))
         .setKey("sessionEnd");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-        column.setSortable(true);
-        column.setAutoWidth(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+                column.setSortable(true);
+                column.setAutoWidth(true);
+              }
+            });
     grid.addColumn(Session::getJsessionId).setKey("jsessionId");
     return grid;
   }
 
   protected Component createDetails(Session session) {
     boolean isNew = session.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + session.getUsername());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + session.getUsername());
 
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
@@ -111,43 +112,47 @@ public class SessionView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
-    editingForm
-        .addFormItem(usernameField, getTranslation("element." + I18N_PREFIX + "username"));
-    editingForm
-        .addFormItem(sourceIpField, getTranslation("element." + I18N_PREFIX + "sourceIp"));
-    editingForm
-        .addFormItem(sessionStartField,
-            getTranslation("element." + I18N_PREFIX + "sessionStart"));
-    editingForm
-        .addFormItem(sessionEndField, getTranslation("element." + I18N_PREFIX + "sessionEnd"));
-    editingForm.addFormItem(sessionDurationField,
-        getTranslation("element." + I18N_PREFIX + "sessionDuration"));
-    editingForm
-        .addFormItem(isSuccessField, getTranslation("element." + I18N_PREFIX + "isSuccess"));
+    editingForm.addFormItem(usernameField, getTranslation("element." + I18N_PREFIX + "username"));
+    editingForm.addFormItem(sourceIpField, getTranslation("element." + I18N_PREFIX + "sourceIp"));
+    editingForm.addFormItem(
+        sessionStartField, getTranslation("element." + I18N_PREFIX + "sessionStart"));
+    editingForm.addFormItem(
+        sessionEndField, getTranslation("element." + I18N_PREFIX + "sessionEnd"));
+    editingForm.addFormItem(
+        sessionDurationField, getTranslation("element." + I18N_PREFIX + "sessionDuration"));
+    editingForm.addFormItem(isSuccessField, getTranslation("element." + I18N_PREFIX + "isSuccess"));
     editingForm.addFormItem(errorField, getTranslation("element." + I18N_PREFIX + "error"));
-    editingForm
-        .addFormItem(jSessionIdField, getTranslation("element." + I18N_PREFIX + "jsessionId"));
+    editingForm.addFormItem(
+        jSessionIdField, getTranslation("element." + I18N_PREFIX + "jsessionId"));
 
     binder.setBean(session);
 
     binder.bind(usernameField, Session::getUsername, null);
     binder.bind(sourceIpField, Session::getSourceIp, null);
-    binder.bind(sessionStartField, entity1 -> entity1.getSessionStart() == null ? ""
-        : DateTimeFormatter.format(entity1.getSessionStart(), getLocale()), (a, b) -> {
-    });
-    binder.bind(sessionEndField, entity1 -> entity1.getSessionEnd() == null ? ""
-        : DateTimeFormatter.format(entity1.getSessionEnd(), getLocale()), (a, b) -> {
-    });
-    binder.bind(sessionDurationField,
-        (e) -> e.getSessionDuration() == null ? null : e.getSessionDuration().toString(), null);
+    binder.bind(
+        sessionStartField,
+        entity1 ->
+            entity1.getSessionStart() == null
+                ? ""
+                : DateTimeFormatter.format(entity1.getSessionStart(), getLocale()),
+        (a, b) -> {});
+    binder.bind(
+        sessionEndField,
+        entity1 ->
+            entity1.getSessionEnd() == null
+                ? ""
+                : DateTimeFormatter.format(entity1.getSessionEnd(), getLocale()),
+        (a, b) -> {});
+    binder.bind(
+        sessionDurationField,
+        (e) -> e.getSessionDuration() == null ? null : e.getSessionDuration().toString(),
+        null);
     binder.bind(isSuccessField, Session::getIsSuccess, null);
     binder.bind(errorField, Session::getError, null);
     binder.bind(jSessionIdField, Session::getJsessionId, null);
@@ -156,9 +161,7 @@ public class SessionView extends
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : ".*" + filter + ".*",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : ".*" + filter + ".*", Boolean.TRUE));
   }
 }

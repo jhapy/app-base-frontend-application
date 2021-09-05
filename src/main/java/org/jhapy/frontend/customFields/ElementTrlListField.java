@@ -32,20 +32,20 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import java.io.Serializable;
-import java.util.Locale;
-import org.jhapy.dto.domain.i18n.ElementTrl;
+import org.jhapy.dto.domain.i18n.ElementTrlDTO;
 import org.jhapy.frontend.renderer.BooleanOkRenderer;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
+
+import java.io.Serializable;
+import java.util.Locale;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public class ElementTrlListField extends
-    DefaultCustomListField<ElementTrl> implements
-    Serializable {
+public class ElementTrlListField extends DefaultCustomListField<ElementTrlDTO>
+    implements Serializable {
 
   public ElementTrlListField() {
     super("elementTrl.");
@@ -67,9 +67,9 @@ public class ElementTrlListField extends
   }
 
   protected Component initContent() {
-    Grid<ElementTrl> grid = new Grid<>();
+    Grid<ElementTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud(ElementTrl.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud(ElementTrlDTO.class, grid, createInterfaceTrlEditor());
     gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -78,24 +78,29 @@ public class ElementTrlListField extends
     gridCrud.addSaveListener(e -> dataProvider.persist(e.getItem()));
     gridCrud.addDeleteListener(e -> dataProvider.delete(e.getItem()));
 
-    editColumn = grid.addColumn(TemplateRenderer.of(createEditColumnTemplate("Edit")))
-        .setKey("vaadin-crud-edit-column").setWidth("4em").setFlexGrow(0);
+    editColumn =
+        grid.addColumn(TemplateRenderer.of(createEditColumnTemplate("Edit")))
+            .setKey("vaadin-crud-edit-column")
+            .setWidth("4em")
+            .setFlexGrow(0);
 
-    grid.addColumn(ElementTrl::getValue)
+    grid.addColumn(ElementTrlDTO::getValue)
         .setHeader(getTranslation("element." + i18nPrefix + "value"));
-    grid.addColumn(new TextRenderer<>(
-        row -> row.getIso3Language() == null ? ""
-            : (new Locale(row.getIso3Language())).getDisplayLanguage(getLocale())))
+    grid.addColumn(
+            new TextRenderer<>(
+                row ->
+                    row.getIso3Language() == null
+                        ? ""
+                        : (new Locale(row.getIso3Language())).getDisplayLanguage(getLocale())))
         .setHeader(getTranslation("element." + i18nPrefix + "language"));
 
-    grid.addColumn(new BooleanOkRenderer<>(ElementTrl::getIsDefault))
+    grid.addColumn(new BooleanOkRenderer<>(ElementTrlDTO::getIsDefault))
         .setHeader(getTranslation("element." + i18nPrefix + "isDefault"));
 
     newButton = new Button(getTranslation("action.global.addButton"));
     newButton.getElement().setAttribute("theme", "primary");
-    newButton
-        .addClickListener(
-            event -> gridCrud.getElement().executeJs("$0.__openEditor($1)", gridCrud, "'new'"));
+    newButton.addClickListener(
+        event -> gridCrud.getElement().executeJs("$0.__openEditor($1)", gridCrud, "'new'"));
     gridCrud.setToolbar(newButton);
 
     newButton.setEnabled(false);
@@ -104,32 +109,36 @@ public class ElementTrlListField extends
     return gridCrud;
   }
 
-  protected CrudEditor<ElementTrl> createInterfaceTrlEditor() {
+  protected CrudEditor<ElementTrlDTO> createInterfaceTrlEditor() {
     TextField value = new TextField(getTranslation("element." + i18nPrefix + "value"));
 
-    ComboBox<Locale> language = new ComboBox<>(
-        getTranslation("element." + i18nPrefix + "language"),
-        MyI18NProvider.getAvailableLanguages(getLocale()));
+    ComboBox<Locale> language =
+        new ComboBox<>(
+            getTranslation("element." + i18nPrefix + "language"),
+            MyI18NProvider.getAvailableLanguages(getLocale()));
     language.setItemLabelGenerator(Locale::getDisplayLanguage);
 
     Checkbox isDefault = new Checkbox(getTranslation("element." + i18nPrefix + "isDefault"));
-    Checkbox isTranslated = new Checkbox(
-        getTranslation("element." + i18nPrefix + "isTranslated"));
+    Checkbox isTranslated = new Checkbox(getTranslation("element." + i18nPrefix + "isTranslated"));
 
     FormLayout form = new FormLayout(value, isDefault, isTranslated, language);
 
-    Binder<ElementTrl> binder = new BeanValidationBinder<>(ElementTrl.class);
-    binder.forField(value).asRequired().bind(ElementTrl::getValue, ElementTrl::setValue);
-    binder.forField(isDefault).bind(ElementTrl::getIsDefault, ElementTrl::setIsDefault);
-    binder.forField(isTranslated)
-        .bind(ElementTrl::getIsTranslated, ElementTrl::setIsTranslated);
-    binder.forField(language).asRequired()
-        .bind((elementTrl) -> elementTrl.getIso3Language() == null ? null
-                : new Locale(elementTrl.getIso3Language()),
+    Binder<ElementTrlDTO> binder = new BeanValidationBinder<>(ElementTrlDTO.class);
+    binder.forField(value).asRequired().bind(ElementTrlDTO::getValue, ElementTrlDTO::setValue);
+    binder.forField(isDefault).bind(ElementTrlDTO::getIsDefault, ElementTrlDTO::setIsDefault);
+    binder
+        .forField(isTranslated)
+        .bind(ElementTrlDTO::getIsTranslated, ElementTrlDTO::setIsTranslated);
+    binder
+        .forField(language)
+        .asRequired()
+        .bind(
+            (elementTrl) ->
+                elementTrl.getIso3Language() == null
+                    ? null
+                    : new Locale(elementTrl.getIso3Language()),
             (elementTrl, locale) -> elementTrl.setIso3Language(locale.getLanguage()));
 
     return new BinderCrudEditor<>(binder, form);
   }
 }
-
-

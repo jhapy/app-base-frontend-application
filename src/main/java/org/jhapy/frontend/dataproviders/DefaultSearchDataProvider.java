@@ -19,20 +19,20 @@
 package org.jhapy.frontend.dataproviders;
 
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
-import java.io.Serializable;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
+
+import java.io.Serializable;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class DefaultSearchDataProvider<T extends SearchQueryResult, F extends SearchQuery> extends
-    AbstractBackEndDataProvider<T, F> implements Serializable {
+public abstract class DefaultSearchDataProvider<T extends SearchQueryResult, F extends SearchQuery>
+    extends AbstractBackEndDataProvider<T, F> implements Serializable {
 
-  public DefaultSearchDataProvider() {
-  }
+  public DefaultSearchDataProvider() {}
 
   @Override
   public Object getId(T item) {
@@ -44,8 +44,7 @@ public abstract class DefaultSearchDataProvider<T extends SearchQueryResult, F e
     private String filter;
     private Boolean showInactive;
 
-    public DefaultFilter() {
-    }
+    public DefaultFilter() {}
 
     public DefaultFilter(String filter) {
       this(filter, null);

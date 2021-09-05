@@ -19,26 +19,29 @@
 package org.jhapy.frontend.components.events;
 
 import com.vaadin.flow.component.HasValue;
-import java.util.List;
-import org.jhapy.dto.domain.BaseRelationshipEntity;
-import org.jhapy.frontend.customFields.DefaultCustomListFieldForRelationship;
+import org.jhapy.dto.domain.BaseEmbeddableEntityDTO;
+import org.jhapy.frontend.customFields.DefaultCustomListFieldForEmbeddedEntity;
 
-public class CustomListFieldForRelationshipValueChangeEvent<C extends BaseRelationshipEntity> implements
-    HasValue.ValueChangeEvent<List<C>> {
+import java.util.Map;
 
-  private final List<C> oldValues;
-  private final List<C> newValues;
-  private final DefaultCustomListFieldForRelationship src;
+public class CustomListFieldForEmbeddedEntityValueChangeEvent<C extends BaseEmbeddableEntityDTO>
+    implements HasValue.ValueChangeEvent<Map<String, C>> {
 
-  public CustomListFieldForRelationshipValueChangeEvent(List<C> oldValues, List<C> newValues,
-      DefaultCustomListFieldForRelationship src) {
+  private final Map<String, C> oldValues;
+  private final Map<String, C> newValues;
+  private final DefaultCustomListFieldForEmbeddedEntity src;
+
+  public CustomListFieldForEmbeddedEntityValueChangeEvent(
+      Map<String, C> oldValues,
+      Map<String, C> newValues,
+      DefaultCustomListFieldForEmbeddedEntity src) {
     this.oldValues = oldValues;
     this.newValues = newValues;
     this.src = src;
   }
 
   @Override
-  public HasValue<?, List<C>> getHasValue() {
+  public HasValue<?, Map<String, C>> getHasValue() {
     return src;
   }
 
@@ -48,12 +51,12 @@ public class CustomListFieldForRelationshipValueChangeEvent<C extends BaseRelati
   }
 
   @Override
-  public List<C> getOldValue() {
+  public Map<String, C> getOldValue() {
     return oldValues;
   }
 
   @Override
-  public List<C> getValue() {
+  public Map<String, C> getValue() {
     return newValues;
   }
 }

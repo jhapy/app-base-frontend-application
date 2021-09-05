@@ -18,27 +18,28 @@
 
 package org.jhapy.frontend.client.reference;
 
-import java.util.List;
 import org.jhapy.dto.domain.reference.IntermediateRegion;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.utils.Page;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-03-27
  */
-@FeignClient(name = "${jhapy.remote-services.backend-server.name:null}", url = "${jhapy.remote-services.backend-server.url:}", path = "/api/intermediateRegionService", fallback = IntermediateRegionServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.backend-server.name:null}",
+    url = "${jhapy.remote-services.backend-server.url:}",
+    path = "/api/intermediateRegionService",
+    fallback = IntermediateRegionServiceFallback.class)
 @Primary
 public interface IntermediateRegionService {
 
@@ -46,8 +47,7 @@ public interface IntermediateRegionService {
   ServiceResult<List<IntermediateRegion>> findAll(@RequestBody BaseRemoteQuery query);
 
   @PostMapping(value = "/findAnyMatching")
-  ServiceResult<Page<IntermediateRegion>> findAnyMatching(
-      @RequestBody FindAnyMatchingQuery query);
+  ServiceResult<Page<IntermediateRegion>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
   @PostMapping(value = "/countAnyMatching")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);

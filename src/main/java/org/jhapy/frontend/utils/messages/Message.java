@@ -26,18 +26,24 @@ package org.jhapy.frontend.utils.messages;
 public class Message {
 
   public static final String CONFIRM_CAPTION_DELETE = "Confirm Delete";
-  public static final String CONFIRM_MESSAGE_DELETE = "Are you sure you want to delete the selected Item? This action cannot be undone.";
+  public static final String CONFIRM_MESSAGE_DELETE =
+      "Are you sure you want to delete the selected Item? This action cannot be undone.";
   public static final String BUTTON_CAPTION_DELETE = "Delete";
   public static final String BUTTON_CAPTION_CANCEL = "Cancel";
 
-  public static final MessageSupplier UNSAVED_CHANGES = createMessage("Unsaved Changes",
-      "Discard",
-      "Continue Editing",
-      "There are unsaved modifications to the %s. Discard changes?");
+  public static final MessageSupplier UNSAVED_CHANGES =
+      createMessage(
+          "Unsaved Changes",
+          "Discard",
+          "Continue Editing",
+          "There are unsaved modifications to the %s. Discard changes?");
 
-  public static final MessageSupplier CONFIRM_DELETE = createMessage(CONFIRM_CAPTION_DELETE,
-      BUTTON_CAPTION_DELETE,
-      BUTTON_CAPTION_CANCEL, CONFIRM_MESSAGE_DELETE);
+  public static final MessageSupplier CONFIRM_DELETE =
+      createMessage(
+          CONFIRM_CAPTION_DELETE,
+          BUTTON_CAPTION_DELETE,
+          BUTTON_CAPTION_CANCEL,
+          CONFIRM_MESSAGE_DELETE);
 
   private final String caption;
   private final String okText;
@@ -51,10 +57,10 @@ public class Message {
     this.message = message;
   }
 
-  private static MessageSupplier createMessage(String caption, String okText, String cancelText,
-      String message) {
-    return (parameters) -> new Message(caption, okText, cancelText,
-        String.format(message, parameters));
+  private static MessageSupplier createMessage(
+      String caption, String okText, String cancelText, String message) {
+    return (parameters) ->
+        new Message(caption, okText, cancelText, String.format(message, parameters));
   }
 
   public String getCaption() {
@@ -78,5 +84,4 @@ public class Message {
 
     Message createMessage(Object... parameters);
   }
-
 }

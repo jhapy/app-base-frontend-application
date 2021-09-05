@@ -45,14 +45,16 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SECURITY_ROLES)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SecurityRolesView extends
-    DefaultMasterDetailsView<SecurityRole, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class SecurityRolesView
+    extends DefaultMasterDetailsView<SecurityRole, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public SecurityRolesView(MyI18NProvider myI18NProvider) {
-    super("securityRole.", SecurityRole.class, new SecurityRoleDataProvider(),
+    super(
+        "securityRole.",
+        SecurityRole.class,
+        new SecurityRoleDataProvider(),
         (e) -> SecurityServices.getSecurityRoleService().save(new SaveQuery<>(e)),
-        e -> SecurityServices.getSecurityRoleService()
-            .delete(new DeleteByStrIdQuery(e.getId())),
+        e -> SecurityServices.getSecurityRoleService().delete(new DeleteByStrIdQuery(e.getId())),
         myI18NProvider);
   }
 
@@ -60,8 +62,7 @@ public class SecurityRolesView extends
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
@@ -69,19 +70,23 @@ public class SecurityRolesView extends
     grid.addColumn(SecurityRole::getName).setKey("name");
     grid.addColumn(new BooleanOkRenderer<>(SecurityRole::getCanLogin)).setKey("canLogin");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
     return grid;
   }
 
   protected Component createDetails(SecurityRole securityRole) {
     boolean isNew = securityRole.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + securityRole.getName());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + securityRole.getName());
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
@@ -97,20 +102,17 @@ public class SecurityRolesView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem nameItem = editingForm
-        .addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
-    editingForm
-        .addFormItem(description, getTranslation("element." + I18N_PREFIX + "description"));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    FormLayout.FormItem nameItem =
+        editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
+    editingForm.addFormItem(description, getTranslation("element." + I18N_PREFIX + "description"));
     editingForm.addFormItem(canLogin, getTranslation("element." + I18N_PREFIX + "canLogin"));
-    FormLayout.FormItem isActiveItem = editingForm
-        .addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
+    FormLayout.FormItem isActiveItem =
+        editingForm.addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
 
     UIUtils.setColSpan(2, nameItem);
 
@@ -125,9 +127,7 @@ public class SecurityRolesView extends
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : "*" + filter + "*",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", Boolean.TRUE));
   }
 }

@@ -34,7 +34,8 @@ public class SecondaryLabelHtmlComponent extends Html implements WhiteSpaceLabel
   }
 
   private void init() {
-    getElement().getStyle()
+    getElement()
+        .getStyle()
         .set("font-size", "var(--lumo-font-size-s)")
         .set("text-overflow", "ellipsis")
         .set("overflow", "scroll")
@@ -43,6 +44,4 @@ public class SecondaryLabelHtmlComponent extends Html implements WhiteSpaceLabel
         .set("min-height", "100px")
         .set("max-height", "200px");
   }
-
 }
-

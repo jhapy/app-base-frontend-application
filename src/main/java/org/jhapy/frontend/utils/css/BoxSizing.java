@@ -19,8 +19,8 @@
 package org.jhapy.frontend.utils.css;
 
 public enum BoxSizing {
-
-  BORDER_BOX("border-box"), CONTENT_BOX("content-box");
+  BORDER_BOX("border-box"),
+  CONTENT_BOX("content-box");
 
   private final String value;
 

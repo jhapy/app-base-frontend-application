@@ -25,35 +25,36 @@ import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudI18n;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.shared.Registration;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.BaseRelationshipEntity;
+import org.jhapy.dto.domain.BaseEmbeddableEntityDTO;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.components.events.CustomListFieldForRelationshipValueChangeEvent;
-import org.jhapy.frontend.dataproviders.DefaultBackendForRelationship;
+import org.jhapy.frontend.components.events.CustomListFieldForEmbeddedEntityValueChangeEvent;
+import org.jhapy.frontend.dataproviders.DefaultBackendForEmbeddedEntity;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-04-21
  */
-public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelationshipEntity> extends
-    FlexBoxLayout
-    implements HasValue<CustomListFieldForRelationshipValueChangeEvent<C>, List<C>>, HasLogger,
-    Serializable {
+public abstract class DefaultCustomListFieldForEmbeddedEntity<C extends BaseEmbeddableEntityDTO>
+    extends FlexBoxLayout
+    implements HasValue<CustomListFieldForEmbeddedEntityValueChangeEvent<C>, Map<String, C>>,
+        HasLogger,
+        Serializable {
 
   protected final String i18nPrefix;
   protected Crud<C> gridCrud;
   protected Button newButton;
-  protected DefaultBackendForRelationship<C> dataProvider;
+  protected DefaultBackendForEmbeddedEntity<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldForRelationshipValueChangeEvent<C>>> changeListeners = new ArrayList<>();
+  private final List<
+          ValueChangeListener<? super CustomListFieldForEmbeddedEntityValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
 
-  protected DefaultCustomListFieldForRelationship(String i18nPrefix) {
+  protected DefaultCustomListFieldForEmbeddedEntity(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;
   }
 
@@ -62,14 +63,14 @@ public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelati
   }
 
   @Override
-  public List<C> getValue() {
+  public Map<String, C> getValue() {
     var loggerPrefix = getLoggerPrefix("generateModelValue");
     logger().debug(loggerPrefix + "Result =  " + dataProvider.getValues());
-    return new ArrayList<>(dataProvider.getValues());
+    return new HashMap<>(dataProvider.getValues());
   }
 
   @Override
-  public void setValue(List<C> values) {
+  public void setValue(Map<String, C> values) {
     var loggerPrefix = getLoggerPrefix("setPresentationValue");
     logger().debug(loggerPrefix + "Param =  " + values);
     if (values != null) {
@@ -77,9 +78,18 @@ public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelati
     }
   }
 
+  public void refreshItem(C e) {
+    dataProvider.refreshItem(e);
+  }
+
+  public void refreshAll() {
+    dataProvider.refreshAll();
+  }
+
   @Override
   public Registration addValueChangeListener(
-      ValueChangeListener<? super CustomListFieldForRelationshipValueChangeEvent<C>> valueChangeListener) {
+      ValueChangeListener<? super CustomListFieldForEmbeddedEntityValueChangeEvent<C>>
+          valueChangeListener) {
     changeListeners.add(valueChangeListener);
     return () -> changeListeners.remove(valueChangeListener);
   }
@@ -95,22 +105,42 @@ public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelati
     i18nGrid.setCancel(getTranslation("action.global.cancel", currentLocal));
     i18nGrid.setEditLabel(getTranslation("action.global.editButton", currentLocal));
 
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setTitle(getTranslation("element.global.cancel.title", currentLocal));
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setContent(getTranslation("element.global.cancel.content", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setDismiss(getTranslation("action.global.cancel.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setConfirm(getTranslation("action.global.cancel.confirmButton", currentLocal));
 
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setTitle(getTranslation("element.global.delete.title", currentLocal));
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setContent(getTranslation("element.global.delete.content", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setDismiss(getTranslation("action.global.delete.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setConfirm(getTranslation("action.global.delete.confirmButton", currentLocal));
 
     return i18nGrid;
@@ -122,8 +152,7 @@ public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelati
   }
 
   @Override
-  public void setReadOnly(boolean b) {
-  }
+  public void setReadOnly(boolean b) {}
 
   @Override
   public boolean isRequiredIndicatorVisible() {
@@ -131,44 +160,45 @@ public abstract class DefaultCustomListFieldForRelationship<C extends BaseRelati
   }
 
   @Override
-  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
+  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {}
+
+  public void updateValue(Map<String, C> oldValues, Map<String, C> newValues) {
+    changeListeners.forEach(
+        valueChangeListener ->
+            valueChangeListener.valueChanged(
+                new CustomListFieldForEmbeddedEntityValueChangeEvent<>(
+                    oldValues, newValues, this)));
   }
 
-  public void updateValue(List<C> oldValues, List<C> newValues) {
-    changeListeners.forEach(valueChangeListener -> valueChangeListener
-        .valueChanged(
-            new CustomListFieldForRelationshipValueChangeEvent<>(oldValues, newValues, this)));
-  }
-
-  public class Backend extends DefaultBackendForRelationship<C> {
+  public class Backend extends DefaultBackendForEmbeddedEntity<C> {
 
     @Override
     public Object getId(C item) {
       return item.getId();
     }
 
-    public void setValues(Collection<C> values) {
+    public void setValues(Map<String, C> values) {
       fieldsMap.clear();
-      fieldsMap.addAll(values);
+      fieldsMap.putAll(values);
     }
 
     public void persist(C value) {
-      List<C> previousValues = new ArrayList<>(fieldsMap);
+      Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
       if (value.getId() == null) {
         value.setId(uniqueLong.incrementAndGet());
         value.setIsNew(true);
       }
-      if (!fieldsMap.contains(value)) {
-        fieldsMap.add(value);
+      if (!fieldsMap.containsKey(value.getDiscriminator())) {
+        fieldsMap.put(value.getDiscriminator(), value);
       }
       updateValue(previousValues, fieldsMap);
     }
 
     public void delete(C value) {
-      List<C> previousValues = new ArrayList<>(fieldsMap);
+      Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
-      fieldsMap.remove(value);
+      fieldsMap.remove(value.getDiscriminator());
 
       updateValue(previousValues, fieldsMap);
     }

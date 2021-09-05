@@ -25,16 +25,17 @@ import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudI18n;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.shared.Registration;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseInnerEntity;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.events.CustomListFieldFreeValueChangeEvent;
 import org.jhapy.frontend.dataproviders.DefaultBackendFree;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author jHapy Lead Dev.
@@ -49,7 +50,8 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
   protected Button newButton;
   protected DefaultBackendFree<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldFreeValueChangeEvent<C>>> changeListeners = new ArrayList<>();
+  private final List<ValueChangeListener<? super CustomListFieldFreeValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldFree(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;
@@ -97,22 +99,42 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
     i18nGrid.setCancel(getTranslation("action.global.cancel", currentLocal));
     i18nGrid.setEditLabel(getTranslation("action.global.editButton", currentLocal));
 
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setTitle(getTranslation("element.global.cancel.title", currentLocal));
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setContent(getTranslation("element.global.cancel.content", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setDismiss(getTranslation("action.global.cancel.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setConfirm(getTranslation("action.global.cancel.confirmButton", currentLocal));
 
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setTitle(getTranslation("element.global.delete.title", currentLocal));
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setContent(getTranslation("element.global.delete.content", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setDismiss(getTranslation("action.global.delete.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setConfirm(getTranslation("action.global.delete.confirmButton", currentLocal));
 
     return i18nGrid;
@@ -124,8 +146,7 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
   }
 
   @Override
-  public void setReadOnly(boolean b) {
-  }
+  public void setReadOnly(boolean b) {}
 
   @Override
   public boolean isRequiredIndicatorVisible() {
@@ -133,12 +154,13 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
   }
 
   @Override
-  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-  }
+  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {}
 
   public void updateValue(List<C> oldValues, List<C> newValues) {
-    changeListeners.forEach(valueChangeListener -> valueChangeListener
-        .valueChanged(new CustomListFieldFreeValueChangeEvent<>(oldValues, newValues, this)));
+    changeListeners.forEach(
+        valueChangeListener ->
+            valueChangeListener.valueChanged(
+                new CustomListFieldFreeValueChangeEvent<>(oldValues, newValues, this)));
   }
 
   public class Backend extends DefaultBackendFree<C> {
@@ -150,11 +172,12 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
 
     public void setValues(Collection<C> values) {
       fieldsMap.clear();
-      values.forEach(value -> {
-        if (value.getTemporaryId() == null) {
-          value.setTemporaryId(uniqueLong.incrementAndGet());
-        }
-      });
+      values.forEach(
+          value -> {
+            if (value.getTemporaryId() == null) {
+              value.setTemporaryId(uniqueLong.incrementAndGet());
+            }
+          });
       fieldsMap.addAll(values);
     }
 

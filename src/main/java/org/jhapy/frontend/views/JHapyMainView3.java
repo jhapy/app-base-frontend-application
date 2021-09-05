@@ -18,37 +18,34 @@
 
 package org.jhapy.frontend.views;
 
-import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
-import static org.jhapy.frontend.utils.AppConst.THEME_ATTRIBUTE;
-
 import com.flowingcode.vaadin.addons.errorwindow.ErrorManager;
 import com.hazelcast.core.HazelcastInstance;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.InitialPageSettings;
-import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.*;
 import com.vaadin.flow.theme.lumo.Lumo;
 import de.codecamp.vaadin.components.messagedialog.MessageDialog;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.commons.utils.HasLoggerStatic;
@@ -57,26 +54,19 @@ import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
+import org.jhapy.dto.utils.AppContext;
 import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.client.audit.AuditServices;
 import org.jhapy.frontend.components.AppCookieConsent;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
-import org.jhapy.frontend.components.navigation.drawer.NaviDrawerWithTreeMenu;
+import org.jhapy.frontend.components.navigation.menubar.*;
 import org.jhapy.frontend.components.search.overlay.SearchOverlayButton;
 import org.jhapy.frontend.config.AppProperties;
-import org.jhapy.frontend.dataproviders.MenuHierarchicalDataProvider;
 import org.jhapy.frontend.security.SecurityUtils;
-import org.jhapy.frontend.utils.AppConst;
-import org.jhapy.frontend.utils.AttributeContextListener;
-import org.jhapy.frontend.utils.FontSize;
-import org.jhapy.frontend.utils.IconSize;
-import org.jhapy.frontend.utils.LumoStyles;
-import org.jhapy.frontend.utils.SessionInfo;
-import org.jhapy.frontend.utils.TextColor;
-import org.jhapy.frontend.utils.UIUtils;
+import org.jhapy.frontend.utils.*;
 import org.jhapy.frontend.utils.css.Overflow;
 import org.jhapy.frontend.utils.css.Shadow;
+import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.admin.MonitoringAdminView;
 import org.jhapy.frontend.views.admin.audit.SessionView;
 import org.jhapy.frontend.views.admin.i18n.ActionsView;
@@ -87,15 +77,34 @@ import org.jhapy.frontend.views.admin.messaging.MailTemplatesAdminView;
 import org.jhapy.frontend.views.admin.messaging.SmsAdminView;
 import org.jhapy.frontend.views.admin.messaging.SmsTemplatesAdminView;
 import org.jhapy.frontend.views.admin.references.CountriesView;
+import org.jhapy.frontend.views.admin.security.ClientsView;
 import org.jhapy.frontend.views.admin.security.SecurityKeycloakGroupsView;
 import org.jhapy.frontend.views.admin.security.SecurityKeycloakRolesView;
 import org.jhapy.frontend.views.admin.security.SecurityKeycloakUsersView;
-import org.jhapy.frontend.views.menu.MenuData;
-import org.jhapy.frontend.views.menu.MenuEntry;
 import org.springframework.core.env.Environment;
-import org.vaadin.tatu.Tree;
+import org.vaadin.miki.superfields.unload.UnloadObserver;
 
-@CssImport(value = "./styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+import javax.servlet.http.Cookie;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
+import static org.jhapy.frontend.utils.AppConst.THEME_ATTRIBUTE;
+import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+
+@NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
+@NpmPackage(value = "line-awesome", version = "1.3.0")
+@CssImport(
+    value = "./styles/components/charts.css",
+    themeFor = "vaadin-chart",
+    include = "vaadin-chart-default-theme")
 @CssImport(value = "./styles/components/floating-action-button.css", themeFor = "vaadin-button")
 @CssImport(value = "./styles/components/grid.css", themeFor = "vaadin-grid")
 @CssImport("./styles/lumo/border-radius.css")
@@ -108,45 +117,60 @@ import org.vaadin.tatu.Tree;
 @CssImport("./styles/misc/box-shadow-borders.css")
 @CssImport(value = "./styles/styles.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge")
+@CssImport("./menubar/main-ui-styles.css")
+@CssImport("./menubar/window-tab-styles.css")
+@CssImport("./menubar/menu-styles.css")
 public abstract class JHapyMainView3 extends FlexBoxLayout
-    implements RouterLayout, PageConfigurator, AfterNavigationObserver, HasLogger {
+    implements PageConfigurator, HasLogger, RouterLayout {
 
   private static final String CLASS_NAME = "root";
   private final ConfirmDialog confirmDialog;
   protected FlexBoxLayout viewContainer;
   private Div appHeaderOuter;
-  private FlexBoxLayout row;
-  private NaviDrawerWithTreeMenu naviDrawer;
-  private FlexBoxLayout column;
+  private FlexBoxLayout content;
   private Div appHeaderInner;
   private Div appFooterInner;
   private Environment environment;
   private Div appFooterOuter;
-  private AppBar appBar;
   protected AppProperties appProperties;
-  protected final MenuHierarchicalDataProvider menuProvider;
   private final HazelcastInstance hazelcastInstance;
   private final List<AttributeContextListener> contextListeners = new ArrayList<>();
+  private final MyI18NProvider myI18NProvider;
+  private final Div header = new Div();
 
-  protected JHapyMainView3(MenuHierarchicalDataProvider menuProvider,
-      HazelcastInstance hazelcastInstance, Environment environment, AppProperties appProperties,
-      boolean hasGlobalSearch, boolean hasGlobalNotification) {
-    this.menuProvider = menuProvider;
+  private final Tabs tabs = new Tabs();
+  private final ModuleTabAdd newTabButton = new ModuleTabAdd();
+  private final List<ModuleTab> tabList = new ArrayList<>();
+  private final List<View> views = new ArrayList<>();
+  private List<Menu> menuList;
+  private List<TopMenuItem> topMenuItemList;
+
+  protected JHapyMainView3(
+      MyI18NProvider myI18NProvider,
+      HazelcastInstance hazelcastInstance,
+      Environment environment,
+      AppProperties appProperties,
+      boolean hasGlobalSearch,
+      boolean hasGlobalNotification) {
+    String loggerPrefix = getLoggerPrefix("JHapyMainView3");
     this.hazelcastInstance = hazelcastInstance;
     this.appProperties = appProperties;
-
-    getElement().executeJs("return window.matchMedia('(prefers-color-scheme: dark)').matches")
-        .then(jsonValue -> {
-          logger().debug(jsonValue.asBoolean());
-          var themeList = UI.getCurrent().getElement().getThemeList();
-          if (!jsonValue.asBoolean()) {
-            themeList.remove(Lumo.DARK);
-            VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, null);
-          } else {
-            themeList.add(Lumo.DARK);
-            VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, Lumo.DARK);
-          }
-        });
+    this.myI18NProvider = myI18NProvider;
+    UI.getCurrent()
+        .getElement()
+        .executeJs("return window.matchMedia('(prefers-color-scheme: dark)').matches")
+        .then(
+            jsonValue -> {
+              logger().debug(jsonValue.asBoolean());
+              var themeList = UI.getCurrent().getElement().getThemeList();
+              if (!jsonValue.asBoolean()) {
+                themeList.remove(Lumo.DARK);
+                VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, null);
+              } else {
+                themeList.add(Lumo.DARK);
+                VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, Lumo.DARK);
+              }
+            });
 
     afterLogin();
 
@@ -158,23 +182,60 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     getElement().appendChild(confirmDialog.getElement());
 
     addClassName(CLASS_NAME);
-    //setBackgroundColor(LumoStyles.Color.Contrast._5);
+    // setBackgroundColor(LumoStyles.Color.Contrast._5);
     setFlexDirection(FlexDirection.COLUMN);
     setSizeFull();
 
     // Initialise the UI building blocks
-    initStructure(menuProvider, false, getAltSearchMenu(),
-        environment.getProperty("APP_VERSION"),
-        environment.getProperty("info.tags.environment"));
+    initStructure();
+
+    if (Session.getAppMenu() == null) {
+      AppMenu appMenu = new AppMenu();
+      Session.setAppMenu(appMenu);
+    }
 
     // Populate the navigation drawer
     initNaviItems();
-    postNaviItems(naviDrawer.getMenuComponent());
+
+    setMenuList(Session.getAppMenu().getMenuList());
 
     // Configure the headers and footers (optional)
     initHeadersAndFooters(hasGlobalSearch, hasGlobalNotification);
 
+    initTabs();
     getElement().appendChild(new AppCookieConsent().getElement());
+
+    /*UI.getCurrent().addAfterNavigationListener(event -> {
+      debug(loggerPrefix, "Navigator event {0}", event.getLocation() );
+    });*/
+    History history = UI.getCurrent().getPage().getHistory();
+    history.setHistoryStateChangeHandler(
+        event -> {
+          debug(loggerPrefix, "History changed {0}", event.getLocation());
+        });
+    getUI()
+        .ifPresent(
+            ui ->
+                ui.addBeforeLeaveListener(
+                    event -> {
+                      debug(loggerPrefix, "Before Leave event {0}", event.getLocation());
+                    }));
+
+    UnloadObserver unloadObserver = UnloadObserver.get();
+    unloadObserver.setQueryingOnUnload(false);
+    unloadObserver.addUnloadListener(
+        event -> {
+          debug(loggerPrefix, "UnloadEvent event {0}", event.isBecauseOfQuerying());
+          debug(loggerPrefix, "Current Tab : " + tabs.getSelectedTab().getLabel());
+        });
+    getElement().appendChild(unloadObserver.getElement());
+  }
+
+  @Override
+  public void showRouterLayoutContent(HasElement content) {
+    String loggerPrefix = getLoggerPrefix("showRouterLayoutContent");
+    debug(loggerPrefix, "Show content ...");
+    displayView((View) content);
   }
 
   public void addAttributeContextListener(AttributeContextListener contextListener) {
@@ -186,8 +247,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
   }
 
   public void fireAttributeContextChanged(String attributeName, Object attributeValue) {
-    contextListeners.parallelStream().forEach(contextListener -> contextListener
-        .onAttributeContextChanged(attributeName, attributeValue));
+    contextListeners.parallelStream()
+        .forEach(
+            contextListener ->
+                contextListener.onAttributeContextChanged(attributeName, attributeValue));
   }
 
   protected Component getAltSearchMenu() {
@@ -199,9 +262,12 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
   }
 
   public static JHapyMainView3 get() {
-    return (JHapyMainView3) UI.getCurrent().getChildren()
-        .filter(component -> RouterLayout.class.isAssignableFrom(component.getClass()))
-        .findFirst().orElse(null);
+    return (JHapyMainView3)
+        UI.getCurrent()
+            .getChildren()
+            .filter(component -> JHapyMainView3.class.isAssignableFrom(component.getClass()))
+            .findFirst()
+            .orElse(null);
   }
 
   public SearchOverlayButton<? extends SearchQueryResult, ? extends SearchQuery> getSearchButton() {
@@ -209,6 +275,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
   }
 
   public Class getHomePage() {
+    return null;
+  }
+
+  public View getHomePage2() {
     return null;
   }
 
@@ -242,8 +312,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
       UI.getCurrent().getSession().setLocale(getDefaultLocale());
     }
 
-    var currentSecurityUser = (SecurityUser) VaadinSession.getCurrent()
-        .getAttribute(SECURITY_USER_ATTRIBUTE);
+    var currentSecurityUser =
+        (SecurityUser) VaadinSession.getCurrent().getAttribute(SECURITY_USER_ATTRIBUTE);
     if (currentSecurityUser == null) {
       currentSecurityUser = SecurityUtils.getSecurityUser();
       if (currentSecurityUser != null) {
@@ -252,19 +322,26 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
         // 5 minutes
         logger()
-            .info(loggerPrefix + "Max Inactive Interval = " + currentSession.getSession()
-                .getMaxInactiveInterval());
+            .info(
+                loggerPrefix
+                    + "Max Inactive Interval = "
+                    + currentSession.getSession().getMaxInactiveInterval());
         // currentSession.getSession().setMaxInactiveInterval( 2 * 60);
 
-        logger().info(
-            loggerPrefix + "Create remote session, Session ID = " + currentSession
-                .getSession()
-                .getId());
-        AuditServices.getAuditServiceQueue().newSession(
-            new NewSession(currentSession.getSession().getId(),
-                currentSecurityUser.getUsername(), currentRequest.getRemoteAddr(), Instant
-                .now(),
-                true, null));
+        logger()
+            .info(
+                loggerPrefix
+                    + "Create remote session, Session ID = "
+                    + currentSession.getSession().getId());
+        AuditServices.getAuditServiceQueue()
+            .newSession(
+                new NewSession(
+                    currentSession.getSession().getId(),
+                    currentSecurityUser.getUsername(),
+                    currentRequest.getRemoteAddr(),
+                    Instant.now(),
+                    true,
+                    null));
 
         var sessionInfo = new SessionInfo();
         sessionInfo.setJSessionId(currentSession.getSession().getId());
@@ -277,365 +354,898 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     }
   }
 
-  /**
-   * Initialise the required components and containers.
-   */
-  private void initStructure(MenuHierarchicalDataProvider menuProvider, boolean showSearchMenu,
-      Component altSearchMenu,
-      String version, String environnement) {
-    naviDrawer = new NaviDrawerWithTreeMenu(menuProvider, showSearchMenu, altSearchMenu,
-        version,
-        environnement);
+  /** Initialise the required components and containers. */
+  private void initStructure() {
 
     viewContainer = new FlexBoxLayout();
     viewContainer.addClassName(CLASS_NAME + "__view-container");
     viewContainer.setOverflow(Overflow.HIDDEN);
 
-    column = new FlexBoxLayout(viewContainer);
-    column.addClassName(CLASS_NAME + "__column");
-    column.setFlexDirection(FlexDirection.COLUMN);
-    column.setFlexGrow(1, viewContainer);
-    column.setOverflow(Overflow.HIDDEN);
-
-    row = new FlexBoxLayout(naviDrawer, column);
-    row.addClassName(CLASS_NAME + "__row");
-    row.setFlexGrow(1, column);
-    row.setOverflow(Overflow.HIDDEN);
-    add(row);
-    setFlexGrow(1, row);
+    content = new FlexBoxLayout(viewContainer);
+    content.addClassName(CLASS_NAME + "__column");
+    content.setFlexDirection(FlexDirection.COLUMN);
+    content.setFlexGrow(1, viewContainer);
+    content.setOverflow(Overflow.HIDDEN);
+    add(content);
+    setFlexGrow(1, content);
   }
 
-  public void rebuildNaviItems() {
-    rebuildNaviItems(true);
+  protected int addToMainMenu(List<Menu> menuList, int currentMenuIdx) {
+    return currentMenuIdx;
   }
 
-  public void rebuildNaviItems(boolean resetAppBar) {
-    List<MenuEntry> expandedMenus = new ArrayList<>();
-
-    naviDrawer.getMenu().getMenuList().forEach(menuEntry -> {
-          if (naviDrawer.getMenuComponent().isExpanded(menuEntry)) {
-            expandedMenus.add(menuEntry);
-          }
-        }
-    );
-
-    // naviDrawer.refreshMenu();
-
-    naviDrawer.toogleSearch();
-    initNaviItems();
-
-    UI.getCurrent().access(() -> {
-      naviDrawer.getMenuComponent().expand(expandedMenus);
-      naviDrawer.navigate(naviDrawer.getLastMenuEntry());
-    });
-
-    if (resetAppBar) {
-      appBar.reset();
-      appBar.rebuildMenu();
-    }
-  }
-
-  public AppBar getAppBar() {
-    return appBar;
-  }
-
-  protected void addToMainMenu(MenuData menuData) {
-  }
-
-  protected void addToSettingsMenu(MenuData menuData, MenuEntry settingMenu) {
+  protected int addToSettingsMenu(List<Menu> menuList, int currentMenuIdx, Menu settingsMenu) {
+    return currentMenuIdx;
   }
 
   protected boolean hasSettingsMenuEntries() {
     return false;
   }
 
-  protected void addToReferencesMenu(MenuData menuData, MenuEntry referenceMenu) {
+  protected int addToReferencesMenu(List<Menu> menuList, int currentMenuIdx, Menu referenceMenu) {
+    return currentMenuIdx;
   }
 
   protected boolean hasReferencesMenuEntries() {
     return false;
   }
 
-  protected void addToSecurityMenu(MenuData menuData, MenuEntry securityMenu) {
+  protected int addToSecurityMenu(List<Menu> menuList, int currentMenuIdx, Menu securityMenu) {
+    return currentMenuIdx;
   }
 
   protected boolean hasSecurityMenuEntries() {
     return false;
   }
 
-  protected void postNaviItems(Tree<MenuEntry> menu) {
-
-  }
-
-  /**
-   * Initialise the navigation items.
-   */
-  private void initNaviItems() {
+  /** Initialise the navigation items. */
+  private int initNaviItems() {
     var currentUI = UI.getCurrent();
 
-    var menuData = naviDrawer.getFreshMenu();
-
-    addToMainMenu(menuData);
+    var menuList = new ArrayList<Menu>();
+    var rootMenuIdx = 1;
+    rootMenuIdx = addToMainMenu(menuList, rootMenuIdx);
+    Session.getAppMenu().initMenuList();
 
     if (SecurityUtils.isUserLoggedIn()) {
 
-      boolean isSettingsDisplayed = hasSettingsMenuEntries() ||
-          SecurityUtils.isAccessGranted(ActionsView.class) ||
-          SecurityUtils.isAccessGranted(ElementsView.class) ||
-          SecurityUtils.isAccessGranted(MessagesView.class) ||
-          SecurityUtils.isAccessGranted(CountriesView.class) ||
-          SecurityUtils.isAccessGranted(SecurityKeycloakUsersView.class) ||
-          SecurityUtils.isAccessGranted(SecurityKeycloakRolesView.class) ||
-          SecurityUtils.isAccessGranted(SecurityKeycloakGroupsView.class);
+      boolean isSettingsDisplayed =
+          hasSettingsMenuEntries()
+              || SecurityUtils.isAccessGranted(ActionsView.class)
+              || SecurityUtils.isAccessGranted(ElementsView.class)
+              || SecurityUtils.isAccessGranted(MessagesView.class)
+              || SecurityUtils.isAccessGranted(CountriesView.class)
+              || SecurityUtils.isAccessGranted(SecurityKeycloakUsersView.class)
+              || SecurityUtils.isAccessGranted(SecurityKeycloakRolesView.class)
+              || SecurityUtils.isAccessGranted(SecurityKeycloakGroupsView.class);
 
       if (isSettingsDisplayed) {
-        var settingsSubMenu = new MenuEntry(AppConst.PAGE_SETTINGS);
-        settingsSubMenu.setVaadinIcon(VaadinIcon.EDIT);
-        settingsSubMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_SETTINGS));
+        var settingsMenuIdx = rootMenuIdx++;
+        var settingMenu =
+            new Menu(
+                settingsMenuIdx,
+                0,
+                currentUI.getTranslation(AppConst.TITLE_SETTINGS),
+                VaadinIcon.EDIT.name(),
+                null,
+                null);
+        menuList.add(settingMenu);
 
-        addToSettingsMenu(menuData, settingsSubMenu);
+        rootMenuIdx = addToSettingsMenu(menuList, rootMenuIdx, settingMenu);
 
-        menuData.addMenuEntry(settingsSubMenu);
-        /*
-         * i18N
-         */
-        boolean isDisplayI18n = SecurityUtils.isAccessGranted(ActionsView.class) ||
-            SecurityUtils.isAccessGranted(ElementsView.class) ||
-            SecurityUtils.isAccessGranted(MessagesView.class);
+        boolean isDisplayI18n =
+            SecurityUtils.isAccessGranted(ActionsView.class)
+                || SecurityUtils.isAccessGranted(ElementsView.class)
+                || SecurityUtils.isAccessGranted(MessagesView.class);
 
         if (isDisplayI18n) {
-          var i18nSubmenu = new MenuEntry(AppConst.PAGE_I18N);
-          i18nSubmenu.setVaadinIcon(VaadinIcon.SITEMAP);
-          i18nSubmenu.setTitle(currentUI.getTranslation(AppConst.TITLE_I18N));
-          i18nSubmenu.setParentMenuEntry(settingsSubMenu);
+          var settingsi18NMenuIdx = rootMenuIdx++;
 
-          menuData.addMenuEntry(i18nSubmenu);
+          menuList.add(
+              new Menu(
+                  settingsi18NMenuIdx,
+                  settingsMenuIdx,
+                  currentUI.getTranslation(AppConst.TITLE_I18N),
+                  VaadinIcon.SITEMAP.name(),
+                  null,
+                  null));
 
           if (SecurityUtils.isAccessGranted(ActionsView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_ACTIONS);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_ACTIONS));
-            subMenu.setTargetClass(ActionsView.class);
-            subMenu.setParentMenuEntry(i18nSubmenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    settingsi18NMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_ACTIONS),
+                    VaadinIcon.QUESTION.name(),
+                    ActionsView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(ElementsView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_ELEMENTS);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_ELEMENTS));
-            subMenu.setTargetClass(ElementsView.class);
-            subMenu.setParentMenuEntry(i18nSubmenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    settingsi18NMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_ELEMENTS),
+                    VaadinIcon.QUESTION.name(),
+                    ElementsView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(MessagesView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_MESSAGES);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_MESSAGES));
-            subMenu.setTargetClass(MessagesView.class);
-            subMenu.setParentMenuEntry(i18nSubmenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    settingsi18NMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_MESSAGES),
+                    VaadinIcon.QUESTION.name(),
+                    MessagesView.class,
+                    null));
           }
         }
 
         /*
          * Reference
          */
-
-        boolean isReferenceMenuDisplay = hasReferencesMenuEntries() ||
-            SecurityUtils.isAccessGranted(CountriesView.class);
+        boolean isReferenceMenuDisplay =
+            hasReferencesMenuEntries() || SecurityUtils.isAccessGranted(CountriesView.class);
 
         if (isReferenceMenuDisplay) {
-          var referenceSubMenu = new MenuEntry(AppConst.PAGE_REFERENCES);
-          referenceSubMenu.setVaadinIcon(VaadinIcon.SITEMAP);
-          referenceSubMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_REFERENCES));
-          referenceSubMenu.setParentMenuEntry(settingsSubMenu);
+          var referenceMenuIdx = rootMenuIdx++;
 
-          menuData.addMenuEntry(referenceSubMenu);
+          var referenceMenu =
+              new Menu(
+                  referenceMenuIdx,
+                  settingsMenuIdx,
+                  currentUI.getTranslation(AppConst.TITLE_REFERENCES),
+                  VaadinIcon.SITEMAP.name(),
+                  null,
+                  null);
+          menuList.add(referenceMenu);
 
           if (hasReferencesMenuEntries()) {
-            addToReferencesMenu(menuData, referenceSubMenu);
+            rootMenuIdx = addToReferencesMenu(menuList, rootMenuIdx, referenceMenu);
           }
-
         }
 
         /*
          * Notification
          */
         boolean isDisplayNotifications =
-            SecurityUtils.isAccessGranted(MailTemplatesAdminView.class) ||
-                SecurityUtils.isAccessGranted(SmsTemplatesAdminView.class) ||
-                SecurityUtils.isAccessGranted(SmsAdminView.class) ||
-                SecurityUtils.isAccessGranted(MailAdminView.class);
+            SecurityUtils.isAccessGranted(MailTemplatesAdminView.class)
+                || SecurityUtils.isAccessGranted(SmsTemplatesAdminView.class)
+                || SecurityUtils.isAccessGranted(SmsAdminView.class)
+                || SecurityUtils.isAccessGranted(MailAdminView.class);
 
         if (isDisplayNotifications) {
-          var notificationsSubMenu = new MenuEntry(AppConst.PAGE_NOTIFICATIONS);
-          notificationsSubMenu.setVaadinIcon(VaadinIcon.SITEMAP);
-          notificationsSubMenu
-              .setTitle(currentUI.getTranslation(AppConst.TITLE_NOTIFICATION_ADMIN));
-          notificationsSubMenu.setParentMenuEntry(settingsSubMenu);
+          var notificationMenuIdx = rootMenuIdx++;
 
-          menuData.addMenuEntry(notificationsSubMenu);
+          menuList.add(
+              new Menu(
+                  notificationMenuIdx,
+                  settingsMenuIdx,
+                  currentUI.getTranslation(AppConst.TITLE_NOTIFICATION_ADMIN),
+                  VaadinIcon.SITEMAP.name(),
+                  null,
+                  null));
 
           if (SecurityUtils.isAccessGranted(MailTemplatesAdminView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_MAIL_TEMPLATES_ADMIN);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(
-                currentUI.getTranslation(AppConst.TITLE_MAIL_TEMPLATES_ADMIN));
-            subMenu.setTargetClass(MailTemplatesAdminView.class);
-            subMenu.setParentMenuEntry(notificationsSubMenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    notificationMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_MAIL_TEMPLATES_ADMIN),
+                    VaadinIcon.QUESTION.name(),
+                    MailTemplatesAdminView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(SmsTemplatesAdminView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_SMS_TEMPLATES_ADMIN);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu
-                .setTitle(currentUI.getTranslation(AppConst.TITLE_SMS_TEMPLATES_ADMIN));
-            subMenu.setTargetClass(SmsTemplatesAdminView.class);
-            subMenu.setParentMenuEntry(notificationsSubMenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    notificationMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SMS_TEMPLATES_ADMIN),
+                    VaadinIcon.QUESTION.name(),
+                    SmsTemplatesAdminView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(SmsAdminView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_SMS_ADMIN);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_SMS));
-            subMenu.setTargetClass(SmsAdminView.class);
-            subMenu.setParentMenuEntry(notificationsSubMenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    notificationMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SMS),
+                    VaadinIcon.QUESTION.name(),
+                    SmsAdminView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(MailAdminView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_MAILS_ADMIN);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_MAILS));
-            subMenu.setTargetClass(MailAdminView.class);
-            subMenu.setParentMenuEntry(notificationsSubMenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    notificationMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_MAILS),
+                    VaadinIcon.QUESTION.name(),
+                    MailAdminView.class,
+                    null));
           }
         }
         /*
          * Security
          */
-        boolean isDisplaySecurity = hasSecurityMenuEntries() ||
-            SecurityUtils.isAccessGranted(SecurityKeycloakUsersView.class) ||
-            SecurityUtils.isAccessGranted(SecurityKeycloakRolesView.class) ||
-            SecurityUtils.isAccessGranted(SecurityKeycloakGroupsView.class);
+        boolean isDisplaySecurity =
+            hasSecurityMenuEntries()
+                || SecurityUtils.isAccessGranted(SecurityKeycloakUsersView.class)
+                || SecurityUtils.isAccessGranted(SecurityKeycloakRolesView.class)
+                || SecurityUtils.isAccessGranted(SecurityKeycloakGroupsView.class);
 
         if (isDisplaySecurity) {
-          var securitySubMenu = new MenuEntry(AppConst.PAGE_SECURITY);
-          securitySubMenu.setVaadinIcon(VaadinIcon.KEY);
-          securitySubMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_SECURITY));
-          securitySubMenu.setParentMenuEntry(settingsSubMenu);
-
-          menuData.addMenuEntry(securitySubMenu);
+          var securityMenuIdx = rootMenuIdx++;
+          var securityMenu =
+              new Menu(
+                  securityMenuIdx,
+                  settingsMenuIdx,
+                  currentUI.getTranslation(AppConst.TITLE_SECURITY),
+                  VaadinIcon.KEY.name(),
+                  null,
+                  null);
+          menuList.add(securityMenu);
 
           if (SecurityUtils.isAccessGranted(SecurityKeycloakUsersView.class)) {
-            var subMenu = getSecurityUserMenuEntry(securitySubMenu);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SECURITY_USERS),
+                    VaadinIcon.QUESTION.name(),
+                    SecurityKeycloakUsersView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(SecurityKeycloakRolesView.class)) {
-            var subMenu = getSecurityRoleMenuEntry(securitySubMenu);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SECURITY_ROLES),
+                    VaadinIcon.QUESTION.name(),
+                    SecurityKeycloakRolesView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(SecurityKeycloakGroupsView.class)) {
-            var subMenu = getSecurityGroupsMenuEntry(securitySubMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SECURITY_GROUPS),
+                    VaadinIcon.QUESTION.name(),
+                    SecurityKeycloakGroupsView.class,
+                    null));
+          }
 
-            menuData.addMenuEntry(subMenu);
+          if (SecurityUtils.isAccessGranted(ClientsView.class)) {
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_CLIENTS),
+                    VaadinIcon.QUESTION.name(),
+                    ClientsView.class,
+                    null));
           }
 
           if (SecurityUtils.isAccessGranted(SessionView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_SESSIONS);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(currentUI.getTranslation(AppConst.TITLE_SESSIONS_ADMIN));
-            subMenu.setTargetClass(SessionView.class);
-            subMenu.setParentMenuEntry(securitySubMenu);
-            subMenu.setHasChildNodes(false);
-
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_SESSIONS_ADMIN),
+                    VaadinIcon.QUESTION.name(),
+                    SessionView.class,
+                    null));
           }
           if (SecurityUtils.isAccessGranted(MonitoringAdminView.class)) {
-            var subMenu = new MenuEntry(AppConst.PAGE_ACTUAL_SESSIONS_ADMIN);
-            subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-            subMenu.setTitle(
-                currentUI.getTranslation(AppConst.TITLE_ACTUAL_SESSIONS_ADMIN));
-            subMenu.setTargetClass(MonitoringAdminView.class);
-            subMenu.setParentMenuEntry(securitySubMenu);
-            subMenu.setHasChildNodes(false);
-            menuData.addMenuEntry(subMenu);
+            menuList.add(
+                new Menu(
+                    rootMenuIdx++,
+                    securityMenuIdx,
+                    currentUI.getTranslation(AppConst.TITLE_ACTUAL_SESSIONS_ADMIN),
+                    VaadinIcon.QUESTION.name(),
+                    MonitoringAdminView.class,
+                    null));
           }
-          addToSecurityMenu(menuData, securitySubMenu);
+          addToSecurityMenu(menuList, rootMenuIdx, securityMenu);
         }
       }
     }
-    naviDrawer.refreshMenu();
+    Session.getAppMenu().setMenuList(menuList);
+
+    return rootMenuIdx;
   }
 
-  protected MenuEntry getSecurityUserMenuEntry(MenuEntry parentEntry) {
-    var subMenu = new MenuEntry(AppConst.PAGE_USERS);
-    subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-    subMenu.setTitle(UI.getCurrent().getTranslation(AppConst.TITLE_SECURITY_USERS));
-    subMenu.setTargetClass(SecurityKeycloakUsersView.class);
-    subMenu.setParentMenuEntry(parentEntry);
-    subMenu.setHasChildNodes(false);
-
-    return subMenu;
-  }
-
-  protected MenuEntry getSecurityRoleMenuEntry(MenuEntry parentEntry) {
-    var subMenu = new MenuEntry(AppConst.PAGE_ROLES);
-    subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-    subMenu.setTitle(UI.getCurrent().getTranslation(AppConst.TITLE_SECURITY_ROLES));
-    subMenu.setTargetClass(SecurityKeycloakRolesView.class);
-    subMenu.setParentMenuEntry(parentEntry);
-    subMenu.setHasChildNodes(false);
-
-    return subMenu;
-  }
-
-  protected MenuEntry getSecurityGroupsMenuEntry(MenuEntry parentEntry) {
-    var subMenu = new MenuEntry(AppConst.PAGE_GROUPS);
-    subMenu.setVaadinIcon(VaadinIcon.QUESTION);
-    subMenu.setTitle(UI.getCurrent().getTranslation(AppConst.TITLE_SECURITY_GROUPS));
-    subMenu.setTargetClass(SecurityKeycloakGroupsView.class);
-    subMenu.setParentMenuEntry(parentEntry);
-    subMenu.setHasChildNodes(false);
-
-    return subMenu;
-  }
-
-  /**
-   * Configure the app's inner and outer headers and footers.micrometer-core.version
-   */
+  /** Configure the app's inner and outer headers and footers.micrometer-core.version */
   protected void initHeadersAndFooters(boolean hasGlobalSearch, boolean hasGlobalNotification) {
-    //setAppHeaderOuter();
-    //setAppFooterOuter();
+    // setAppHeaderOuter();
+    // setAppFooterOuter();
 
     // setAppFooterInner();
 
-    appBar = new AppBar(appProperties, hasGlobalSearch, hasGlobalNotification);
-    //UIUtils.setTheme(Lumo.DARK, appBar);
-    setAppHeaderInner(appBar);
+    // UIUtils.setTheme(Lumo.DARK, appBar);
+    setAppHeaderInner(initHeader());
+  }
+
+  private Component initHeader() {
+    MenuBar menuBar = new MenuBar();
+    menuBar.getStyle().set("padding-bottom", "2px");
+    menuBar.setOpenOnHover(true);
+    menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+    Image icon = new Image(UIUtils.IMG_PATH + "logo-32x32.png", "");
+    icon.addClassName("header-icon");
+
+    Span appTitle = new Span(getTranslation("element.application.title"));
+    appTitle.addClassName("header-text");
+
+    MenuItem mainMenu = menuBar.addItem(appTitle);
+    mainMenu.addComponentAsFirst(icon);
+    mainMenu.addComponentAsFirst(new Icon(VaadinIcon.MENU));
+
+    buildMenu(0, mainMenu);
+
+    mainMenu.getSubMenu().add(new Hr());
+
+    var languageButton =
+        UIUtils.createButton(
+            getTranslation("action.settings.language"),
+            VaadinIcon.GLOBE,
+            ButtonVariant.LUMO_TERTIARY_INLINE);
+    var currentLocale = UI.getCurrent().getSession().getLocale();
+    var languageMenu = mainMenu.getSubMenu().addItem(languageButton);
+
+    List<MenuItem> menuItems = new ArrayList<>();
+    MyI18NProvider.getAvailableLanguagesInDB(getLocale())
+        .forEach(
+            locale -> {
+              MenuItem menu =
+                  languageMenu
+                      .getSubMenu()
+                      .addItem(
+                          UIUtils.createLabel(
+                              TextColor.PRIMARY, locale.getDisplayLanguage(getLocale())));
+              menu.setCheckable(true);
+              menu.setChecked(currentLocale.getLanguage().equals(locale.getLanguage()));
+              menu.addClickListener(
+                  event -> {
+                    setLanguage(locale);
+                    menuItems.forEach(
+                        menuItem -> {
+                          if (!menuItem.equals(menu)) {
+                            menuItem.setChecked(false);
+                          }
+                        });
+                  });
+              menuItems.add(menu);
+            });
+
+    var switchDarkThemeButton =
+        UIUtils.createButton(
+            getTranslation("action.global.darkTheme"),
+            VaadinIcon.CIRCLE_THIN,
+            ButtonVariant.LUMO_TERTIARY_INLINE);
+    if (VaadinSession.getCurrent().getAttribute(THEME_ATTRIBUTE) != null) {
+      switchDarkThemeButton.setIcon(VaadinIcon.CHECK_CIRCLE_O.create());
+    }
+
+    mainMenu
+        .getSubMenu()
+        .addItem(
+            switchDarkThemeButton,
+            event -> {
+              var themeList = UI.getCurrent().getElement().getThemeList();
+              if (VaadinSession.getCurrent().getAttribute(THEME_ATTRIBUTE) != null) {
+                themeList.remove(Lumo.DARK);
+                switchDarkThemeButton.setIcon(VaadinIcon.CIRCLE_THIN.create());
+                VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, null);
+              } else {
+                themeList.add(Lumo.DARK);
+                switchDarkThemeButton.setIcon(VaadinIcon.CHECK_CIRCLE_O.create());
+                VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, Lumo.DARK);
+              }
+            });
+
+    mainMenu.getSubMenu().add(new Hr());
+    if (SecurityUtils.isUserLoggedIn()) {
+      var avatar = new Image();
+      avatar.setClassName(CLASS_NAME + "__avatar");
+      avatar.setAlt("User menu");
+      avatar.setSrc(UIUtils.IMG_PATH + "icons8-question-mark-64.png");
+      avatar.setWidth("32px");
+      avatar.setHeight("32px");
+
+      StoredFile userAvatar = AppContext.getInstance().getCurrentAvatar();
+      if (userAvatar != null) {
+        avatar.setSrc(
+            new StreamResource(
+                userAvatar.getFilename(), () -> new ByteArrayInputStream(userAvatar.getContent())));
+      }
+
+      var settingsButton =
+          UIUtils.createButton(
+              AppContext.getInstance().getCurrentUsername(),
+              avatar,
+              ButtonVariant.LUMO_TERTIARY_INLINE);
+      mainMenu
+          .getSubMenu()
+          .addItem(
+              settingsButton,
+              event -> {
+                if (JHapyMainView3.get().getUserSettingsView() != null) {
+                  getUI().ifPresent(ui -> ui.navigate(JHapyMainView3.get().getUserSettingsView()));
+                }
+              });
+
+      var exitButton =
+          UIUtils.createButton(
+              getTranslation("action.global.logout"),
+              VaadinIcon.EXIT,
+              ButtonVariant.LUMO_TERTIARY_INLINE);
+      mainMenu.getSubMenu().addItem(new Anchor("logout", exitButton));
+    } else {
+      var loginButton =
+          UIUtils.createButton(
+              getTranslation("action.global.login"),
+              VaadinIcon.USER,
+              ButtonVariant.LUMO_TERTIARY_INLINE);
+      mainMenu
+          .getSubMenu()
+          .addItem(
+              new Anchor(
+                  appProperties.getAuthorization().getLoginRootUrl()
+                      + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+                      + "/"
+                      + appProperties.getSecurity().getRealm(),
+                  loginButton));
+    }
+
+    header.removeAll();
+    header.addClassName("header");
+    header.add(menuBar);
+    UIUtils.setTheme(Lumo.DARK, header);
+    return header;
+  }
+
+  private void setLanguage(Locale language) {
+    UI.getCurrent().getSession().setLocale(language);
+    var languageCookie = new Cookie("PreferredLanguage", language.getLanguage());
+    languageCookie.setMaxAge(31449600);
+    languageCookie.setPath("/");
+    languageCookie.setSecure(true);
+    VaadinService.getCurrentResponse().addCookie(languageCookie);
+
+    UI.getCurrent().getPage().reload();
+  }
+
+  private void buildMenu(long parentMenuIdx, MenuItem parentMenu) {
+    Session.getAppMenu().getMenuList().stream()
+        .filter(menu -> menu.getParentId() == parentMenuIdx)
+        .forEach(
+            menu -> {
+              var menuButtonItem =
+                  UIUtils.createButton(
+                      menu.getMenuName(),
+                      VaadinIcon.valueOf(menu.getIconName()),
+                      ButtonVariant.LUMO_TERTIARY_INLINE);
+
+              MenuItem menuItem = parentMenu.getSubMenu().addItem(menuButtonItem);
+
+              if (menu.getBrowser() != null)
+                menuItem.addClickListener(
+                    event -> {
+                      ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+                      views.add(viewMenu);
+                      ModuleTab lastTab = null;
+                      for (ModuleTab moduleTab : tabList) {
+                        if (moduleTab.isLastTab()) {
+                          lastTab = moduleTab;
+                          break;
+                        }
+                      }
+                      displayView(
+                          menu.getBrowser(),
+                          menu.getMenuName(),
+                          menu.getParentId(),
+                          viewMenu,
+                          lastTab);
+                    });
+              buildMenu(menu.getId(), menuItem);
+            });
+  }
+
+  private void initTabs() {
+    ModuleTab newTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
+    newTab.addCloseButtonClickListener(() -> closeTab(newTab));
+    tabList.add(newTab);
+    tabs.setHeightFull();
+    tabs.add(newTab);
+    tabs.add(newTabButton);
+
+    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+    viewMenu.setSizeFull();
+    viewMenu.addModuleSelectedListener(
+        (className, menuName, menuParentId, currentViewMenu) ->
+            displayView(className, menuName, menuParentId, viewMenu, newTab));
+    viewMenu.addCaptionChangedListener(newTab::setCaption);
+    views.add(viewMenu);
+
+    viewContainer.getChildren().forEach(e -> e.setVisible(false));
+    viewContainer.add(viewMenu);
+
+    tabs.addClassName("tab-container");
+
+    tabs.addSelectedChangeListener(
+        listener -> {
+          if (views.size() < 1) return;
+          if (listener.getSource().getSelectedIndex() < 0) return;
+          if (listener.getSource().getSelectedIndex() >= views.size()) return;
+
+          View view = views.get(listener.getSource().getSelectedIndex());
+
+          viewContainer.getChildren().forEach(e -> e.setVisible(false));
+
+          if (views.contains(view)) {
+            view.setVisible(true);
+
+          } else {
+            view.add(view);
+            viewContainer.add(view);
+          }
+        });
+
+    newTabButton.addClickListener(listener -> addNewTab());
+    header.add(tabs);
+  }
+
+  private void closeTab(ModuleTab tab) {
+
+    View browser = views.get(tabs.indexOf(tab));
+    viewContainer.remove(browser);
+    views.remove(browser);
+
+    tabs.remove(newTabButton);
+    tabs.remove(tab);
+    tabList.remove(tab);
+
+    if (tabList.size() < 1) {
+      addNewTab();
+    } else {
+      tabs.setSelectedTab(tabList.get(tabList.size() - 1));
+
+      View view = views.get(tabList.size() - 1);
+
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+
+      if (views.contains(view)) {
+        view.setVisible(true);
+
+      } else {
+        view.add(view);
+        viewContainer.add(view);
+      }
+    }
+
+    tabs.add(newTabButton);
+  }
+
+  private void addNewTab() {
+
+    tabs.remove(newTabButton);
+
+    for (ModuleTab tab : tabList) {
+      tab.setLastTab(false);
+    }
+
+    ModuleTab lastTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
+    lastTab.addCloseButtonClickListener(() -> closeTab(lastTab));
+    tabList.add(lastTab);
+    tabs.add(lastTab);
+    tabs.add(newTabButton);
+    tabs.setSelectedTab(lastTab);
+
+    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+    viewMenu.setSizeFull();
+    viewMenu.addModuleSelectedListener(
+        (className, menuName, menuParentId, currentViewMenu) ->
+            displayView(className, menuName, menuParentId, viewMenu, lastTab));
+    viewMenu.addCaptionChangedListener(lastTab::setCaption);
+    views.add(viewMenu);
+
+    viewContainer.getChildren().forEach(e -> e.setVisible(false));
+    viewContainer.add(viewMenu);
+  }
+
+  public boolean displayView(View view) {
+    String loggerPrefix = getLoggerPrefix("displayView");
+    try {
+      ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
+      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, "xxx"));
+      view.setMenuBackListener(
+          () -> {
+            viewContainer.remove(view);
+            ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+            viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
+            viewMenu.getBreadcrumb().pull();
+            viewMenu.addModuleSelectedListener(
+                (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                    displayView(
+                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+            viewMenu.addCaptionChangedListener(currentTab::setCaption);
+            viewContainer.getChildren().forEach(e -> e.setVisible(false));
+            views.set(views.indexOf(view), viewMenu);
+            viewContainer.add(viewMenu);
+
+            Menu parentMenu = null;
+
+            for (Menu menu : getMenuList()) {
+              if (menu.getId() == 0) {
+                parentMenu = menu;
+              }
+            }
+
+            if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+          });
+
+      var currentMenu = views.get(0);
+      viewContainer.remove(currentMenu);
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+      views.set(views.indexOf(currentMenu), view);
+      viewContainer.add(view);
+      // currentTab.setCaption(menuName);
+      return true;
+    } catch (Exception ex) {
+      String error = ex.toString();
+      if (error.contains("java.lang.ClassNotFoundException")) {
+        error = "Module not yet available.";
+        error(loggerPrefix, ex, "Module not yet available.");
+        ErrorManager.showError(ex, error);
+      } else {
+        error = "Failed to load module " + "menuName" + ": \n" + ex;
+        error(loggerPrefix, ex, "Failed to load module {0}", "menuName");
+        // Dialogs.notifyError("MenuView", 0, error);
+        ErrorManager.showError(ex, error);
+      }
+
+      return false;
+    }
+  }
+
+  public boolean displayView(
+      View parentView, Object parentParams, Class<? extends View> newView, Object newViewParams) {
+    String loggerPrefix = getLoggerPrefix("displayView");
+
+    debug(
+        loggerPrefix,
+        "New View : {0} with parameter(s) {1}, Parent View : {2} with parameter(s) : {3}",
+        newView.getSimpleName(),
+        newViewParams == null ? "None" : newViewParams,
+        parentView.getClass().getSimpleName(),
+        parentParams == null ? "None" : parentParams);
+    try {
+      if (newView == null) {
+        Dialogs.notifyError("Module not yet available.");
+        return false;
+      }
+
+      View view = newViewInstance(newView);
+      view.getBreadcrumb().setBreadcrumbs(parentView.getBreadcrumb().getBreadcrumbs());
+      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
+
+      if (newViewParams != null) {
+        debug(loggerPrefix, "New View has parameter, set them");
+        view.setParameter(newViewParams);
+      }
+      final ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
+      view.setGoBackListener(
+          () -> {
+            if (parentView.getNavigationRootClass() != null
+                && parentView.getNavigationRootClass().equals(newView)) {
+
+              long parentId = -1;
+              for (Menu menu1 : getMenuList()) {
+                if (menu1.getBrowser() != null
+                    && menu1.getBrowser().equals(parentView.getNavigationRootClass())) {
+                  parentId = menu1.getParentId();
+                  break;
+                }
+              }
+              viewContainer.remove(view);
+              ViewMenu viewMenu = new ViewMenu(getMenuList(), parentId, getTopMenuItemList());
+              viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
+              viewMenu.getBreadcrumb().pull();
+              viewMenu.addModuleSelectedListener(
+                  (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                      displayView(
+                          className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+              viewMenu.addCaptionChangedListener(currentTab::setCaption);
+              viewContainer.getChildren().forEach(e -> e.setVisible(false));
+              views.set(views.indexOf(view), viewMenu);
+              viewContainer.add(viewMenu);
+
+              Menu parentMenu = null;
+
+              for (Menu menu : getMenuList()) {
+                if (menu.getId() == parentId) {
+                  parentMenu = menu;
+                }
+              }
+
+              if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+            } else {
+              if (view.getParents().containsKey(view.getClass())) {
+                View.ViewParent viewParent = view.getParents().get(view.getClass());
+                view.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
+                view.getBreadcrumb().pull();
+                view.getBreadcrumb().pull();
+                displayView(
+                    view,
+                    newViewParams,
+                    viewParent.getParentClass(),
+                    viewParent.getParentParameters());
+              } else {
+                // Seems to be never use...
+                displayView(view, newViewParams, parentView.getClass(), parentParams);
+              }
+            }
+          });
+      var parentMap = parentView.getParents();
+      if (!parentMap.containsKey(newView)) {
+        View.ViewParent viewParent = new View.ViewParent();
+        viewParent.setParentParameters(parentParams);
+        viewParent.setParentClass(parentView.getClass());
+        debug(
+            loggerPrefix,
+            "Set parent {0} for {1}",
+            parentView.getClass().getSimpleName(),
+            newView.getSimpleName());
+        parentView.putParent(newView, viewParent);
+      }
+      view.setParents(parentView.getParents());
+      if (parentView.getNavigationRootClass() != null)
+        view.setNavigationRootClass(parentView.getNavigationRootClass());
+      if (parentView.getMenuBackListener() != null)
+        view.setMenuBackListener(parentView.getMenuBackListener());
+
+      viewContainer.remove(parentView);
+
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+      if (views.contains(parentView)) views.set(views.indexOf(parentView), view);
+      viewContainer.add(view);
+
+      currentTab.setCaption(view.getTitle());
+      return true;
+    } catch (Exception ex) {
+      String error = ex.toString();
+      if (error.contains("java.lang.ClassNotFoundException")
+          || error.contains("java.lang.NoSuchMethodException")) {
+        error = "Module not yet available.";
+        error(loggerPrefix, ex, "Module not yet available.");
+        Dialogs.notifyWarning(error);
+        // ErrorManager.showError(ex, error);
+      } else {
+        error = "Failed to load module " + newView.getSimpleName() + ": \n" + ex;
+        error(loggerPrefix, ex, "Failed to load module {0}", newView.getSimpleName());
+        Dialogs.notifyError("MenuView", 0, error);
+        // ErrorManager.showError(ex, error);
+      }
+
+      return false;
+    }
+  }
+
+  private View newViewInstance(Class<? extends View> newView)
+      throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+          IllegalAccessException {
+    var constructors = newView.getDeclaredConstructors();
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.getParameterCount() == 1
+          && constructor.getParameterTypes()[0].equals(MyI18NProvider.class)) {
+        return newView.getDeclaredConstructor(MyI18NProvider.class).newInstance(myI18NProvider);
+      }
+    }
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.getParameterCount() == 0) {
+        return newView.getDeclaredConstructor().newInstance();
+      }
+    }
+    throw new NoSuchMethodException("No valid constructor found");
+  }
+
+  public boolean displayView(
+      Class<? extends View> viewClass,
+      String menuName,
+      long menuParentId,
+      View currentMenu,
+      ModuleTab currentTab) {
+    String loggerPrefix = getLoggerPrefix("displayView");
+    try {
+      if (viewClass == null) {
+        error(loggerPrefix, "Module is not set (viewClass)");
+        Dialogs.notifyError("Module not yet available.");
+        return false;
+      }
+
+      View view = newViewInstance(viewClass);
+      view.setNavigationRootClass(viewClass);
+      view.getBreadcrumb().setBreadcrumbs(currentMenu.getBreadcrumb().getBreadcrumbs());
+      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
+      String route = null;
+      for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
+        if (routeData.getNavigationTarget().equals(viewClass)) route = routeData.getTemplate();
+      }
+      if (route != null) UI.getCurrent().getPage().getHistory().pushState(null, route);
+      view.setMenuBackListener(
+          () -> {
+            viewContainer.remove(view);
+            ViewMenu viewMenu = new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList());
+            viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
+            viewMenu.getBreadcrumb().pull();
+            viewMenu.addModuleSelectedListener(
+                (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                    displayView(
+                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+            viewMenu.addCaptionChangedListener(currentTab::setCaption);
+            viewContainer.getChildren().forEach(e -> e.setVisible(false));
+            views.set(views.indexOf(view), viewMenu);
+            viewContainer.add(viewMenu);
+
+            Menu parentMenu = null;
+
+            for (Menu menu : getMenuList()) {
+              if (menu.getId() == menuParentId) {
+                parentMenu = menu;
+              }
+            }
+
+            if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+          });
+
+      viewContainer.remove(currentMenu);
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+      views.set(views.indexOf(currentMenu), view);
+      viewContainer.add(view);
+      currentTab.setCaption(menuName);
+
+      return true;
+    } catch (Exception ex) {
+      String error = ex.toString();
+      if (error.contains("java.lang.ClassNotFoundException")) {
+        error = "Module not yet available.";
+        error(loggerPrefix, ex, "Module not yet available.");
+        ErrorManager.showError(ex, error);
+      } else {
+        error = "Failed to load module " + menuName + ": \n" + ex;
+        error(loggerPrefix, ex, "Failed to load module {0}", menuName);
+        // Dialogs.notifyError("MenuView", 0, error);
+        ErrorManager.showError(ex, error);
+      }
+
+      return false;
+    }
+  }
+
+  public List<Menu> getMenuList() {
+    return menuList;
+  }
+
+  public void setMenuList(List<Menu> menuList) {
+    this.menuList = menuList;
+  }
+
+  public List<TopMenuItem> getTopMenuItemList() {
+    return topMenuItemList;
   }
 
   protected void setAppHeaderOuter(Component... components) {
@@ -652,7 +1262,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     if (appHeaderInner == null) {
       appHeaderInner = new Div();
       appHeaderInner.addClassName("app-header-inner");
-      column.getElement().insertChild(0, appHeaderInner.getElement());
+      content.getElement().insertChild(0, appHeaderInner.getElement());
     }
     appHeaderInner.removeAll();
     appHeaderInner.add(components);
@@ -662,8 +1272,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     if (appFooterInner == null) {
       appFooterInner = new Div();
       appFooterInner.addClassName("app-footer-inner");
-      column.getElement().insertChild(column.getElement().getChildCount(),
-          appFooterInner.getElement());
+      content
+          .getElement()
+          .insertChild(content.getElement().getChildCount(), appFooterInner.getElement());
     }
     appFooterInner.removeAll();
     appFooterInner.add(components);
@@ -675,8 +1286,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     if (appFooterOuter == null) {
       appFooterOuter = new Div();
       appFooterOuter.addClassName("app-footer-outer");
-      getElement().insertChild(getElement().getChildCount(),
-          appFooterOuter.getElement());
+      getElement().insertChild(getElement().getChildCount(), appFooterOuter.getElement());
     }
     appFooterOuter.removeAll();
     appFooterOuter.add(components);
@@ -690,17 +1300,17 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     settings.addFavIcon("icon", "icons/icon-192x192.png", "192x192");
   }
 
-  public NaviDrawerWithTreeMenu getNaviDrawer() {
-    return naviDrawer;
-  }
-
   public void displayInfoMessage(String title, String message) {
     var icon = UIUtils.createIcon(IconSize.S, TextColor.PRIMARY, VaadinIcon.INFO);
-    MessageDialog okDialog = new MessageDialog()
-        .setTitle(title, icon)
-        .setMessage(message);
-    okDialog.addButton().text(getTranslation("action.global.close")).primary()
-        .closeOnClick().clickShortcutEnter().clickShortcutEscape().closeOnClick();
+    MessageDialog okDialog = new MessageDialog().setTitle(title, icon).setMessage(message);
+    okDialog
+        .addButton()
+        .text(getTranslation("action.global.close"))
+        .primary()
+        .closeOnClick()
+        .clickShortcutEnter()
+        .clickShortcutEscape()
+        .closeOnClick();
     okDialog.open();
   }
 
@@ -714,10 +1324,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     messageLayout.setAlignItems(Alignment.CENTER);
 
     // Add spacing and padding
-    messageLayout.addClassNames(
-        LumoStyles.Spacing.Right.S,
-        LumoStyles.Padding.Wide.M
-    );
+    messageLayout.addClassNames(LumoStyles.Spacing.Right.S, LumoStyles.Padding.Wide.M);
 
     var notification = new Notification(messageLayout);
     notification.setDuration(3000);
@@ -727,30 +1334,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     UIUtils.setShadow(Shadow.M, notification);
 
     notification.open();
-
-    // getAppBar().addNotification(new DefaultNotification(getTranslation("message.global.info"), message, Priority.MEDIUM));
-    /*
-    Icon icon = UIUtils.createIcon(IconSize.S, TextColor.SUCCESS, VaadinIcon.CHECK);
-    Label label = UIUtils.createLabel(FontSize.XS, TextColor.BODY, message);
-
-    FlexLayout footer = new FlexLayout(icon, label);
-
-    // Set the alignment
-    footer.setAlignItems(Alignment.CENTER);
-
-    // Add spacing and padding
-    footer.addClassNames(
-        LumoStyles.Spacing.Right.S,
-        LumoStyles.Padding.Wide.M
-    );
-
-    // Set background color and shadow
-    UIUtils.setBackgroundColor(LumoStyles.Color.BASE_COLOR, footer);
-    UIUtils.setShadow(Shadow.M, footer);
-
-    setAppFooterInner(footer);
-
-     */
   }
 
   public void displayErrorMessage(Throwable t) {
@@ -759,11 +1342,15 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
   public void displayErrorMessage(String title, String message) {
     var icon = UIUtils.createIcon(IconSize.S, TextColor.ERROR, VaadinIcon.WARNING);
-    MessageDialog okDialog = new MessageDialog()
-        .setTitle(title, icon)
-        .setMessage(message);
-    okDialog.addButton().text(getTranslation("action.global.close")).primary()
-        .closeOnClick().clickShortcutEnter().clickShortcutEscape().closeOnClick();
+    MessageDialog okDialog = new MessageDialog().setTitle(title, icon).setMessage(message);
+    okDialog
+        .addButton()
+        .text(getTranslation("action.global.close"))
+        .primary()
+        .closeOnClick()
+        .clickShortcutEnter()
+        .clickShortcutEscape()
+        .closeOnClick();
     okDialog.open();
   }
 
@@ -777,31 +1364,43 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     if (current != null) {
       current.displayErrorMessage(errorResult);
     } else {
-      HasLoggerStatic.error(JHapyMainView3.class, loggerPrefix,
+      HasLoggerStatic.error(
+          JHapyMainView3.class,
+          loggerPrefix,
           "MainView is null, cannot display message : " + errorResult.getMessage());
     }
   }
 
   public void displayErrorMessage(ServiceResult errorResult) {
-    displayErrorMessage(errorResult.getMessageTitle(), errorResult.getMessage(),
-        errorResult.getExceptionString());
+    displayErrorMessage(
+        errorResult.getMessageTitle(), errorResult.getMessage(), errorResult.getExceptionString());
   }
 
   public void displayErrorMessage(String title, String message, String stacktrace) {
     var icon = UIUtils.createIcon(IconSize.S, TextColor.ERROR, VaadinIcon.WARNING);
-    MessageDialog okDialog = new MessageDialog()
-        .setTitle(StringUtils.isNotBlank(title) ? title : getTranslation("message.global.error"),
-            icon)
-        .setMessage(message);
-    okDialog.addButton().text(getTranslation("action.global.close")).primary()
-        .closeOnClick().clickShortcutEnter().clickShortcutEscape().closeOnClick();
+    MessageDialog okDialog =
+        new MessageDialog()
+            .setTitle(
+                StringUtils.isNotBlank(title) ? title : getTranslation("message.global.error"),
+                icon)
+            .setMessage(message);
+    okDialog
+        .addButton()
+        .text(getTranslation("action.global.close"))
+        .primary()
+        .closeOnClick()
+        .clickShortcutEnter()
+        .clickShortcutEscape()
+        .closeOnClick();
     if (!isProductionMode() && StringUtils.isNotBlank(stacktrace)) {
       var detailsText = new TextArea();
       detailsText.setWidthFull();
       detailsText.setMaxHeight("15em");
       detailsText.setReadOnly(true);
       detailsText.setValue(stacktrace);
-      okDialog.addButtonToLeft().text(getTranslation("action.global.showErrorDetails"))
+      okDialog
+          .addButtonToLeft()
+          .text(getTranslation("action.global.showErrorDetails"))
           .icon(VaadinIcon.ARROW_DOWN)
           .toggleDetails();
       okDialog.getDetails().add(detailsText);
@@ -811,68 +1410,43 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
   public void displayErrorMessage(String message) {
     var icon = UIUtils.createIcon(IconSize.S, TextColor.ERROR, VaadinIcon.WARNING);
-    MessageDialog okDialog = new MessageDialog()
-        .setTitle(getTranslation("message.global.error"), icon)
-        .setMessage(message);
-    okDialog.addButton().text(getTranslation("action.global.close")).primary()
-        .closeOnClick().clickShortcutEnter().clickShortcutEscape().closeOnClick();
+    MessageDialog okDialog =
+        new MessageDialog()
+            .setTitle(getTranslation("message.global.error"), icon)
+            .setMessage(message);
+    okDialog
+        .addButton()
+        .text(getTranslation("action.global.close"))
+        .primary()
+        .closeOnClick()
+        .clickShortcutEnter()
+        .clickShortcutEscape()
+        .closeOnClick();
 
     okDialog.open();
-    /*
-    Label label = UIUtils.createLabel(FontSize.XS, TextColor.ERROR, message);
-
-    FlexLayout messageLayout = new FlexLayout(icon, label);
-
-    // Set the alignment
-    messageLayout.setAlignItems(Alignment.CENTER);
-
-    // Add spacing and padding
-    messageLayout.addClassNames(
-        LumoStyles.Spacing.Right.S,
-        LumoStyles.Padding.Wide.M
-    );
-
-    Notification notification = new Notification( messageLayout );
-    notification.setDuration(0);
-    notification.setPosition(Position.TOP_CENTER);
-
-
-    Button closeButton = UIUtils.createSmallButton(getTranslation("action.global.close"));
-    closeButton.addThemeVariants( ButtonVariant.LUMO_ERROR);
-    closeButton.addClickListener(event -> notification.close());
-    FlexLayout footer = new FlexLayout(closeButton);
-    footer.setJustifyContentMode(JustifyContentMode.CENTER);
-    footer.setWidthFull();
-
-    notification.add(footer);
-
-    UIUtils.setBackgroundColor(LumoStyles.Color.BASE_COLOR, notification);
-    UIUtils.setShadow(Shadow.M, notification);
-
-    notification.open();
-     */
   }
 
+  public void displayWarningMessage(String message) {
+    var icon = UIUtils.createIcon(IconSize.S, TextColor.ERROR, VaadinIcon.EXCLAMATION_CIRCLE);
+    MessageDialog okDialog =
+        new MessageDialog()
+            .setTitle(getTranslation("message.global.warning"), icon)
+            .setMessage(message);
+    okDialog
+        .addButton()
+        .text(getTranslation("action.global.close"))
+        .primary()
+        .closeOnClick()
+        .clickShortcutEnter()
+        .clickShortcutEscape()
+        .closeOnClick();
 
-  @Override
-  public void afterNavigation(AfterNavigationEvent event) {
-    MenuEntry active = getActiveItem(event);
-    if (active != null && StringUtils.isBlank(appBar.getTitle())) {
-      appBar.setTitle(active.getTitle());
-    }
-  }
-
-  private MenuEntry getActiveItem(AfterNavigationEvent e) {
-    for (MenuEntry item : naviDrawer.getMenuComponent().getSelectedItems()) {
-      return item;
-    }
-    return null;
+    okDialog.open();
   }
 
   public abstract void onLogout();
 
-  public void beforeLogin() {
-  }
+  public void beforeLogin() {}
 
   private static class FeederThread extends Thread {
 
@@ -895,14 +1469,18 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         Thread.sleep(delay);
 
         // Inform that we are done
-        ui.access(() -> appFooterInner.getChildren().forEach(component -> {
-              for (Component c : components) {
-                if (c.equals(component)) {
-                  appFooterInner.remove(component);
-                }
-              }
-            }
-        ));
+        ui.access(
+            () ->
+                appFooterInner
+                    .getChildren()
+                    .forEach(
+                        component -> {
+                          for (Component c : components) {
+                            if (c.equals(component)) {
+                              appFooterInner.remove(component);
+                            }
+                          }
+                        }));
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

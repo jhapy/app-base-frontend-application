@@ -19,8 +19,9 @@
 package org.jhapy.frontend.utils.css;
 
 public enum FlexWrap {
-
-  NO_WRAP("nowrap"), WRAP("wrap"), WRAP_REVERSE("wrap-reverse");
+  NO_WRAP("nowrap"),
+  WRAP("wrap"),
+  WRAP_REVERSE("wrap-reverse");
 
   private final String value;
 

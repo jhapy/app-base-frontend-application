@@ -27,7 +27,6 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
-import java.util.List;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.keycloak.MemoryInfo;
 import org.jhapy.dto.keycloak.SystemInfo;
@@ -48,6 +47,8 @@ import org.jhapy.frontend.utils.LumoStyles;
 import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.lumo.BadgeColor;
 
+import java.util.List;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -63,16 +64,19 @@ public class HomeTabContent extends ActuatorBaseView {
   protected EurekaInfo eurekaInfo;
   private List<String> replicas;
 
-  public HomeTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public HomeTabContent(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX, authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
     this.eurekaInfo = eurekaInfo;
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(false, eurekaInfo.getApplicationList(), this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(false, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -86,10 +90,10 @@ public class HomeTabContent extends ActuatorBaseView {
     getDetails(null, null);
   }
 
-  protected void getDetails(EurekaApplication eurekaApplication,
-      EurekaApplicationInstance eurekaApplicationInstance) {
-    ServiceResult<List<String>> replicasResult = RegistryServices.getEurekaService()
-        .replicas(new BaseRemoteQuery());
+  protected void getDetails(
+      EurekaApplication eurekaApplication, EurekaApplicationInstance eurekaApplicationInstance) {
+    ServiceResult<List<String>> replicasResult =
+        RegistryServices.getEurekaService().replicas(new BaseRemoteQuery());
     if (replicasResult.getIsSuccess() && replicasResult.getData() != null) {
       replicas = replicasResult.getData();
     }
@@ -125,48 +129,46 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
     content.setWidthFull();
 
-    Label header = UIUtils
-        .createH3Label(getTranslation("element." + I18N_PREFIX + "eurekaInfo"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    Label header = UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "eurekaInfo"));
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
     items.addClassNames(BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L);
 
-    ListItem environmentItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.environment"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getEnvironment())
-    );
+    ListItem environmentItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.environment"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getEnvironment()));
     environmentItem.setDividerVisible(true);
     items.add(environmentItem);
 
-    ListItem datacenterItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.datacenter"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getDatacenter())
-    );
+    ListItem datacenterItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.datacenter"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getDatacenter()));
     datacenterItem.setDividerVisible(true);
     items.add(datacenterItem);
 
-    ListItem currentTimeItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.currentTime"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getCurrentTime())
-    );
+    ListItem currentTimeItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.currentTime"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getCurrentTime()));
     currentTimeItem.setDividerVisible(true);
     items.add(currentTimeItem);
 
-    ListItem systemUpTimeItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.systemUpTime"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getUpTime())
-    );
+    ListItem systemUpTimeItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.systemUpTime"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getUpTime()));
     systemUpTimeItem.setDividerVisible(true);
     items.add(systemUpTimeItem);
 
-    ListItem belowRenewThreshold = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.belowRenewThreshold"),
-        UIUtils
-            .createH5Label(Boolean.toString(eurekaInfo.getStatus().getIsBelowRenewThreshold()))
-    );
+    ListItem belowRenewThreshold =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.belowRenewThreshold"),
+            UIUtils.createH5Label(
+                Boolean.toString(eurekaInfo.getStatus().getIsBelowRenewThreshold())));
     belowRenewThreshold.setDividerVisible(false);
     items.add(belowRenewThreshold);
 
@@ -180,51 +182,51 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
     content.setWidthFull();
 
-    Label header = UIUtils
-        .createH3Label(getTranslation("element." + I18N_PREFIX + "generalInfo"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    Label header = UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "generalInfo"));
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
     items.addClassNames(BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L);
 
-    ListItem instanceInfoStatusItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.instanceInfoStatus"),
-        new Badge(eurekaInfo.getStatus().getInstanceInfoStatus(),
-            eurekaInfo.getStatus().getInstanceInfoStatus().equalsIgnoreCase("UP")
-                ? BadgeColor.SUCCESS : BadgeColor.ERROR)
-    );
+    ListItem instanceInfoStatusItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.instanceInfoStatus"),
+            new Badge(
+                eurekaInfo.getStatus().getInstanceInfoStatus(),
+                eurekaInfo.getStatus().getInstanceInfoStatus().equalsIgnoreCase("UP")
+                    ? BadgeColor.SUCCESS
+                    : BadgeColor.ERROR));
     instanceInfoStatusItem.setDividerVisible(true);
     items.add(instanceInfoStatusItem);
 
-    ListItem instanceInfoIpAddrItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.instanceInfoIpAddr"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getInstanceInfoIpAddr())
-    );
+    ListItem instanceInfoIpAddrItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.instanceInfoIpAddr"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getInstanceInfoIpAddr()));
     instanceInfoIpAddrItem.setDividerVisible(true);
     items.add(instanceInfoIpAddrItem);
 
-    ListItem numOfCpusItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.num-of-cpus"),
-        UIUtils.createH5Label(eurekaInfo.getStatus().getGeneralStats().get("num-of-cpus"))
-    );
+    ListItem numOfCpusItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.num-of-cpus"),
+            UIUtils.createH5Label(eurekaInfo.getStatus().getGeneralStats().get("num-of-cpus")));
     numOfCpusItem.setDividerVisible(true);
     items.add(numOfCpusItem);
 
-    ListItem totalAvailMemoryItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.total-avail-memory"),
-        UIUtils
-            .createH5Label(eurekaInfo.getStatus().getGeneralStats().get("total-avail-memory"))
-    );
+    ListItem totalAvailMemoryItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.total-avail-memory"),
+            UIUtils.createH5Label(
+                eurekaInfo.getStatus().getGeneralStats().get("total-avail-memory")));
     totalAvailMemoryItem.setDividerVisible(true);
     items.add(totalAvailMemoryItem);
 
-    ListItem currentMemoryUsageItem = new ListItem(
-        getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.current-memory-usage"),
-        UIUtils
-            .createH5Label(eurekaInfo.getStatus().getGeneralStats().get("current-memory-usage"))
-    );
+    ListItem currentMemoryUsageItem =
+        new ListItem(
+            getTranslation("element." + I18N_PREFIX + "eurekaInfo.status.current-memory-usage"),
+            UIUtils.createH5Label(
+                eurekaInfo.getStatus().getGeneralStats().get("current-memory-usage")));
     currentMemoryUsageItem.setDividerVisible(false);
     items.add(currentMemoryUsageItem);
 
@@ -247,10 +249,8 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
 
-    Label header = UIUtils
-        .createH3Label(getTranslation("element." + I18N_PREFIX + "instances"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    Label header = UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "instances"));
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
@@ -258,18 +258,17 @@ public class HomeTabContent extends ActuatorBaseView {
 
     int idx = 0;
     for (EurekaApplication eurekaApplication : eurekaInfo.getApplicationList()) {
-      for (EurekaApplicationInstance eurekaApplicationInstance : eurekaApplication
-          .getInstances()) {
-        ListItem instanceInfoStatusItem = new ListItem(
-            eurekaApplication.getName(),
-            eurekaApplicationInstance.getInstanceId(),
-            new Badge(eurekaApplicationInstance.getStatus(),
-                eurekaApplicationInstance.getStatus().equalsIgnoreCase("UP")
-                    ? BadgeColor.SUCCESS
-                    : BadgeColor.ERROR)
-        );
-        instanceInfoStatusItem
-            .setDividerVisible(++idx < eurekaInfo.getApplicationList().size());
+      for (EurekaApplicationInstance eurekaApplicationInstance : eurekaApplication.getInstances()) {
+        ListItem instanceInfoStatusItem =
+            new ListItem(
+                eurekaApplication.getName(),
+                eurekaApplicationInstance.getInstanceId(),
+                new Badge(
+                    eurekaApplicationInstance.getStatus(),
+                    eurekaApplicationInstance.getStatus().equalsIgnoreCase("UP")
+                        ? BadgeColor.SUCCESS
+                        : BadgeColor.ERROR));
+        instanceInfoStatusItem.setDividerVisible(++idx < eurekaInfo.getApplicationList().size());
         items.add(instanceInfoStatusItem);
       }
     }
@@ -285,8 +284,7 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
 
     Label header = UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "replicas"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
@@ -294,9 +292,7 @@ public class HomeTabContent extends ActuatorBaseView {
 
     int idx = 0;
     for (String replica : replicas) {
-      ListItem replicaItem = new ListItem(
-          replica
-      );
+      ListItem replicaItem = new ListItem(replica);
       replicaItem.setDividerVisible(++idx < replicas.size());
       items.add(replicaItem);
     }
@@ -319,37 +315,36 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
 
-    Label header = UIUtils
-        .createH3Label(getTranslation("element." + I18N_PREFIX + "keycloakServerInfo"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    Label header =
+        UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "keycloakServerInfo"));
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
     items.addClassNames(BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L);
 
-    ServiceResult<SystemInfo> systemInfoServiceResult = SecurityServices.getKeycloakClient()
-        .getServerSystemInfo();
+    ServiceResult<SystemInfo> systemInfoServiceResult =
+        SecurityServices.getKeycloakClient().getServerSystemInfo();
     if (systemInfoServiceResult.getIsSuccess() && systemInfoServiceResult.getData() != null) {
       SystemInfo systemInfo = systemInfoServiceResult.getData();
-      ListItem versionItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.version"),
-          UIUtils.createH5Label(systemInfo.getVersion())
-      );
+      ListItem versionItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.version"),
+              UIUtils.createH5Label(systemInfo.getVersion()));
       versionItem.setDividerVisible(true);
       items.add(versionItem);
 
-      ListItem serverTimeItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.serverTime"),
-          UIUtils.createH5Label(systemInfo.getServerTime())
-      );
+      ListItem serverTimeItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.serverTime"),
+              UIUtils.createH5Label(systemInfo.getServerTime()));
       serverTimeItem.setDividerVisible(true);
       items.add(serverTimeItem);
 
-      ListItem upTimeItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.upTime"),
-          UIUtils.createH5Label(systemInfo.getUptime())
-      );
+      ListItem upTimeItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.upTime"),
+              UIUtils.createH5Label(systemInfo.getUptime()));
       upTimeItem.setDividerVisible(false);
       items.add(upTimeItem);
     }
@@ -364,37 +359,36 @@ public class HomeTabContent extends ActuatorBaseView {
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setMargin(Horizontal.AUTO, Vertical.RESPONSIVE_L);
 
-    Label header = UIUtils
-        .createH3Label(getTranslation("element." + I18N_PREFIX + "keycloakMemoryInfo"));
-    header
-        .addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
+    Label header =
+        UIUtils.createH3Label(getTranslation("element." + I18N_PREFIX + "keycloakMemoryInfo"));
+    header.addClassNames(LumoStyles.Margin.Vertical.L, LumoStyles.Margin.Responsive.Horizontal.L);
     content.add(header);
 
     Div items = new Div();
     items.addClassNames(BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L);
 
-    ServiceResult<MemoryInfo> memoryInfoServiceResult = SecurityServices.getKeycloakClient()
-        .getServerMemoryInfo();
+    ServiceResult<MemoryInfo> memoryInfoServiceResult =
+        SecurityServices.getKeycloakClient().getServerMemoryInfo();
     if (memoryInfoServiceResult.getIsSuccess() && memoryInfoServiceResult.getData() != null) {
       MemoryInfo memoryInfo = memoryInfoServiceResult.getData();
-      ListItem totalMemoryItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.totalMemory"),
-          UIUtils.createH5Label(memoryInfo.getTotal())
-      );
+      ListItem totalMemoryItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.totalMemory"),
+              UIUtils.createH5Label(memoryInfo.getTotal()));
       totalMemoryItem.setDividerVisible(true);
       items.add(totalMemoryItem);
 
-      ListItem freeMemoryItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.freeMemory"),
-          UIUtils.createH5Label(memoryInfo.getFree())
-      );
+      ListItem freeMemoryItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.freeMemory"),
+              UIUtils.createH5Label(memoryInfo.getFree()));
       freeMemoryItem.setDividerVisible(true);
       items.add(freeMemoryItem);
 
-      ListItem userMemoryItem = new ListItem(
-          getTranslation("element." + I18N_PREFIX + "keycloakinfo.userMemory"),
-          UIUtils.createH5Label(memoryInfo.getUsed())
-      );
+      ListItem userMemoryItem =
+          new ListItem(
+              getTranslation("element." + I18N_PREFIX + "keycloakinfo.userMemory"),
+              UIUtils.createH5Label(memoryInfo.getUsed()));
       userMemoryItem.setDividerVisible(false);
       items.add(userMemoryItem);
     }

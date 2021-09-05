@@ -19,8 +19,9 @@
 package org.jhapy.frontend.utils;
 
 public enum IconSize {
-
-  S("size-s"), M("size-m"), L("size-l");
+  S("size-s"),
+  M("size-m"),
+  L("size-l");
 
   private final String style;
 
@@ -31,5 +32,4 @@ public enum IconSize {
   public String getClassName() {
     return style;
   }
-
 }

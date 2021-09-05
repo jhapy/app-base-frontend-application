@@ -2,9 +2,10 @@ package org.jhapy.frontend.views.menu;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu.GridContextMenuItemClickEvent;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.function.Consumer;
-import lombok.Data;
 
 /**
  * @author Alexandre Clavaud.
@@ -12,7 +13,6 @@ import lombok.Data;
  * @since 31/07/2020
  */
 @Data
-
 public class MenuAction implements Serializable {
 
   private String title;
@@ -27,15 +27,14 @@ public class MenuAction implements Serializable {
     this.component = component;
   }
 
-
-  public MenuAction(String title,
-      Consumer<GridContextMenuItemClickEvent<MenuEntry>> clickListener) {
+  public MenuAction(
+      String title, Consumer<GridContextMenuItemClickEvent<MenuEntry>> clickListener) {
     this.title = title;
     this.clickListener = clickListener;
   }
 
-  public MenuAction(Component component,
-      Consumer<GridContextMenuItemClickEvent<MenuEntry>> clickListener) {
+  public MenuAction(
+      Component component, Consumer<GridContextMenuItemClickEvent<MenuEntry>> clickListener) {
     this.component = component;
     this.clickListener = clickListener;
   }

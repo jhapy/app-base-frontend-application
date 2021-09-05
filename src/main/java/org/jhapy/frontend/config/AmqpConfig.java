@@ -1,10 +1,6 @@
 package org.jhapy.frontend.config;
 
-import org.springframework.amqp.core.AnonymousQueue;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -118,5 +114,4 @@ public class AmqpConfig {
       @Qualifier("messageTrlUpdateQueue") Queue queue) {
     return BindingBuilder.bind(queue).to(fanout);
   }
-
 }

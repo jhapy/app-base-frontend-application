@@ -19,8 +19,10 @@
 package org.jhapy.frontend.utils.css;
 
 public enum Overflow {
-
-  AUTO("auto"), HIDDEN("hidden"), SCROLL("scroll"), VISIBLE("visible");
+  AUTO("auto"),
+  HIDDEN("hidden"),
+  SCROLL("scroll"),
+  VISIBLE("visible");
 
   private final String value;
 

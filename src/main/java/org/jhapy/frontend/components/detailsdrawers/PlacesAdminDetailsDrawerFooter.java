@@ -46,13 +46,11 @@ public class PlacesAdminDetailsDrawerFooter extends FlexBoxLayout {
     add(create, cancel);
   }
 
-  public Registration addCreateListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addCreateListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return create.addClickListener(listener);
   }
 
-  public Registration addCancelListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addCancelListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return cancel.addClickListener(listener);
   }
 

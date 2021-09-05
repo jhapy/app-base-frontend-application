@@ -24,22 +24,24 @@ import org.jhapy.frontend.customFields.DefaultCustomListFieldForTranslationV2;
 
 import java.util.Map;
 
-public class CustomListFieldValueChangeEventForTranslationV2<C extends EntityTranslationV2> implements
-    HasValue.ValueChangeEvent<Map<String,C>> {
+public class CustomListFieldValueChangeEventForTranslationV2<C extends EntityTranslationV2>
+    implements HasValue.ValueChangeEvent<Map<String, C>> {
 
-  private final Map<String,C> oldValues;
-  private final Map<String,C> newValues;
+  private final Map<String, C> oldValues;
+  private final Map<String, C> newValues;
   private final DefaultCustomListFieldForTranslationV2 src;
 
-  public CustomListFieldValueChangeEventForTranslationV2(Map<String,C> oldValues, Map<String,C> newValues,
-                                                         DefaultCustomListFieldForTranslationV2 src) {
+  public CustomListFieldValueChangeEventForTranslationV2(
+      Map<String, C> oldValues,
+      Map<String, C> newValues,
+      DefaultCustomListFieldForTranslationV2 src) {
     this.oldValues = oldValues;
     this.newValues = newValues;
     this.src = src;
   }
 
   @Override
-  public HasValue<?, Map<String,C>> getHasValue() {
+  public HasValue<?, Map<String, C>> getHasValue() {
     return src;
   }
 
@@ -49,12 +51,12 @@ public class CustomListFieldValueChangeEventForTranslationV2<C extends EntityTra
   }
 
   @Override
-  public Map<String,C> getOldValue() {
+  public Map<String, C> getOldValue() {
     return oldValues;
   }
 
   @Override
-  public Map<String,C> getValue() {
+  public Map<String, C> getValue() {
     return newValues;
   }
 }

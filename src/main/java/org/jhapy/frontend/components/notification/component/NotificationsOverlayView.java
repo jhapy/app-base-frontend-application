@@ -7,22 +7,23 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import java.io.Serial;
-import java.util.ArrayList;
 import org.jhapy.frontend.components.notification.NotificationHolder;
 import org.jhapy.frontend.components.notification.interfaces.Notification;
 
+import java.io.Serial;
+import java.util.ArrayList;
+
 public class NotificationsOverlayView<T extends Notification> extends IronOverlay {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
-  //private final IconButton backButton = new IconButton(VaadinIcon.ARROW_LEFT.create());
-  //private final IconButton clearButton = new IconButton(VaadinIcon.CHECK.create());
-  //private Component overlayTitle = new Label("Notifications");
+  // private final IconButton backButton = new IconButton(VaadinIcon.ARROW_LEFT.create());
+  // private final IconButton clearButton = new IconButton(VaadinIcon.CHECK.create());
+  // private Component overlayTitle = new Label("Notifications");
   private final VerticalLayout results = new VerticalLayout();
-  //private HorizontalLayout appBarWrapper = new HorizontalLayout(backButton, overlayTitle, clearButton);
-  //private VerticalLayout wrapper = new VerticalLayout(results);
+  // private HorizontalLayout appBarWrapper = new HorizontalLayout(backButton, overlayTitle,
+  // clearButton);
+  // private VerticalLayout wrapper = new VerticalLayout(results);
   private NotificationHolder holder;
   private String noNotificationText = "No Notifications";
   private Label noNotificationsLabel;
@@ -30,39 +31,40 @@ public class NotificationsOverlayView<T extends Notification> extends IronOverla
 
   public NotificationsOverlayView() {
     getElement().getStyle().set("width", "100%");
-    //overlayTitle.getElement().getStyle().set("width", "100%");
+    // overlayTitle.getElement().getStyle().set("width", "100%");
     setVerticalAlign(VerticalOrientation.TOP);
-    //backButton.addClickListener(buttonClickEvent -> close());
-    //clearButton.addClickListener(buttonClickEvent -> holder.clearNotifications());
-        /*appBarWrapper.getStyle()
-                .set("background", "var(--app-layout-bar-background-base-color)")
-                .set("height", "var(--app-bar-height)")
-                .set("box-shadow", "var(--app-layout-bar-shadow)")
-                .set("padding", "var(--app-layout-bar-padding)")
-                .set("flex-shrink", "0")
-                .set("z-index", "1");
-         */
-    //appBarWrapper.setWidthFull();
-    //appBarWrapper.setAlignItems(FlexComponent.Alignment.CENTER);
-       /*
-        wrapper.setSizeFull();
-        wrapper.setAlignItems(FlexComponent.Alignment.CENTER);
-        wrapper.setMargin(false);
-        wrapper.setPadding(false);
-        wrapper.setSpacing(false);
-        wrapper.getStyle()
-            .set("max-width", "100vw")
-            .set("height", "100vh");
-*/
+    // backButton.addClickListener(buttonClickEvent -> close());
+    // clearButton.addClickListener(buttonClickEvent -> holder.clearNotifications());
+    /*appBarWrapper.getStyle()
+           .set("background", "var(--app-layout-bar-background-base-color)")
+           .set("height", "var(--app-bar-height)")
+           .set("box-shadow", "var(--app-layout-bar-shadow)")
+           .set("padding", "var(--app-layout-bar-padding)")
+           .set("flex-shrink", "0")
+           .set("z-index", "1");
+    */
+    // appBarWrapper.setWidthFull();
+    // appBarWrapper.setAlignItems(FlexComponent.Alignment.CENTER);
+    /*
+            wrapper.setSizeFull();
+            wrapper.setAlignItems(FlexComponent.Alignment.CENTER);
+            wrapper.setMargin(false);
+            wrapper.setPadding(false);
+            wrapper.setSpacing(false);
+            wrapper.getStyle()
+                .set("max-width", "100vw")
+                .set("height", "100vh");
+    */
     results.setAlignItems(FlexComponent.Alignment.CENTER);
-    results.getStyle()
+    results
+        .getStyle()
         .set("overflow-y", "auto")
         /*.set("max-width", "100%")*/
         .set("min-width", "40%")
         .set("--lumo-size-m", "var(--lumo-size-xl)")
         .set("--lumo-contrast-10pct", "transparent");
-    //results.setHeightFull();
-    //results.setWidth("unset");
+    // results.setHeightFull();
+    // results.setWidth("unset");
     add(results);
   }
 
@@ -91,7 +93,8 @@ public class NotificationsOverlayView<T extends Notification> extends IronOverla
       views.addAll(this.holder.getNotificationCards());
     } else {
       noNotificationsLabel = new Label(noNotificationText);
-      noNotificationsLabel.getStyle()
+      noNotificationsLabel
+          .getStyle()
           .set("color", "var(--app-layout-notification-font-color)")
           .set("font-size", "var(--app-layout-font-size-menu)");
 
@@ -99,9 +102,9 @@ public class NotificationsOverlayView<T extends Notification> extends IronOverla
       labelWrapper.setAlignItems(FlexComponent.Alignment.CENTER);
       labelWrapper.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
       Card wrapper = new Card(labelWrapper);
-      //wrapper.setWidthFull();
+      // wrapper.setWidthFull();
       wrapper.setBackground("var(--lumo-base-color)");
-      //wrapper.setWidth("100%");
+      // wrapper.setWidth("100%");
       wrapper.setMinWidth("40%");
       wrapper.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
       views.add(wrapper);
@@ -128,14 +131,14 @@ public class NotificationsOverlayView<T extends Notification> extends IronOverla
   public void setHolder(NotificationHolder<T> holder) {
     this.holder = holder;
   }
-/*
-    public Button getBackButton() {
-        return backButton;
-    }
+  /*
+     public Button getBackButton() {
+         return backButton;
+     }
 
-    public Button getClearButton() {
-        return clearButton;
-    }
+     public Button getClearButton() {
+         return clearButton;
+     }
 
- */
+  */
 }

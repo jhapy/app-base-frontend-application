@@ -21,14 +21,10 @@ package org.jhapy.frontend.components;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.theme.lumo.Lumo;
-import java.util.ArrayList;
 import org.jhapy.frontend.layout.size.Size;
-import org.jhapy.frontend.utils.css.BorderRadius;
-import org.jhapy.frontend.utils.css.BoxSizing;
-import org.jhapy.frontend.utils.css.Display;
-import org.jhapy.frontend.utils.css.Overflow;
-import org.jhapy.frontend.utils.css.Position;
-import org.jhapy.frontend.utils.css.Shadow;
+import org.jhapy.frontend.utils.css.*;
+
+import java.util.ArrayList;
 
 public class FlexBoxLayout extends FlexLayout {
 
@@ -101,13 +97,11 @@ public class FlexBoxLayout extends FlexLayout {
     }
   }
 
-
   public void setFlexShrink(String value, Component... components) {
     for (Component component : components) {
       component.getElement().getStyle().set("flex-shrink", value);
     }
   }
-
 
   public void setMargin(Size... sizes) {
     for (Size size : sizes) {

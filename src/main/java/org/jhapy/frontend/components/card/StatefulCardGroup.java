@@ -21,6 +21,7 @@ package org.jhapy.frontend.components.card;
 import com.github.appreciated.card.StatefulCard;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

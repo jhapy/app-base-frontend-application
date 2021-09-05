@@ -43,7 +43,6 @@ public class ListItem extends FlexBoxLayout {
   private final Label primary;
   private final Label secondary;
 
-
   public ListItem(String primary, String secondary) {
     addClassName(CLASS_NAME);
     setAlignItems(FlexComponent.Alignment.CENTER);
@@ -52,8 +51,7 @@ public class ListItem extends FlexBoxLayout {
 
     this.primary = new Label(primary);
 
-    this.secondary = UIUtils.createLabel(FontSize.S, TextColor.SECONDARY,
-        secondary);
+    this.secondary = UIUtils.createLabel(FontSize.S, TextColor.SECONDARY, secondary);
     content = new FlexBoxLayout(this.primary, this.secondary);
     content.setClassName(CLASS_NAME + "__content");
     content.setFlexDirection(FlexDirection.COLUMN);
@@ -88,8 +86,7 @@ public class ListItem extends FlexBoxLayout {
 
   /* === PREFIX & SUFFIX === */
 
-  public ListItem(Component prefix, String primary, String secondary,
-      Component suffix) {
+  public ListItem(Component prefix, String primary, String secondary, Component suffix) {
     this(primary, secondary);
     setPrefix(prefix);
     setSuffix(suffix);
@@ -154,8 +151,7 @@ public class ListItem extends FlexBoxLayout {
     if (suffix == null) {
       suffix = new Div();
       suffix.setClassName(CLASS_NAME + "__suffix");
-      getElement().insertChild(getElement().getChildCount(),
-          suffix.getElement());
+      getElement().insertChild(getElement().getChildCount(), suffix.getElement());
       getElement().setAttribute("with-suffix", true);
     }
     suffix.removeAll();
@@ -169,5 +165,4 @@ public class ListItem extends FlexBoxLayout {
       getElement().removeAttribute("with-divider");
     }
   }
-
 }

@@ -19,17 +19,17 @@
 package org.jhapy.frontend.layout.size;
 
 public enum Right implements Size {
-
   AUTO("auto", null),
 
-  XS("var(--lumo-space-xs)", "spacing-r-xs"), S("var(--lumo-space-s)",
-      "spacing-r-s"), M("var(--lumo-space-m)", "spacing-r-m"), L(
-      "var(--lumo-space-l)",
-      "spacing-r-l"), XL("var(--lumo-space-xl)", "spacing-r-xl"),
+  XS("var(--lumo-space-xs)", "spacing-r-xs"),
+  S("var(--lumo-space-s)", "spacing-r-s"),
+  M("var(--lumo-space-m)", "spacing-r-m"),
+  L("var(--lumo-space-l)", "spacing-r-l"),
+  XL("var(--lumo-space-xl)", "spacing-r-xl"),
 
-  RESPONSIVE_M("var(--lumo-space-r-m)", null), RESPONSIVE_L(
-      "var(--lumo-space-r-l)",
-      null), RESPONSIVE_X("var(--lumo-space-r-x)", null);
+  RESPONSIVE_M("var(--lumo-space-r-m)", null),
+  RESPONSIVE_L("var(--lumo-space-r-l)", null),
+  RESPONSIVE_X("var(--lumo-space-r-x)", null);
 
   private final String variable;
   private final String spacingClassName;
@@ -41,12 +41,12 @@ public enum Right implements Size {
 
   @Override
   public String[] getMarginAttributes() {
-    return new String[]{"margin-right"};
+    return new String[] {"margin-right"};
   }
 
   @Override
   public String[] getPaddingAttributes() {
-    return new String[]{"padding-right"};
+    return new String[] {"padding-right"};
   }
 
   @Override

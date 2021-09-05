@@ -18,27 +18,25 @@
 
 package org.jhapy.frontend.layout;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.views.JHapyMainView3;
+import org.jhapy.frontend.components.navigation.menubar.View;
 
 /**
  * A view frame that establishes app design guidelines. It consists of four parts:
+ *
  * <ul>
- * <li>Topmost {@link #setViewHeader(Component...) header}</li>
- * <li>Center {@link #setViewContent(Component...) content}</li>
- * <li>Center {@link #setViewDetails(Component...) details}</li>
- * <li>Bottom {@link #setViewFooter(Component...) footer}</li>
+ *   <li>Topmost {@link #setViewHeader(Component...) header}
+ *   <li>Center {@link #setViewContent(Component...) content}
+ *   <li>Center {@link #setViewDetails(Component...) details}
+ *   <li>Bottom {@link #setViewFooter(Component...) footer}
  * </ul>
  */
 @CssImport("./styles/components/view-frame.css")
-public class SplitViewFrame extends Composite<Div> implements HasStyle {
+public abstract class SplitViewFrame extends View implements HasStyle {
 
   private final String CLASS_NAME = "view-frame";
 
@@ -65,28 +63,22 @@ public class SplitViewFrame extends Composite<Div> implements HasStyle {
     footer.setClassName(CLASS_NAME + "__footer");
 
     wrapper.add(content, details);
-    getContent().add(header, wrapper, footer);
+    add(header, wrapper, footer);
   }
 
-  /**
-   * Sets the header slot's components.
-   */
+  /** Sets the header slot's components. */
   public void setViewHeader(Component... components) {
     header.removeAll();
     header.add(components);
   }
 
-  /**
-   * Sets the content slot's components.
-   */
+  /** Sets the content slot's components. */
   public void setViewContent(Component... components) {
     content.removeAll();
     content.add(components);
   }
 
-  /**
-   * Sets the detail slot's components.
-   */
+  /** Sets the detail slot's components. */
   public void setViewDetails(Component... components) {
     details.removeAll();
     details.add(components);
@@ -101,21 +93,14 @@ public class SplitViewFrame extends Composite<Div> implements HasStyle {
     }
   }
 
-  /**
-   * Sets the footer slot's components.
-   */
+  /** Sets the footer slot's components. */
   public void setViewFooter(Component... components) {
     footer.removeAll();
     footer.add(components);
   }
 
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
-    JHapyMainView3.get().getAppBar().reset();
-  }
-
   public enum Position {
-    RIGHT, BOTTOM
+    RIGHT,
+    BOTTOM
   }
 }

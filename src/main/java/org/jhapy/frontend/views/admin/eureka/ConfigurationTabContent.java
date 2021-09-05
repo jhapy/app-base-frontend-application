@@ -39,13 +39,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.EurekaApplication;
@@ -63,12 +56,12 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.vaadin.tabs.PagedTabs;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
@@ -86,15 +79,18 @@ public class ConfigurationTabContent extends ActuatorBaseView {
   protected Map<String, Grid<PropertySource>> envGrid;
   protected FlexBoxLayout envRows;
 
-  public ConfigurationTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public ConfigurationTabContent(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX + "configurations.", authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -105,31 +101,41 @@ public class ConfigurationTabContent extends ActuatorBaseView {
     tabs.add(getTranslation("element." + I18N_PREFIX + "tab.beans"), getBeans(), false);
     tabs.add(getTranslation("element." + I18N_PREFIX + "tab.env"), getEnv(), false);
 
-    //getDetails( null, null);
+    // getDetails( null, null);
 
     return content;
   }
 
-  protected void getDetails(EurekaApplication eurekaApplication,
-      EurekaApplicationInstance eurekaApplicationInstance) {
+  protected void getDetails(
+      EurekaApplication eurekaApplication, EurekaApplicationInstance eurekaApplicationInstance) {
     titleLabel.setText(
-        getTranslation("element." + I18N_PREFIX + "title") + " - " + eurekaApplicationInstance
-            .getInstanceId());
+        getTranslation("element." + I18N_PREFIX + "title")
+            + " - "
+            + eurekaApplicationInstance.getInstanceId());
 
     try {
-      final HttpHeaders httpHeaders = new HttpHeaders() {{
-        set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
-        setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-      }};
+      final HttpHeaders httpHeaders =
+          new HttpHeaders() {
+            {
+              set("Authorization", authorizationHeaderUtil.getAuthorizationHeader().get());
+              setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            }
+          };
 
-      logger().debug(
-          "Application : " + eurekaApplication.getName() + ", Config Props Url = "
-              + eurekaApplicationInstance.getMetadata().get("management.url")
-              + "/configprops");
-      ResponseEntity<String> configprops = restTemplate.exchange(URI.create(
-          eurekaApplicationInstance.getMetadata().get("management.url") + "/configprops"),
-          HttpMethod.GET,
-          new HttpEntity<>(httpHeaders), String.class);
+      logger()
+          .debug(
+              "Application : "
+                  + eurekaApplication.getName()
+                  + ", Config Props Url = "
+                  + eurekaApplicationInstance.getMetadata().get("management.url")
+                  + "/configprops");
+      ResponseEntity<String> configprops =
+          restTemplate.exchange(
+              URI.create(
+                  eurekaApplicationInstance.getMetadata().get("management.url") + "/configprops"),
+              HttpMethod.GET,
+              new HttpEntity<>(httpHeaders),
+              String.class);
       String configpropsBody = configprops.getBody();
 
       logger().debug("Config Props = " + configpropsBody);
@@ -146,69 +152,84 @@ public class ConfigurationTabContent extends ActuatorBaseView {
       JSONObject configpropsJsonObject = (JSONObject) jsonParser.parse(configpropsBody);
 
       JSONObject contextsJsonObject = (JSONObject) configpropsJsonObject.get("contexts");
-      contextsJsonObject.forEach((key, contexts) -> {
-        ConfigProps.Contexts.Context contextObj = new Context();
-        contextObj.setBeans(new HashMap<>());
-        JSONObject beansJsonObject = (JSONObject) ((JSONObject) contexts).get("beans");
+      contextsJsonObject.forEach(
+          (key, contexts) -> {
+            ConfigProps.Contexts.Context contextObj = new Context();
+            contextObj.setBeans(new HashMap<>());
+            JSONObject beansJsonObject = (JSONObject) ((JSONObject) contexts).get("beans");
 
-        beansJsonObject.forEach((o, o2) -> {
-          Bean beanObj = new Bean();
-          beanObj.setPrefix(((JSONObject) o2).get("prefix").toString());
-          try {
-            beanObj.setProperties(objectMapper
-                .readValue(((JSONObject) o2).get("properties").toString(),
-                    new TypeReference<>() {
-                    }));
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-          contextObj.getBeans().put(o.toString(), beanObj);
-        });
-        contextsObj.getContexts().put(key.toString(), contextObj);
-      });
+            beansJsonObject.forEach(
+                (o, o2) -> {
+                  Bean beanObj = new Bean();
+                  beanObj.setPrefix(((JSONObject) o2).get("prefix").toString());
+                  try {
+                    beanObj.setProperties(
+                        objectMapper.readValue(
+                            ((JSONObject) o2).get("properties").toString(),
+                            new TypeReference<>() {}));
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                  }
+                  contextObj.getBeans().put(o.toString(), beanObj);
+                });
+            contextsObj.getContexts().put(key.toString(), contextObj);
+          });
 
-      //logger().debug("Config Props Converted = " + configPropsObj);
+      // logger().debug("Config Props Converted = " + configPropsObj);
       beanListDataProvider = new ListDataProvider<>(configPropsObj.getBeans());
       beansGrid.setDataProvider(beanListDataProvider);
 
-      logger().debug(
-          "Application : " + eurekaApplication.getName() + ", Env Url = "
-              + eurekaApplicationInstance.getMetadata().get("management.url") + "/env");
-      ResponseEntity<String> env = restTemplate.exchange(URI.create(
-          eurekaApplicationInstance.getMetadata().get("management.url") + "/env"),
-          HttpMethod.GET,
-          new HttpEntity<>(httpHeaders), String.class);
+      logger()
+          .debug(
+              "Application : "
+                  + eurekaApplication.getName()
+                  + ", Env Url = "
+                  + eurekaApplicationInstance.getMetadata().get("management.url")
+                  + "/env");
+      ResponseEntity<String> env =
+          restTemplate.exchange(
+              URI.create(eurekaApplicationInstance.getMetadata().get("management.url") + "/env"),
+              HttpMethod.GET,
+              new HttpEntity<>(httpHeaders),
+              String.class);
       String envBody = env.getBody();
 
-      //logger().debug("Env = " + envBody);
+      // logger().debug("Env = " + envBody);
 
       Env env1 = new Env();
 
       JSONObject envJsonObject = (JSONObject) jsonParser.parse(envBody);
       JSONArray activeProfilesJsonObject = (JSONArray) envJsonObject.get("activeProfiles");
       env1.setActiveProfiles(
-          (String[]) activeProfilesJsonObject.stream().map(Object::toString)
-              .toArray(String[]::new));
+          (String[])
+              activeProfilesJsonObject.stream().map(Object::toString).toArray(String[]::new));
       JSONArray propertySourcesJsonObject = (JSONArray) envJsonObject.get("propertySources");
-      env1.setPropertySources((PropertySource[]) propertySourcesJsonObject.stream().map(o -> {
-        PropertySource propertySource = new PropertySource();
-        JSONObject propertySourceJsonObject = (JSONObject) o;
-        propertySource.setName(propertySourceJsonObject.get("name").toString());
-        propertySource.setProperties(new HashMap<>());
-        JSONObject properties = (JSONObject) propertySourceJsonObject.get("properties");
-        properties.forEach((o1, o2) -> {
-          Property property = new Property();
-          JSONObject propertyJsonObject = (JSONObject) o2;
-          if (propertyJsonObject.get("value") != null) {
-            property.setValue(propertyJsonObject.get("value").toString());
-          }
-          if (propertyJsonObject.get("origin") != null) {
-            property.setOrigin(propertyJsonObject.get("origin").toString());
-          }
-          propertySource.getProperties().put(o1.toString(), property);
-        });
-        return propertySource;
-      }).toArray(PropertySource[]::new));
+      env1.setPropertySources(
+          (PropertySource[])
+              propertySourcesJsonObject.stream()
+                  .map(
+                      o -> {
+                        PropertySource propertySource = new PropertySource();
+                        JSONObject propertySourceJsonObject = (JSONObject) o;
+                        propertySource.setName(propertySourceJsonObject.get("name").toString());
+                        propertySource.setProperties(new HashMap<>());
+                        JSONObject properties =
+                            (JSONObject) propertySourceJsonObject.get("properties");
+                        properties.forEach(
+                            (o1, o2) -> {
+                              Property property = new Property();
+                              JSONObject propertyJsonObject = (JSONObject) o2;
+                              if (propertyJsonObject.get("value") != null) {
+                                property.setValue(propertyJsonObject.get("value").toString());
+                              }
+                              if (propertyJsonObject.get("origin") != null) {
+                                property.setOrigin(propertyJsonObject.get("origin").toString());
+                              }
+                              propertySource.getProperties().put(o1.toString(), property);
+                            });
+                        return propertySource;
+                      })
+                  .toArray(PropertySource[]::new));
 
       envRows.removeAll();
 
@@ -217,11 +238,15 @@ public class ConfigurationTabContent extends ActuatorBaseView {
       TextField filterTextField = new TextField();
       filterTextField.setLabel(getTranslation("element." + I18N_PREFIX + "filter"));
       filterTextField.addValueChangeListener(
-          event -> dataProviders.forEach(dataProvider -> dataProvider.addFilter(
-              data ->
-                  StringUtils.containsIgnoreCase(data.getName(), filterTextField.getValue())
-                      || StringUtils
-                      .containsIgnoreCase(data.getValue(), filterTextField.getValue()))));
+          event ->
+              dataProviders.forEach(
+                  dataProvider ->
+                      dataProvider.addFilter(
+                          data ->
+                              StringUtils.containsIgnoreCase(
+                                      data.getName(), filterTextField.getValue())
+                                  || StringUtils.containsIgnoreCase(
+                                      data.getValue(), filterTextField.getValue()))));
       filterTextField.setValueChangeMode(ValueChangeMode.EAGER);
 
       envRows.add(filterTextField);
@@ -230,30 +255,32 @@ public class ConfigurationTabContent extends ActuatorBaseView {
         envRows.add(UIUtils.createH5Label(propertySource.getName()));
 
         Grid<Property> gridProperty = new Grid();
-        ListDataProvider<Property> listDataProvider = new ListDataProvider<>(
-            propertySource.getPropertyList());
+        ListDataProvider<Property> listDataProvider =
+            new ListDataProvider<>(propertySource.getPropertyList());
         dataProviders.add(listDataProvider);
 
         gridProperty.setDataProvider(listDataProvider);
 
-        Column propertyColumn = gridProperty.addColumn(Property::getName).setWidth("150px")
-            .setKey("property");
-        Column valueColumn = gridProperty.addColumn(Property::getValue).setAutoWidth(true)
-            .setKey("value");
+        Column propertyColumn =
+            gridProperty.addColumn(Property::getName).setWidth("150px").setKey("property");
+        Column valueColumn =
+            gridProperty.addColumn(Property::getValue).setAutoWidth(true).setKey("value");
 
-        gridProperty.getColumns().forEach(column -> {
-          if (column.getKey() != null) {
-            column
-                .setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-            column.setResizable(true);
-          }
-        });
+        gridProperty
+            .getColumns()
+            .forEach(
+                column -> {
+                  if (column.getKey() != null) {
+                    column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                    column.setResizable(true);
+                  }
+                });
 
         beansGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         envRows.add(gridProperty);
       }
-      //ogger().debug("Env Converted = " + env1);
+      // ogger().debug("Env Converted = " + env1);
 
     } catch (Throwable t) {
       t.printStackTrace();
@@ -266,25 +293,27 @@ public class ConfigurationTabContent extends ActuatorBaseView {
     beanListDataProvider = new ListDataProvider<>(Collections.emptyList());
     beansGrid.setDataProvider(beanListDataProvider);
 
-    Column prefixColumn = beansGrid.addColumn(Bean::getPrefix).setWidth("150px")
-        .setKey("prefix");
-    Column propertiesColumn = beansGrid.addComponentColumn(BeanComponent::new)
-        .setAutoWidth(true)
-        .setKey("properties");
+    Column prefixColumn = beansGrid.addColumn(Bean::getPrefix).setWidth("150px").setKey("prefix");
+    Column propertiesColumn =
+        beansGrid.addComponentColumn(BeanComponent::new).setAutoWidth(true).setKey("properties");
 
-    beansGrid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    beansGrid
+        .getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
 
     HeaderRow filterRow = beansGrid.appendHeaderRow();
 
     TextField prefixFilter = new TextField();
-    prefixFilter.addValueChangeListener(event -> beanListDataProvider.addFilter(
-        data -> StringUtils.containsIgnoreCase(data.getPrefix(),
-            prefixFilter.getValue())));
+    prefixFilter.addValueChangeListener(
+        event ->
+            beanListDataProvider.addFilter(
+                data -> StringUtils.containsIgnoreCase(data.getPrefix(), prefixFilter.getValue())));
 
     prefixFilter.setValueChangeMode(ValueChangeMode.EAGER);
 
@@ -293,9 +322,12 @@ public class ConfigurationTabContent extends ActuatorBaseView {
     prefixFilter.setPlaceholder("Filter");
 
     TextField propertiesFilter = new TextField();
-    propertiesFilter.addValueChangeListener(event -> beanListDataProvider
-        .addFilter(data -> StringUtils.containsIgnoreCase(
-            StringUtils.join(data.getProperties()), propertiesFilter.getValue())));
+    propertiesFilter.addValueChangeListener(
+        event ->
+            beanListDataProvider.addFilter(
+                data ->
+                    StringUtils.containsIgnoreCase(
+                        StringUtils.join(data.getProperties()), propertiesFilter.getValue())));
 
     propertiesFilter.setValueChangeMode(ValueChangeMode.EAGER);
 
@@ -324,34 +356,37 @@ public class ConfigurationTabContent extends ActuatorBaseView {
       rows.setWidthFull();
 
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
-      bean.getProperties().keySet().forEach(s -> {
-        FlexBoxLayout row = new FlexBoxLayout();
-        row.setFlexDirection(FlexDirection.ROW);
-        row.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        Label label = UIUtils.createH5Label(s);
-        label.setWidth("33%");
-        row.add(label);
+      bean.getProperties()
+          .keySet()
+          .forEach(
+              s -> {
+                FlexBoxLayout row = new FlexBoxLayout();
+                row.setFlexDirection(FlexDirection.ROW);
+                row.setJustifyContentMode(JustifyContentMode.BETWEEN);
+                Label label = UIUtils.createH5Label(s);
+                label.setWidth("33%");
+                row.add(label);
 
-        String v = gson.toJson(bean.getProperties().get(s));
-        if (v.split("\n").length > 1) {
-          TextArea val = new TextArea();
-          val.setReadOnly(true);
-          val.setWidth("66%");
-          val.setValue(v);
-          row.add(val);
+                String v = gson.toJson(bean.getProperties().get(s));
+                if (v.split("\n").length > 1) {
+                  TextArea val = new TextArea();
+                  val.setReadOnly(true);
+                  val.setWidth("66%");
+                  val.setValue(v);
+                  row.add(val);
 
-          row.setFlex("1", val);
-        } else {
-          TextField val = new TextField();
-          val.setReadOnly(true);
-          val.setWidth("66%");
-          val.setValue(v);
-          row.add(val);
+                  row.setFlex("1", val);
+                } else {
+                  TextField val = new TextField();
+                  val.setReadOnly(true);
+                  val.setWidth("66%");
+                  val.setValue(v);
+                  row.add(val);
 
-          row.setFlex("1", val);
-        }
-        rows.add(row);
-      });
+                  row.setFlex("1", val);
+                }
+                rows.add(row);
+              });
 
       add(rows);
     }

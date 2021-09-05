@@ -19,9 +19,11 @@
 package org.jhapy.frontend.utils.css;
 
 public enum WhiteSpace {
-
-  NORMAL("normal"), NOWRAP("nowrap"), PRE("pre"), PRE_WRAP(
-      "pre-wrap"), PRE_LINE("pre-line");
+  NORMAL("normal"),
+  NOWRAP("nowrap"),
+  PRE("pre"),
+  PRE_WRAP("pre-wrap"),
+  PRE_LINE("pre-line");
 
   private final String value;
 

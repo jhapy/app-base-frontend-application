@@ -18,15 +18,7 @@
 
 package io.rocketbase.vaadin.croppie;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientCallable;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
-import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -41,24 +33,20 @@ import lombok.Setter;
 
 @Tag("vaadin-croppie")
 @NpmPackage(value = "croppie", version = "2.6.5")
-//@JsModule("./mycroppie/croppie.js")
+// @JsModule("./mycroppie/croppie.js")
 public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, HasStyle {
 
-  private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
-      .attributeWithDefault("src", "");
-  private static final PropertyDescriptor<String, String> labelDescriptor = PropertyDescriptors
-      .attributeWithDefault("label", "");
+  private static final PropertyDescriptor<String, String> srcDescriptor =
+      PropertyDescriptors.attributeWithDefault("src", "");
+  private static final PropertyDescriptor<String, String> labelDescriptor =
+      PropertyDescriptors.attributeWithDefault("label", "");
 
   private CroppieConfiguration config;
-  @Getter
-  private boolean attached = false;
+  @Getter private boolean attached = false;
   private boolean initPhase = true;
 
-  /**
-   * size is automatically configured via CroppieConfig boundary/viewport
-   */
-  @Setter
-  private boolean autoConfigSize = true;
+  /** size is automatically configured via CroppieConfig boundary/viewport */
+  @Setter private boolean autoConfigSize = true;
 
   public Croppie(AbstractStreamResource src) {
     withSrc(src);
@@ -99,8 +87,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * The outer container of the cropper
-   * <p>
-   * Default will default to the size of the container
+   *
+   * <p>Default will default to the size of the container
    */
   public Croppie withBoundary(SizeConfig boundary) {
     getConfigInitialized().setBoundary(boundary);
@@ -109,8 +97,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * The inner container of the coppie. The visible part of the image
-   * <p>
-   * Default { width: 100, height: 100, type: 'square' }
+   *
+   * <p>Default { width: 100, height: 100, type: 'square' }
    */
   public Croppie withViewport(ViewPortConfig viewport) {
     getConfigInitialized().setViewport(viewport);
@@ -119,8 +107,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * Enable or disable support for resizing the viewport area.
-   * <p>
-   * Default false
+   *
+   * <p>Default false
    */
   public Croppie withEnableResize(boolean enableResize) {
     getConfigInitialized();
@@ -136,8 +124,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * Enable zooming functionality. If set to false - scrolling and pinching would not zoom.
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
   public Croppie withEnableZoom(boolean enableZoom) {
     getConfigInitialized();
@@ -147,8 +135,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * Enable or disable the ability to use the mouse wheel to zoom in and out on a croppie instance.
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
   public Croppie withMouseWheelZoom(boolean mouseWheelZoom) {
     getConfigInitialized();
@@ -158,8 +146,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   /**
    * Hide or Show the zoom slider
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
   public Croppie withShowZoomer(boolean showZoomer) {
     getConfigInitialized();
@@ -167,9 +155,7 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
     return getAndUpdateConfig();
   }
 
-
-  public Registration addCropListener(
-      ComponentEventListener<CropEvent> listener) {
+  public Registration addCropListener(ComponentEventListener<CropEvent> listener) {
     return addListener(CropEvent.class, listener);
   }
 
@@ -236,14 +222,12 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
         }
         if (config.getBoundary() != null) {
           setWidth(String.format("%dpx", config.getBoundary().getWidth()));
-          setHeight(
-              String.format("%dpx", config.getBoundary().getHeight() + extraHeight));
+          setHeight(String.format("%dpx", config.getBoundary().getHeight() + extraHeight));
           return;
         }
         if (config.getViewport() != null) {
           setWidth(String.format("%dpx", config.getViewport().getWidth()));
-          setHeight(
-              String.format("%dpx", config.getViewport().getHeight() + extraHeight));
+          setHeight(String.format("%dpx", config.getViewport().getHeight() + extraHeight));
         }
       }
     }
@@ -251,8 +235,8 @@ public class Croppie extends PolymerTemplate<CroppieModel> implements HasSize, H
 
   @ClientCallable
   private void cropChanged(String points, String zoom) {
-    CropEvent event = new CropEvent(this, !initPhase,
-        CropPoints.parseArray(points), Float.parseFloat(zoom));
+    CropEvent event =
+        new CropEvent(this, !initPhase, CropPoints.parseArray(points), Float.parseFloat(zoom));
     fireEvent(event);
     initPhase = false;
   }

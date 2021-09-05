@@ -1,9 +1,10 @@
 package org.jhapy.frontend.components.notification.interfaces;
 
 import com.github.appreciated.app.layout.component.appbar.ComponentBadgeWrapper;
-import java.time.LocalDateTime;
 import org.jhapy.frontend.components.notification.DefaultNotificationHolder;
 import org.jhapy.frontend.components.notification.entity.Priority;
+
+import java.time.LocalDateTime;
 
 /**
  * A notification is a entity which holds data about certain event which can be raised by the
@@ -53,5 +54,4 @@ public interface Notification extends Comparable<Notification> {
   void setCreationTime(LocalDateTime creationTime);
 
   void setSticky(boolean sticky);
-
 }

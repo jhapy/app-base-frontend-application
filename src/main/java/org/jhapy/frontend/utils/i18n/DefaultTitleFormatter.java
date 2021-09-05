@@ -19,6 +19,7 @@
 package org.jhapy.frontend.utils.i18n;
 
 import com.vaadin.flow.i18n.I18NProvider;
+
 import java.util.Locale;
 
 /**

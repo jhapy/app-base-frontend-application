@@ -19,10 +19,11 @@
 package org.jhapy.frontend.client;
 
 import com.vaadin.flow.spring.SpringServlet;
-import javax.servlet.ServletContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author jHapy Lead Dev.

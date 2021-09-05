@@ -40,8 +40,8 @@ public class BooleanOkRenderer<SOURCE> extends ComponentRenderer<Component, SOUR
     this.valueProvider = valueProvider;
   }
 
-  public BooleanOkRenderer(ValueProvider<SOURCE, Boolean> valueProvider,
-      ValueProvider<SOURCE, String> textProvider) {
+  public BooleanOkRenderer(
+      ValueProvider<SOURCE, Boolean> valueProvider, ValueProvider<SOURCE, String> textProvider) {
     this.valueProvider = valueProvider;
     this.textProvider = textProvider;
   }

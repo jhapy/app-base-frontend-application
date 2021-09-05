@@ -21,8 +21,6 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
-import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -35,6 +33,9 @@ import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.dataproviders.AuditLogDataProvider.AuditLogFilter;
 import org.jhapy.frontend.utils.AppConst;
 
+import java.io.Serializable;
+import java.util.function.Function;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -42,9 +43,8 @@ import org.jhapy.frontend.utils.AppConst;
  */
 @SpringComponent
 @UIScope
-public class AuditLogDataProvider extends
-    DefaultDataProvider<AuditLog, AuditLogFilter> implements
-    Serializable {
+public class AuditLogDataProvider extends DefaultDataProvider<AuditLog, AuditLogFilter>
+    implements Serializable {
 
   private final Function<FindAuditLogQuery, ServiceResult<Page<AuditLog>>> findHandler;
   private final Function<CountAuditLogQuery, ServiceResult<Long>> countHandler;
@@ -52,33 +52,31 @@ public class AuditLogDataProvider extends
   public AuditLogDataProvider(
       Function<FindAuditLogQuery, ServiceResult<Page<AuditLog>>> findHandler,
       Function<CountAuditLogQuery, ServiceResult<Long>> countHandler) {
-    super(AppConst.DEFAULT_SORT_DIRECTION,
-        AppConst.DEFAULT_SORT_FIELDS);
+    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
     this.findHandler = findHandler;
     this.countHandler = countHandler;
   }
 
   @Override
   protected Page<AuditLog> fetchFromBackEnd(
-      Query<AuditLog, AuditLogFilter> query,
-      Pageable pageable) {
+      Query<AuditLog, AuditLogFilter> query, Pageable pageable) {
     AuditLogFilter filter = query.getFilter().orElse(null);
-    Page<AuditLog> page = findHandler
-        .apply(new FindAuditLogQuery(filter.getClassName(), filter.getRecordId(), pageable))
-        .getData();
+    Page<AuditLog> page =
+        findHandler
+            .apply(new FindAuditLogQuery(filter.getClassName(), filter.getRecordId(), pageable))
+            .getData();
     if (getPageObserver() != null) {
       getPageObserver().accept(page);
     }
     return page;
   }
 
-
   @Override
   protected int sizeInBackEnd(Query<AuditLog, AuditLogFilter> query) {
     AuditLogFilter filter = query.getFilter().orElse(null);
 
-    ServiceResult<Long> _count = countHandler
-        .apply(new CountAuditLogQuery(filter.getClassName(), filter.getRecordId()));
+    ServiceResult<Long> _count =
+        countHandler.apply(new CountAuditLogQuery(filter.getClassName(), filter.getRecordId()));
 
     if (_count.getIsSuccess() && _count.getData() != null) {
       return _count.getData().intValue();

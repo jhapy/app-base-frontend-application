@@ -23,9 +23,6 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
 import org.jhapy.dto.domain.notification.MailTemplate;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
@@ -34,6 +31,10 @@ import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.notification.NotificationServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -41,17 +42,16 @@ import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
  */
 @SpringComponent
 @UIScope
-public class MailTemplateStringDataProvider extends
-    PageableDataProvider<MailTemplate, String> implements
-    Serializable {
-
+public class MailTemplateStringDataProvider extends PageableDataProvider<MailTemplate, String>
+    implements Serializable {
 
   @Override
-  protected Page<MailTemplate> fetchFromBackEnd(Query<MailTemplate, String> query,
-      Pageable pageable) {
+  protected Page<MailTemplate> fetchFromBackEnd(
+      Query<MailTemplate, String> query, Pageable pageable) {
 
-    return NotificationServices.getMailTemplateService().findAnyMatching(
-        new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable)).getData();
+    return NotificationServices.getMailTemplateService()
+        .findAnyMatching(new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable))
+        .getData();
   }
 
   @Override
@@ -59,11 +59,11 @@ public class MailTemplateStringDataProvider extends
     return Collections.singletonList(new QuerySortOrder("name", SortDirection.ASCENDING));
   }
 
-
   @Override
   protected int sizeInBackEnd(Query<MailTemplate, String> query) {
     return NotificationServices.getMailTemplateService()
         .countAnyMatching(new CountAnyMatchingQuery(query.getFilter().orElse(null), true))
-        .getData().intValue();
+        .getData()
+        .intValue();
   }
 }

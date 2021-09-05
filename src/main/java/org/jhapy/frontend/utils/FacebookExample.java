@@ -25,6 +25,7 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -36,8 +37,7 @@ public class FacebookExample {
   private static final String NETWORK_NAME = "Facebook";
   private static final String PROTECTED_RESOURCE_URL = "https://graph.facebook.com/v3.2/me";
 
-  private FacebookExample() {
-  }
+  private FacebookExample() {}
 
   @SuppressWarnings("PMD.SystemPrintln")
   public static void main(String... args)
@@ -46,10 +46,11 @@ public class FacebookExample {
     final String clientId = "287555422129327";
     final String clientSecret = "4371c4df775b7af8b2e3e3d23e619abb";
     final String secretState = "secret" + new Random().nextInt(999_999);
-    final OAuth20Service service = new ServiceBuilder(clientId)
-        .apiSecret(clientSecret)
-        .callback("http://localhost:9002/frontend/oauth2/popupCallback.html")
-        .build(FacebookApi.instance());
+    final OAuth20Service service =
+        new ServiceBuilder(clientId)
+            .apiSecret(clientSecret)
+            .callback("http://localhost:9002/frontend/oauth2/popupCallback.html")
+            .build(FacebookApi.instance());
 
     final Scanner in = new Scanner(System.in, StandardCharsets.UTF_8);
 
@@ -68,8 +69,7 @@ public class FacebookExample {
     System.out.println();
 
     System.out.println(
-        "And paste the state from server here. We have set 'secretState'='" + secretState
-            + "'.");
+        "And paste the state from server here. We have set 'secretState'='" + secretState + "'.");
     System.out.print(">>");
     final String value = in.nextLine();
     if (secretState.equals(value)) {
@@ -84,8 +84,7 @@ public class FacebookExample {
     System.out.println("Trading the Authorization Code for an Access Token...");
     final OAuth2AccessToken accessToken = service.getAccessToken(code);
     System.out.println("Got the Access Token!");
-    System.out
-        .println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
+    System.out.println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
     System.out.println();
 
     // Now let's go and ask for a protected resource!
@@ -100,6 +99,5 @@ public class FacebookExample {
 
     System.out.println();
     System.out.println("Thats it man! Go and build something awesome with ScribeJava! :)");
-
   }
 }

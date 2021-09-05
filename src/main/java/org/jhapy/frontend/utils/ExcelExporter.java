@@ -21,6 +21,14 @@ package org.jhapy.frontend.utils;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.binder.PropertySet;
 import com.vaadin.flow.data.provider.Query;
+import org.apache.commons.text.WordUtils;
+import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.dto.domain.BaseEntity;
+import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.frontend.dataproviders.DefaultDataProvider;
+import org.jhapy.frontend.dataproviders.DefaultFilter;
+import org.jhapy.frontend.views.JHapyMainView3;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,13 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.text.WordUtils;
-import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.BaseEntity;
-import org.jhapy.dto.utils.StoredFile;
-import org.jhapy.frontend.dataproviders.DefaultDataProvider;
-import org.jhapy.frontend.dataproviders.DefaultFilter;
-import org.jhapy.frontend.views.JHapyMainView3;
 
 /**
  * @author jHapy Lead Dev.
@@ -57,12 +58,14 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
 
   private PropertySet<T> propertySet;
 
-  public ExcelExporter(Grid<T> grid, DefaultDataProvider<T, F> dataProvider,
-      Class<T> entityType) {
+  public ExcelExporter(Grid<T> grid, DefaultDataProvider<T, F> dataProvider, Class<T> entityType) {
     this(grid, dataProvider, entityType, null);
   }
 
-  public ExcelExporter(Grid<T> grid, DefaultDataProvider<T, F> dataProvider, Class<T> entityType,
+  public ExcelExporter(
+      Grid<T> grid,
+      DefaultDataProvider<T, F> dataProvider,
+      Class<T> entityType,
       List<String> excludedColumns) {
     this.dataProvider = dataProvider;
     this.entityType = entityType;
@@ -91,9 +94,7 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
     return File.createTempFile(TMP_FILE_NAME, getFileExtension());
   }
 
-  protected void resetContent() {
-
-  }
+  protected void resetContent() {}
 
   private void buildFileContent() {
     buildHeaderRow();
@@ -122,31 +123,34 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
   void buildColumnHeaderCell(String header) {
     var loggerPrefix = getLoggerPrefix("buildColumnHeaderCell");
 
-    logger().debug(
-        loggerPrefix + "Build header for column name " + header + " : " + JHapyMainView3.get()
-            .getTranslation(header));
+    logger()
+        .debug(
+            loggerPrefix
+                + "Build header for column name "
+                + header
+                + " : "
+                + JHapyMainView3.get().getTranslation(header));
   }
 
   private void buildRows() {
     var loggerPrefix = getLoggerPrefix("buildRows");
     Object filter = null;
 
-    Query<T, F> streamQuery = new Query(0, dataProvider.size(dataProvider.getCurrentQuery()),
-        grid.getDataCommunicator().getBackEndSorting(),
-        grid.getDataCommunicator().getInMemorySorting(),
-        dataProvider.getCurrentQuery().getFilter());
+    Query<T, F> streamQuery =
+        new Query(
+            0,
+            dataProvider.size(dataProvider.getCurrentQuery()),
+            grid.getDataCommunicator().getBackEndSorting(),
+            grid.getDataCommunicator().getInMemorySorting(),
+            dataProvider.getCurrentQuery().getFilter());
     Stream<T> dataStream = getDataStream(streamQuery);
 
     dataStream.forEach(this::buildRow);
   }
 
-  void buildFooter() {
+  void buildFooter() {}
 
-  }
-
-  void writeToFile() {
-
-  }
+  void writeToFile() {}
 
   private void buildRow(T item) {
     onNewRow();
@@ -166,10 +170,11 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
       }
     }
 
-    values.forEach((s, o) -> {
-      onNewCell();
-      buildCell(o);
-    });
+    values.forEach(
+        (s, o) -> {
+          onNewCell();
+          buildCell(o);
+        });
   }
 
   String getFileExtension() {
@@ -198,9 +203,10 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
     var loggerPrefix = getLoggerPrefix("getDataStream");
     Stream<T> stream = grid.getDataProvider().fetch(newQuery);
     if (stream.isParallel()) {
-      logger().debug("Data provider {} has returned "
-              + "parallel stream on 'fetch' call",
-          grid.getDataProvider().getClass());
+      logger()
+          .debug(
+              "Data provider {} has returned " + "parallel stream on 'fetch' call",
+              grid.getDataProvider().getClass());
       stream = stream.collect(Collectors.toList()).stream();
       assert !stream.isParallel();
     }

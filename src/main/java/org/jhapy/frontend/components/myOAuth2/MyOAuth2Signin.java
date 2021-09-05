@@ -18,8 +18,6 @@
 
 package org.jhapy.frontend.components.myOAuth2;
 
-import static java.util.Objects.requireNonNull;
-
 import com.github.scribejava.core.model.Response;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Tag;
@@ -29,9 +27,12 @@ import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.templatemodel.TemplateModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static java.util.Objects.requireNonNull;
 
 @Tag("sign-in-2")
 @JsModule("./myOAuth2/signin.js")
@@ -39,6 +40,7 @@ public abstract class MyOAuth2Signin extends PolymerTemplate<TemplateModel> {
 
   private final List<Consumer<String>> loginListeners = new ArrayList<>();
   private String accessToken;
+
   @Id("signin-button")
   private Button signinButton;
 
@@ -73,8 +75,7 @@ public abstract class MyOAuth2Signin extends PolymerTemplate<TemplateModel> {
    *
    * @param response the response
    */
-  protected void onResponseError(Response response) {
-  }
+  protected void onResponseError(Response response) {}
 
   public String getAccessToken() {
     return accessToken;

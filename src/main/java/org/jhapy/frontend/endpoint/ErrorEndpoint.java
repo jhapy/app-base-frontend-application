@@ -18,12 +18,13 @@
 
 package org.jhapy.frontend.endpoint;
 
-import javax.servlet.http.HttpServletRequest;
 import org.jhapy.commons.utils.HasLogger;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author jHapy Lead Dev.

@@ -27,7 +27,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
-import java.util.Collections;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.EurekaApplication;
 import org.jhapy.dto.registry.EurekaApplicationInstance;
@@ -43,6 +42,8 @@ import org.jhapy.frontend.utils.LumoStyles;
 import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.lumo.BadgeColor;
 
+import java.util.Collections;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -56,17 +57,19 @@ public class EurekaInstancesTabContent extends ActuatorBaseView {
 
   protected EurekaInfo eurekaInfo;
 
-  public EurekaInstancesTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public EurekaInstancesTabContent(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX + "eurekaInstances.", authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
     this.eurekaInfo = eurekaInfo;
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(false, eurekaInfo.getApplicationList(),
-            this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(false, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -80,8 +83,8 @@ public class EurekaInstancesTabContent extends ActuatorBaseView {
     getDetails(null, null);
   }
 
-  protected void getDetails(EurekaApplication _eurekaApplication,
-      EurekaApplicationInstance _eurekaApplicationInstance) {
+  protected void getDetails(
+      EurekaApplication _eurekaApplication, EurekaApplicationInstance _eurekaApplicationInstance) {
     Grid<EurekaApplicationInstance> eurekaApplicationInstanceGrid = new Grid();
     eurekaApplicationInstanceGrid.setWidthFull();
 
@@ -89,15 +92,15 @@ public class EurekaInstancesTabContent extends ActuatorBaseView {
     Div items = new Div();
     items.addClassNames(BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L);
     for (EurekaApplication eurekaApplication : eurekaInfo.getApplicationList()) {
-      ListItem eurekaApplicationItem = new ListItem(
-          eurekaApplication.getName(),
-          new Badge(String.valueOf(eurekaApplication.getInstances().size()),
-              BadgeColor.SUCCESS)
-      );
-      eurekaApplicationItem.addClickListener(flexLayoutClickEvent -> eurekaApplicationInstanceGrid
-          .setItems(eurekaApplication.getInstances()));
-      eurekaApplicationItem
-          .setDividerVisible(++idx < eurekaApplication.getInstances().size());
+      ListItem eurekaApplicationItem =
+          new ListItem(
+              eurekaApplication.getName(),
+              new Badge(
+                  String.valueOf(eurekaApplication.getInstances().size()), BadgeColor.SUCCESS));
+      eurekaApplicationItem.addClickListener(
+          flexLayoutClickEvent ->
+              eurekaApplicationInstanceGrid.setItems(eurekaApplication.getInstances()));
+      eurekaApplicationItem.setDividerVisible(++idx < eurekaApplication.getInstances().size());
       items.add(eurekaApplicationItem);
     }
     content.add(items);
@@ -126,13 +129,20 @@ public class EurekaInstancesTabContent extends ActuatorBaseView {
     content.setPadding(Horizontal.RESPONSIVE_L, Vertical.S);
     content.setSpacing(Right.S);
     content.setAlignItems(Alignment.BASELINE);
-    content.add(new Badge(eurekaApplicationInstance.getStatus(),
-        eurekaApplicationInstance.getStatus().equalsIgnoreCase("UP") ? BadgeColor.SUCCESS
-            : BadgeColor.ERROR));
-    eurekaApplicationInstance.getMetadata().keySet().forEach(s -> {
-      content.add(new Badge(s, BadgeColor.NORMAL));
-      content.add(UIUtils.createH6Label(eurekaApplicationInstance.getMetadata().get(s)));
-    });
+    content.add(
+        new Badge(
+            eurekaApplicationInstance.getStatus(),
+            eurekaApplicationInstance.getStatus().equalsIgnoreCase("UP")
+                ? BadgeColor.SUCCESS
+                : BadgeColor.ERROR));
+    eurekaApplicationInstance
+        .getMetadata()
+        .keySet()
+        .forEach(
+            s -> {
+              content.add(new Badge(s, BadgeColor.NORMAL));
+              content.add(UIUtils.createH6Label(eurekaApplicationInstance.getMetadata().get(s)));
+            });
 
     return content;
   }

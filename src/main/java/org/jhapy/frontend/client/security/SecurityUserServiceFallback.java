@@ -22,11 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.security.securityUser.GetSecurityUserByUsernameQuery;
 import org.jhapy.dto.utils.Page;
 import org.springframework.cloud.openfeign.FallbackFactory;
@@ -38,8 +34,8 @@ import org.springframework.stereotype.Component;
  * @since 2019-06-04
  */
 @Component
-public class SecurityUserServiceFallback implements SecurityUserService, HasLogger,
-    FallbackFactory<SecurityUserServiceFallback> {
+public class SecurityUserServiceFallback
+    implements SecurityUserService, HasLogger, FallbackFactory<SecurityUserServiceFallback> {
 
   final Throwable cause;
 
@@ -54,8 +50,10 @@ public class SecurityUserServiceFallback implements SecurityUserService, HasLogg
   @Override
   public SecurityUserServiceFallback create(Throwable cause) {
     if (cause != null) {
-      String errMessage = StringUtils.isNotBlank(cause.getMessage()) ? cause.getMessage()
-          : "Unknown error occurred : " + cause;
+      String errMessage =
+          StringUtils.isNotBlank(cause.getMessage())
+              ? cause.getMessage()
+              : "Unknown error occurred : " + cause;
       // I don't see this log statement
       logger().debug("Client fallback called for the cause : {}", errMessage);
     }
@@ -65,8 +63,7 @@ public class SecurityUserServiceFallback implements SecurityUserService, HasLogg
   @Override
   public ServiceResult<SecurityUser> getSecurityUserByUsername(
       GetSecurityUserByUsernameQuery query) {
-    logger()
-        .error(getLoggerPrefix("getSecurityUserByUsername") + "Cannot connect to the server");
+    logger().error(getLoggerPrefix("getSecurityUserByUsername") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }

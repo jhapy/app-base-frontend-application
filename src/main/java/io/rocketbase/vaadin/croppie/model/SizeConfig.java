@@ -33,5 +33,4 @@ public class SizeConfig {
   public String getJsonString() {
     return String.format("{\"width\": %d,\"height\": %d }", width, height);
   }
-
 }

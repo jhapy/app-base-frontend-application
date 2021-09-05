@@ -18,12 +18,13 @@
 
 package io.rocketbase.vaadin.croppie.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -37,59 +38,53 @@ public class CroppieConfiguration {
 
   /**
    * The outer container of the cropper
-   * <p>
-   * Default will default to the size of the container
+   *
+   * <p>Default will default to the size of the container
    */
   private SizeConfig boundary;
   /**
    * A class of your choosing to add to the container to add custom styles to your croppie
-   * <p>
-   * Default ""
+   *
+   * <p>Default ""
    */
-  @Builder.Default
-  private String customClass = "";
+  @Builder.Default private String customClass = "";
 
   /**
    * The inner container of the coppie. The visible part of the image
-   * <p>
-   * Default { width: 100, height: 100, type: 'square' }
+   *
+   * <p>Default { width: 100, height: 100, type: 'square' }
    */
-  @Builder.Default
-  private ViewPortConfig viewport = ViewPortConfig.DEFAULT_VALUE;
+  @Builder.Default private ViewPortConfig viewport = ViewPortConfig.DEFAULT_VALUE;
 
   /**
    * Enable or disable support for resizing the viewport area.
-   * <p>
-   * Default false
+   *
+   * <p>Default false
    */
   private boolean enableResize;
 
   /**
    * Enable zooming functionality. If set to false - scrolling and pinching would not zoom.
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
-  @Builder.Default
-  private boolean enableZoom = true;
+  @Builder.Default private boolean enableZoom = true;
 
-  @Builder.Default
-  private boolean enableOrientation = true;
+  @Builder.Default private boolean enableOrientation = true;
 
   /**
    * Enable or disable the ability to use the mouse wheel to zoom in and out on a croppie instance.
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
-  @Builder.Default
-  private boolean mouseWheelZoom = true;
+  @Builder.Default private boolean mouseWheelZoom = true;
 
   /**
    * Hide or Show the zoom slider
-   * <p>
-   * Default true
+   *
+   * <p>Default true
    */
-  @Builder.Default
-  private boolean showZoomer = true;
+  @Builder.Default private boolean showZoomer = true;
 
   public String getJsonString() {
     List<String> parameters = new ArrayList<>();
@@ -125,6 +120,4 @@ public class CroppieConfiguration {
     result.append("}");
     return result.toString();
   }
-
-
 }

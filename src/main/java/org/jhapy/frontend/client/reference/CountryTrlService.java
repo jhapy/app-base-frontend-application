@@ -34,7 +34,11 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-04-21
  */
-@FeignClient(name = "${jhapy.remote-services.backend-server.name:null}", url = "${jhapy.remote-services.backend-server.url:}", path = "/api/countryTrlService", fallback = CountryTrlServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.backend-server.name:null}",
+    url = "${jhapy.remote-services.backend-server.url:}",
+    path = "/api/countryTrlService",
+    fallback = CountryTrlServiceFallback.class)
 @Primary
 public interface CountryTrlService {
 

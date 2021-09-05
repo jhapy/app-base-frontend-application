@@ -31,11 +31,6 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.domain.security.SecurityRole;
@@ -58,17 +53,24 @@ import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
 import org.vaadin.gatanaso.MultiselectComboBox;
 
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SECURITY_USERS)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SecurityUsersView extends
-    DefaultMasterDetailsView<SecurityUser, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class SecurityUsersView
+    extends DefaultMasterDetailsView<SecurityUser, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public SecurityUsersView(MyI18NProvider myI18NProvider) {
-    super("securityUser.", SecurityUser.class, new SecurityUserDataProvider(),
+    super(
+        "securityUser.",
+        SecurityUser.class,
+        new SecurityUserDataProvider(),
         (e) -> SecurityServices.getSecurityUserService().save(new SaveQuery<>(e)),
-        e -> SecurityServices.getSecurityUserService()
-            .delete(new DeleteByStrIdQuery(e.getId())),
+        e -> SecurityServices.getSecurityUserService().delete(new DeleteByStrIdQuery(e.getId())),
         myI18NProvider);
   }
 
@@ -76,8 +78,7 @@ public class SecurityUsersView extends
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
@@ -90,25 +91,35 @@ public class SecurityUsersView extends
         .setKey("isAccountExpired");
     grid.addColumn(new BooleanOkRenderer<>(BaseEntity::getIsActive)).setKey("isActive");
 
-    grid.addColumn(new TextRenderer<>(
-        securityUser -> securityUser.getRoles() == null ? ""
-            : securityUser.getRoles().stream().map(SecurityRole::getName)
-                .reduce((a, b) -> a.concat(", ").concat(b)).orElse(""))).setKey("roles");
+    grid.addColumn(
+            new TextRenderer<>(
+                securityUser ->
+                    securityUser.getRoles() == null
+                        ? ""
+                        : securityUser.getRoles().stream()
+                            .map(SecurityRole::getName)
+                            .reduce((a, b) -> a.concat(", ").concat(b))
+                            .orElse("")))
+        .setKey("roles");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-        column.setSortable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+                column.setSortable(true);
+              }
+            });
     return grid;
   }
 
   protected Component createDetails(SecurityUser securityUser) {
     boolean isNew = securityUser.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + securityUser.getUsername());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + securityUser.getUsername());
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
@@ -160,8 +171,7 @@ public class SecurityUsersView extends
 
     ComboBox<Locale> defaultLocaleField = new ComboBox<>();
     defaultLocaleField.setItems(locales);
-    defaultLocaleField
-        .setItemLabelGenerator((ItemLabelGenerator<Locale>) Locale::getDisplayName);
+    defaultLocaleField.setItemLabelGenerator((ItemLabelGenerator<Locale>) Locale::getDisplayName);
     defaultLocaleField.setWidthFull();
 
     ComboBox<SecurityUserTypeEnum> userTypeField = new ComboBox<>();
@@ -175,97 +185,96 @@ public class SecurityUsersView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    editingForm
-        .addFormItem(usernameField, getTranslation("element." + I18N_PREFIX + "username"));
-    editingForm
-        .addFormItem(passwordField, getTranslation("element." + I18N_PREFIX + "password"));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    editingForm.addFormItem(usernameField, getTranslation("element." + I18N_PREFIX + "username"));
+    editingForm.addFormItem(passwordField, getTranslation("element." + I18N_PREFIX + "password"));
 
-    editingForm
-        .addFormItem(firstNameField, getTranslation("element." + I18N_PREFIX + "firstName"));
-    editingForm
-        .addFormItem(lastNameField, getTranslation("element." + I18N_PREFIX + "lastName"));
+    editingForm.addFormItem(firstNameField, getTranslation("element." + I18N_PREFIX + "firstName"));
+    editingForm.addFormItem(lastNameField, getTranslation("element." + I18N_PREFIX + "lastName"));
 
-    editingForm
-        .addFormItem(nickNameField, getTranslation("element." + I18N_PREFIX + "nickName"));
+    editingForm.addFormItem(nickNameField, getTranslation("element." + I18N_PREFIX + "nickName"));
     editingForm.addFormItem(emailField, getTranslation("element." + I18N_PREFIX + "email"));
 
-    editingForm.addFormItem(passwordLastModificationField,
+    editingForm.addFormItem(
+        passwordLastModificationField,
         getTranslation("element." + I18N_PREFIX + "passwordLastModification"));
-    editingForm
-        .addFormItem(lastSuccessfulLoginField,
-            getTranslation("element." + I18N_PREFIX + "lastSuccessfulLogin"));
+    editingForm.addFormItem(
+        lastSuccessfulLoginField, getTranslation("element." + I18N_PREFIX + "lastSuccessfulLogin"));
 
-    editingForm
-        .addFormItem(isActiveField, getTranslation("element." + I18N_PREFIX + "isActive"));
+    editingForm.addFormItem(isActiveField, getTranslation("element." + I18N_PREFIX + "isActive"));
 
-    editingForm
-        .addFormItem(isAccountLockedField,
-            getTranslation("element." + I18N_PREFIX + "isAccountLocked"));
+    editingForm.addFormItem(
+        isAccountLockedField, getTranslation("element." + I18N_PREFIX + "isAccountLocked"));
 
-    editingForm
-        .addFormItem(isActivatedField,
-            getTranslation("element." + I18N_PREFIX + "isActivated"));
+    editingForm.addFormItem(
+        isActivatedField, getTranslation("element." + I18N_PREFIX + "isActivated"));
 
-    editingForm.addFormItem(isAccountExpiredField,
-        getTranslation("element." + I18N_PREFIX + "isAccountExpired"));
-    editingForm
-        .addFormItem(isCredentialsExpiredField,
-            getTranslation("element." + I18N_PREFIX + "isCredentialsExpired"));
+    editingForm.addFormItem(
+        isAccountExpiredField, getTranslation("element." + I18N_PREFIX + "isAccountExpired"));
+    editingForm.addFormItem(
+        isCredentialsExpiredField,
+        getTranslation("element." + I18N_PREFIX + "isCredentialsExpired"));
 
-    editingForm
-        .addFormItem(failedLoginAttemptsField,
-            getTranslation("element." + I18N_PREFIX + "failedLoginAttempts"));
+    editingForm.addFormItem(
+        failedLoginAttemptsField, getTranslation("element." + I18N_PREFIX + "failedLoginAttempts"));
 
-    editingForm
-        .addFormItem(defaultLocaleField,
-            getTranslation("element." + I18N_PREFIX + "defaultLanguage"));
-    editingForm
-        .addFormItem(userTypeField, getTranslation("element." + I18N_PREFIX + "userType"));
+    editingForm.addFormItem(
+        defaultLocaleField, getTranslation("element." + I18N_PREFIX + "defaultLanguage"));
+    editingForm.addFormItem(userTypeField, getTranslation("element." + I18N_PREFIX + "userType"));
 
-    FormLayout.FormItem rolesItem = editingForm
-        .addFormItem(rolesField, getTranslation("element." + I18N_PREFIX + "roles"));
+    FormLayout.FormItem rolesItem =
+        editingForm.addFormItem(rolesField, getTranslation("element." + I18N_PREFIX + "roles"));
 
     UIUtils.setColSpan(2, rolesItem);
 
     binder.setBean(securityUser);
 
-    binder.forField(usernameField)
+    binder
+        .forField(usernameField)
         .asRequired(getTranslation("message.securityUser.usernameRequired"))
         .bind(SecurityUser::getUsername, SecurityUser::setUsername);
-    binder.forField(passwordField)
-        .bind(SecurityUser::getPassword, SecurityUser::setPassword);
+    binder.forField(passwordField).bind(SecurityUser::getPassword, SecurityUser::setPassword);
     binder.bind(firstNameField, SecurityUser::getFirstName, SecurityUser::setFirstName);
     binder.bind(lastNameField, SecurityUser::getLastName, SecurityUser::setLastName);
     binder.bind(emailField, SecurityUser::getEmail, SecurityUser::setEmail);
     binder.bind(nickNameField, SecurityUser::getNickName, SecurityUser::setNickName);
-    binder.bind(failedLoginAttemptsField,
+    binder.bind(
+        failedLoginAttemptsField,
         e -> e.getFailedLoginAttempts() == null ? "0" : e.getFailedLoginAttempts().toString(),
         (f, e) -> f.setFailedLoginAttempts(Integer.parseInt(e)));
-    binder
-        .bind(passwordLastModificationField, e -> e.getPasswordLastModification() == null ? null
+    binder.bind(
+        passwordLastModificationField,
+        e ->
+            e.getPasswordLastModification() == null
+                ? null
                 : e.getPasswordLastModification().atZone(ZoneId.systemDefault()).toLocalDate(),
-            null);
-    binder.bind(lastSuccessfulLoginField, e -> e.getLastSuccessfulLogin() == null ? null
-        : e.getLastSuccessfulLogin().atZone(ZoneId.systemDefault()).toLocalDate(), null);
+        null);
+    binder.bind(
+        lastSuccessfulLoginField,
+        e ->
+            e.getLastSuccessfulLogin() == null
+                ? null
+                : e.getLastSuccessfulLogin().atZone(ZoneId.systemDefault()).toLocalDate(),
+        null);
     binder.bind(isActiveField, SecurityUser::getIsActive, SecurityUser::setIsActive);
-    binder.bind(isAccountExpiredField, SecurityUser::getIsAccountExpired,
+    binder.bind(
+        isAccountExpiredField,
+        SecurityUser::getIsAccountExpired,
         SecurityUser::setIsAccountExpired);
-    binder
-        .bind(isAccountLockedField, SecurityUser::getIsAccountLocked,
-            SecurityUser::setIsAccountLocked);
+    binder.bind(
+        isAccountLockedField, SecurityUser::getIsAccountLocked, SecurityUser::setIsAccountLocked);
     binder.bind(isActivatedField, SecurityUser::getIsActivated, SecurityUser::setIsActivated);
-    binder.bind(isCredentialsExpiredField, SecurityUser::getIsCredentialsExpired,
+    binder.bind(
+        isCredentialsExpiredField,
+        SecurityUser::getIsCredentialsExpired,
         SecurityUser::setIsCredentialsExpired);
-    binder.bind(defaultLocaleField, SecurityUser::getDefaultLocale,
-        SecurityUser::setDefaultLocale);
-    binder.forField(userTypeField)
+    binder.bind(defaultLocaleField, SecurityUser::getDefaultLocale, SecurityUser::setDefaultLocale);
+    binder
+        .forField(userTypeField)
         .asRequired(getTranslation("message.securityUser.userTypeRequired"))
         .bind(SecurityUser::getUserType, SecurityUser::setUserType);
     binder.bind(rolesField, SecurityUser::getRoles, SecurityUser::setRoles);
@@ -274,9 +283,7 @@ public class SecurityUsersView extends
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : filter,
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, Boolean.TRUE));
   }
 }

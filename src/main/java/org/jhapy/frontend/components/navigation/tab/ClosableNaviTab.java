@@ -29,8 +29,7 @@ public class ClosableNaviTab extends NaviTab {
 
   private final Button close;
 
-  public ClosableNaviTab(String label,
-      Class<? extends Component> navigationTarget) {
+  public ClosableNaviTab(String label, Class<? extends Component> navigationTarget) {
     super(label, navigationTarget);
     getElement().setAttribute("closable", true);
 

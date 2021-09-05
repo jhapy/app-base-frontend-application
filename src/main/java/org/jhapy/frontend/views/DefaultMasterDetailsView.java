@@ -18,6 +18,7 @@
 
 package org.jhapy.frontend.views;
 
+import ch.carnet.kasparscherrer.EmptyFormLayoutItem;
 import com.github.appreciated.card.ClickableCard;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickNotifier;
@@ -56,8 +57,7 @@ import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawer;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawerFooter;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawerHeader;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
-import org.jhapy.frontend.components.navigation.bar.AppBar.NaviMode;
+import org.jhapy.frontend.components.navigation.menubar.ModuleToolbar;
 import org.jhapy.frontend.dataproviders.DefaultDataProvider;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.DefaultSearchDataProvider;
@@ -80,8 +80,12 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 8/27/19
  */
-public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends DefaultFilter, Q extends SearchQuery, S extends SearchQueryResult> extends
-    SplitViewFrame implements BeforeLeaveObserver {
+public abstract class DefaultMasterDetailsView<
+        T extends BaseEntity,
+        F extends DefaultFilter,
+        Q extends SearchQuery,
+        S extends SearchQueryResult>
+    extends SplitViewFrame implements BeforeLeaveObserver {
 
   protected final String I18N_PREFIX;
   protected Grid<T> grid;
@@ -95,27 +99,36 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
   private final Function<T, ServiceResult<T>> saveHandler;
   private final Function<T, ServiceResult<Void>> deleteHandler;
   private Tabs tabs;
-  private Button newRecordButton;
   private Boolean initialFetch = Boolean.TRUE;
   private FlexBoxLayout content;
   protected final MyI18NProvider myI18NProvider;
+  protected ModuleToolbar moduleToolbar;
 
-  public DefaultMasterDetailsView(String I18N_PREFIX, Class<T> entityType,
-      DefaultDataProvider<T, F> dataProvider, MyI18NProvider myI18NProvider) {
+  public DefaultMasterDetailsView(
+      String I18N_PREFIX,
+      Class<T> entityType,
+      DefaultDataProvider<T, F> dataProvider,
+      MyI18NProvider myI18NProvider) {
     this(I18N_PREFIX, entityType, dataProvider, null, null, myI18NProvider);
   }
 
-  public DefaultMasterDetailsView(String I18N_PREFIX, Class<T> entityType,
+  public DefaultMasterDetailsView(
+      String I18N_PREFIX,
+      Class<T> entityType,
       DefaultDataProvider<T, F> dataProvider,
-      Function<T, ServiceResult<T>> saveHandler, Function<T, ServiceResult<Void>> deleteHandler,
+      Function<T, ServiceResult<T>> saveHandler,
+      Function<T, ServiceResult<Void>> deleteHandler,
       MyI18NProvider myI18NProvider) {
-    this(I18N_PREFIX, entityType, dataProvider, true, saveHandler, deleteHandler,
-        myI18NProvider);
+    this(I18N_PREFIX, entityType, dataProvider, true, saveHandler, deleteHandler, myI18NProvider);
   }
 
-  public DefaultMasterDetailsView(String I18N_PREFIX, Class<T> entityType,
-      DefaultDataProvider<T, F> dataProvider, Boolean initialFetch,
-      Function<T, ServiceResult<T>> saveHandler, Function<T, ServiceResult<Void>> deleteHandler,
+  public DefaultMasterDetailsView(
+      String I18N_PREFIX,
+      Class<T> entityType,
+      DefaultDataProvider<T, F> dataProvider,
+      Boolean initialFetch,
+      Function<T, ServiceResult<T>> saveHandler,
+      Function<T, ServiceResult<Void>> deleteHandler,
       MyI18NProvider myI18NProvider) {
     this.I18N_PREFIX = I18N_PREFIX;
     this.entityType = entityType;
@@ -155,7 +168,9 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
       ConfirmDialog.createQuestion()
           .withCaption(getTranslation("element.global.unsavedChanged.title"))
           .withMessage(getTranslation("message.global.unsavedChanged"))
-          .withOkButton(action::run, ButtonOption.focus(),
+          .withOkButton(
+              action::run,
+              ButtonOption.focus(),
               ButtonOption.caption(getTranslation("action.global.yes")))
           .withCancelButton(ButtonOption.caption(getTranslation("action.global.no")))
           .open();
@@ -173,41 +188,40 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
   }
 
   protected void initHeader() {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
-    appBar.setNaviMode(NaviMode.MENU);
+    moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
+    moduleToolbar.addGoBackListener(
+        () -> {
+          if (super.getGoBackListener() != null) super.getGoBackListener().goBack();
+          else super.getMenuBackListener().goBack();
+        });
+    moduleToolbar.setSearchTextFieldVisible(isShowSearchTextField());
+    moduleToolbar.addSearchTextChangedListener(
+        searchText -> filter(searchText, moduleToolbar.getActiveFilterValue()));
 
-    initSearchBar();
+    moduleToolbar.setShowInactiveButtonVisible(isShowInactiveFilter());
+    moduleToolbar.addShowInactiveChangedListener(
+        showInactive -> filter(moduleToolbar.getSearchText(), showInactive));
 
-    String title = getTitle();
-    if (title != null) {
-      appBar.setTitle(title);
-    }
+    moduleToolbar.setFilterButtonVisible(false);
 
     if (canCreateRecord() && saveHandler != null) {
-      newRecordButton = UIUtils.createTertiaryButton(VaadinIcon.PLUS);
-      newRecordButton.addClickListener(event -> showDetails());
-      appBar.addActionItem(newRecordButton);
+      moduleToolbar.setAddButtonVisible(true);
+      moduleToolbar.addNewRecordListener(this::showDetails);
     }
 
-    Button refreshButton = UIUtils.createTertiaryButton(VaadinIcon.REFRESH);
-    refreshButton.addClickListener(buttonClickEvent -> dataProvider.refreshAll());
-    appBar.addActionItem(refreshButton);
+    moduleToolbar.addRefreshListener(dataProvider::refreshAll);
+
+    setViewHeader(moduleToolbar);
   }
 
-  protected void setTitle( String title ) {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
-    appBar.setTitle(title);
-  }
   protected void showDetails() {
     try {
       showDetails(entityType.getDeclaredConstructor().newInstance());
-
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+    } catch (InstantiationException
+        | IllegalAccessException
+        | InvocationTargetException
+        | NoSuchMethodException ignored) {
     }
-  }
-
-  protected String getTitle() {
-    return null;
   }
 
   protected boolean canCreateRecord() {
@@ -222,22 +236,16 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     return true;
   }
 
-  protected void initSearchBar() {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
-    if (!isGlobalSearchEnabled()) {
-      Button searchButton = UIUtils.createTertiaryButton(VaadinIcon.SEARCH);
-      searchButton.addClickListener(event -> appBar.searchModeOn());
-      appBar.addSearchListener(
-          event -> filter(appBar.getSearchString(), appBar.getSearchShowActive()));
-      appBar.setSearchPlaceholder(getTranslation("element.global.search"));
-      appBar.addActionItem(searchButton);
-    } else {
-      appBar.addActionItem(JHapyMainView3.get().getSearchButton());
-    }
-  }
-
   protected boolean isGlobalSearchEnabled() {
     return false;
+  }
+
+  protected boolean isShowInactiveFilter() {
+    return true;
+  }
+
+  protected boolean isShowSearchTextField() {
+    return true;
   }
 
   protected Function<S, ClickNotifier> getSearchResultDataProvider() {
@@ -250,18 +258,6 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
 
   protected Function<String, Query<S, Q>> getSearchQueryProvider() {
     return s -> new Query(DefaultFilter.getEmptyFilter());
-  }
-
-  public void enableCreateRecord() {
-    if (newRecordButton != null) {
-      newRecordButton.setVisible(true);
-    }
-  }
-
-  public void disableCreateRecord() {
-    if (newRecordButton != null) {
-      newRecordButton.setVisible(false);
-    }
   }
 
   public void enableSaveButton() {
@@ -287,8 +283,10 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
     Label nbRows = UIUtils.createH4Label(getTranslation("element.global.nbRows", 0));
-    dataProvider.setPageObserver(executionPage -> nbRows
-        .setText(getTranslation("element.global.nbRows", executionPage.getTotalElements())));
+    dataProvider.setPageObserver(
+        executionPage ->
+            nbRows.setText(
+                getTranslation("element.global.nbRows", executionPage.getTotalElements())));
 
     FooterRow footerRow = grid.appendFooterRow();
     footerRow.getCell(grid.getColumns().get(0)).setComponent(nbRows);
@@ -315,16 +313,15 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
 
     tabs = new Tabs(details, audit);
     tabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS);
-    tabs.addSelectedChangeListener(e -> {
-      Tab selectedTab = tabs.getSelectedTab();
-      if (selectedTab.equals(details)) {
-        detailsDrawer
-            .setContent(createDetails(currentEditing));
-      } else if (selectedTab.equals(audit)) {
-        detailsDrawer
-            .setContent(createAudit(currentEditing));
-      }
-    });
+    tabs.addSelectedChangeListener(
+        e -> {
+          Tab selectedTab = tabs.getSelectedTab();
+          if (selectedTab.equals(details)) {
+            detailsDrawer.setContent(createDetails(currentEditing));
+          } else if (selectedTab.equals(audit)) {
+            detailsDrawer.setContent(createAudit(currentEditing));
+          }
+        });
 
     return tabs;
   }
@@ -336,12 +333,15 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
 
     tabs = buildTabs();
 
-    detailsDrawerHeader = new DetailsDrawerHeader(
-        getTranslation("element." + I18N_PREFIX + "className"), tabs);
-    detailsDrawerHeader.addCloseListener(e -> checkForDetailsChanges(() -> {
-      detailsDrawer.hide();
-      currentEditing = null;
-    }));
+    detailsDrawerHeader =
+        new DetailsDrawerHeader(getTranslation("element." + I18N_PREFIX + "className"), tabs);
+    detailsDrawerHeader.addCloseListener(
+        e ->
+            checkForDetailsChanges(
+                () -> {
+                  detailsDrawer.hide();
+                  currentEditing = null;
+                }));
     detailsDrawer.setHeader(detailsDrawerHeader);
 
     // Footer
@@ -354,10 +354,11 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
       detailsDrawerFooter.setDeleteButtonVisible(false);
     }
 
-    detailsDrawerFooter.addCancelListener(e -> {
-      detailsDrawer.hide();
-      currentEditing = null;
-    });
+    detailsDrawerFooter.addCancelListener(
+        e -> {
+          detailsDrawer.hide();
+          currentEditing = null;
+        });
     if (saveHandler != null && canSave()) {
       detailsDrawerFooter.addSaveListener(e -> save(false));
       detailsDrawerFooter.addSaveAndNewListener(e -> save(true));
@@ -372,75 +373,86 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
 
   protected void showDetails(T entity) {
     if (detailsDrawerFooter != null) {
-      checkForDetailsChanges(() -> {
-        if (entity.getId() != null) {
-          detailsDrawerFooter.setSaveAndNewButtonVisible(false);
-        } else {
-          if (saveHandler != null && canSave()) {
-            detailsDrawerFooter.setSaveAndNewButtonVisible(true);
-          }
-        }
-        this.binder = new BeanValidationBinder<>(entityType);
+      checkForDetailsChanges(
+          () -> {
+            if (entity.getId() != null) {
+              detailsDrawerFooter.setSaveAndNewButtonVisible(false);
+            } else {
+              if (saveHandler != null && canSave()) {
+                detailsDrawerFooter.setSaveAndNewButtonVisible(true);
+              }
+            }
+            this.binder = new BeanValidationBinder<>(entityType);
 
-        currentEditing = entity;
-        detailsDrawer.setContent(createDetails(entity));
-        detailsDrawer.show();
-        tabs.setSelectedIndex(0);
-      });
+            currentEditing = entity;
+            detailsDrawer.setContent(createDetails(entity));
+            detailsDrawer.show();
+            tabs.setSelectedIndex(0);
+          });
     }
   }
 
   protected abstract Component createDetails(T entity);
 
   protected Component createAudit(T entity) {
-    TextField id = new TextField();
-    id.setWidth("100%");
+    var idField = new TextField();
+    idField.setWidthFull();
 
-    Checkbox isActive = new Checkbox();
+    var clientNameField = new TextField();
+    clientNameField.setWidthFull();
 
-    TextField created = new TextField();
-    created.setWidth("100%");
+    var isActiveField = new Checkbox();
 
-    TextField updated = new TextField();
-    updated.setWidth("100%");
+    var createdField = new TextField();
+    createdField.setWidthFull();
 
-    TextField createdBy = new TextField();
-    createdBy.setWidth("100%");
+    var updatedField = new TextField();
+    updatedField.setWidthFull();
 
-    TextField updatedBy = new TextField();
-    updatedBy.setWidth("100%");
+    var createdByField = new TextField();
+    createdByField.setWidthFull();
+
+    var updatedByField = new TextField();
+    updatedByField.setWidthFull();
 
     // Form layout
-    FormLayout auditForm = new FormLayout();
-    auditForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    var auditForm = new FormLayout();
+    auditForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     auditForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    auditForm.setWidthFull();
 
-    auditForm.addFormItem(id, getTranslation("element.baseEntity.id"));
-    auditForm.addFormItem(isActive, getTranslation("element.baseEntity.isActive"));
-    auditForm.addFormItem(created, getTranslation("element.baseEntity.created"));
-    auditForm.addFormItem(updated, getTranslation("element.baseEntity.updated"));
-    auditForm.addFormItem(createdBy, getTranslation("element.baseEntity.createdBy"));
-    auditForm.addFormItem(updatedBy, getTranslation("element.baseEntity.updatedBy"));
+    auditForm.addFormItem(idField, getTranslation("element.baseEntity.id"));
+    auditForm.addFormItem(clientNameField, getTranslation("element.baseEntity.clientName"));
+    auditForm.addFormItem(isActiveField, getTranslation("element.baseEntity.isActive"));
+    auditForm.add(new EmptyFormLayoutItem());
+    auditForm.addFormItem(createdField, getTranslation("element.baseEntity.created"));
+    auditForm.addFormItem(updatedField, getTranslation("element.baseEntity.updated"));
+    auditForm.addFormItem(createdByField, getTranslation("element.baseEntity.createdBy"));
+    auditForm.addFormItem(updatedByField, getTranslation("element.baseEntity.updatedBy"));
 
-    binder.bind(id, entity1 -> entity1.getId() == null ? null :
-            entity1.getId().toString(),
+    binder.bind(
+        idField, entity1 -> entity1.getId() == null ? null : entity1.getId().toString(), null);
+    binder.bind(clientNameField, BaseEntity::getClientName, null);
+    binder.bind(isActiveField, BaseEntity::getIsActive, BaseEntity::setIsActive);
+    binder.bind(
+        createdField,
+        entity1 ->
+            entity1.getCreated() == null
+                ? ""
+                : DateTimeFormatter.format(entity1.getCreated(), getLocale()),
         null);
-    binder.bind(isActive, BaseEntity::getIsActive, BaseEntity::setIsActive);
-    binder.bind(created, entity1 -> entity1.getCreated() == null ? ""
-        : DateTimeFormatter.format(entity1.getCreated(), getLocale()), null);
-    binder.bind(createdBy,
-        activityDisplay -> entity.getCreatedBy(),
+    binder.bind(createdByField, activityDisplay -> entity.getCreatedBy(), null);
+    binder.bind(
+        updatedField,
+        entity1 ->
+            entity1.getModified() == null
+                ? ""
+                : DateTimeFormatter.format(entity1.getModified(), getLocale()),
         null);
-    binder.bind(updated, entity1 -> entity1.getModified() == null ? ""
-        : DateTimeFormatter.format(entity1.getModified(), getLocale()), null);
-    binder.bind(updatedBy,
-        activityDisplay -> entity.getModifiedBy(),
-        null);
+    binder.bind(updatedByField, activityDisplay -> entity.getModifiedBy(), null);
 
     binder.readBean(entity);
 
@@ -451,15 +463,13 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     return true;
   }
 
-  protected void afterSave(T entity) {
-  }
+  protected void afterSave(T entity) {}
 
   protected boolean beforeDelete(T entity) {
     return true;
   }
 
-  protected void afterDelete() {
-  }
+  protected void afterDelete() {}
 
   private void save(boolean saveAndNew) {
     if (binder.writeBeanIfValid(currentEditing)) {
@@ -476,8 +486,7 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
       }
       afterSave(currentEditing);
 
-      JHapyMainView3.get()
-          .displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
+      JHapyMainView3.get().displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
 
       if (!isNew) {
         dataProvider.refreshItem(currentEditing);
@@ -493,15 +502,18 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
       showDetails(currentEditing);
     } else {
       BinderValidationStatus<T> validate = binder.validate();
-      String errorText = validate.getFieldValidationStatuses()
-          .stream().filter(BindingValidationStatus::isError)
-          .map(BindingValidationStatus::getMessage)
-          .map(Optional::get).distinct()
-          .collect(Collectors.joining(", "));
+      String errorText =
+          validate.getFieldValidationStatuses().stream()
+              .filter(BindingValidationStatus::isError)
+              .map(BindingValidationStatus::getMessage)
+              .map(Optional::get)
+              .distinct()
+              .collect(Collectors.joining(", "));
 
-      Notification
-          .show(getTranslation("message.global.validationErrorMessage", errorText), 3000,
-              Notification.Position.BOTTOM_CENTER);
+      Notification.show(
+          getTranslation("message.global.validationErrorMessage", errorText),
+          3000,
+          Notification.Position.BOTTOM_CENTER);
     }
   }
 
@@ -509,8 +521,7 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     ConfirmDialog.create()
         .withCaption(getTranslation("message.global.confirmDelete.title"))
         .withMessage(getTranslation("message.global.confirmDelete.message"))
-        .withOkButton(this::deleteConfirmed, ButtonOption.focus(),
-            ButtonOption.caption("YES"))
+        .withOkButton(this::deleteConfirmed, ButtonOption.focus(), ButtonOption.caption("YES"))
         .withCancelButton(ButtonOption.caption("NO"))
         .open();
   }
@@ -533,16 +544,13 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
   }
 
   protected void filter(String filter, Boolean showInactive) {
-    dataProvider
-        .setFilter((F) new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : filter,
-            showInactive));
+    dataProvider.setFilter(
+        (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
   }
 
   protected Label getLabel(String element) {
     Label label = new Label(getTranslation(element));
-    TooltipConfiguration ttconfig = new TooltipConfiguration(
-        myI18NProvider.getTooltip(element));
+    TooltipConfiguration ttconfig = new TooltipConfiguration(myI18NProvider.getTooltip(element));
     ttconfig.setDelay(1000);
     ttconfig.setHideOnClick(TC_HIDE_ON_CLICK.TRUE);
     ttconfig.setShowOnCreate(false);
@@ -563,8 +571,7 @@ public abstract class DefaultMasterDetailsView<T extends BaseEntity, F extends D
     return getButton(icon, action, false, false);
   }
 
-  protected Button getButton(VaadinIcon icon, String action, boolean isSmall,
-      boolean displayText) {
+  protected Button getButton(VaadinIcon icon, String action, boolean isSmall, boolean displayText) {
     Button button;
     if (isSmall) {
       if (displayText) {

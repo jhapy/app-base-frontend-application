@@ -18,7 +18,6 @@
 
 package org.jhapy.frontend.client.security.keycloak;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -27,11 +26,13 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.Assert;
 
+import java.util.List;
+
 public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 
   private final Logger log = LoggerFactory.getLogger(AudienceValidator.class);
-  private final OAuth2Error error = new OAuth2Error("invalid_token",
-      "The required audience is missing", null);
+  private final OAuth2Error error =
+      new OAuth2Error("invalid_token", "The required audience is missing", null);
 
   private final List<String> allowedAudience;
 

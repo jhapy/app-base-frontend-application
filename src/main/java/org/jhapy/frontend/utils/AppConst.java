@@ -18,8 +18,9 @@
 
 package org.jhapy.frontend.utils;
 
-import java.util.Locale;
 import org.jhapy.dto.utils.DirectionEnum;
+
+import java.util.Locale;
 
 /**
  * @author jHapy Lead Dev.
@@ -70,6 +71,8 @@ public interface AppConst {
   String PAGE_ENTRANCE_TYPE = "settings/places/entranceType";
   String PAGE_RATING_TYPE = "settings/places/ratingType";
   String PAGE_PLACE_TYPE = "settings/places/placeType";
+  String PAGE_CLIENTS = "settings/security/clients";
+  String PAGE_DB_TABLES = "settings/security/dbTables";
   String PAGE_SECURITY_USERS = "settings/security/securityUsers";
   String PAGE_SECURITY_ROLES = "settings/security/securityRoles";
   String PAGE_SECURITY_GROUPS = "settings/security/securityGroups";
@@ -113,6 +116,8 @@ public interface AppConst {
   String TITLE_ACTIVITY_ADMIN = "element.page.title.activityAdmin";
   String TITLE_PLACES_ADMIN = "element.page.title.placesAdmin";
   String TITLE_PLACE_ADMIN = "element.page.title.placeAdmin";
+  String TITLE_CLIENTS = "element.page.title.clients";
+  String TITLE_DB_TABLES = "element.page.title.dbTables";
   String TITLE_SECURITY_USERS = "element.page.title.securityUsers";
   String TITLE_SECURITY_ROLES = "element.page.title.securityRoles";
   String TITLE_SECURITY_GROUPS = "element.page.title.securityGroups";
@@ -163,10 +168,14 @@ public interface AppConst {
   int NOTIFICATION_DURATION = 4000;
 
   String AVATAR_ATTRIBUTE = "AVATAR";
+  String CLIENT_ID_ATTRIBUTE = "CLIENT_ID";
+  String MAILBOX_ATTRIBUTE = "MAILBOX";
+  String MAILBOX_FULL_NAME_ATTRIBUTE = "MAILBOX_FULL_NAME";
   String SECURITY_USER_ATTRIBUTE = "SECURITY_USER";
   String SECURITY_USER_ID_ATTRIBUTE = "SECURITY_USER_ID";
   String USER_ATTRIBUTE = "USER";
   String THEME_ATTRIBUTE = "THEME";
 
   String USER_ID_ATTRIBUTE = "USER_ID";
+  String NICKNAME_ATTRIBUTE = "NICKNAME";
 }

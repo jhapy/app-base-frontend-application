@@ -42,5 +42,4 @@ public class Initials extends FlexBoxLayout {
 
     add(initials);
   }
-
 }

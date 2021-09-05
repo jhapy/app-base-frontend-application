@@ -39,15 +39,20 @@ import java.util.*;
  * @version 1.0
  * @since 2019-04-21
  */
-public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTranslationV2> extends FlexBoxLayout
-    implements HasValue<CustomListFieldValueChangeEventForTranslationV2<C>, Map<String,C>>, HasLogger, Serializable {
+public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTranslationV2>
+    extends FlexBoxLayout
+    implements HasValue<CustomListFieldValueChangeEventForTranslationV2<C>, Map<String, C>>,
+        HasLogger,
+        Serializable {
 
   protected final String i18nPrefix;
   protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackendForTranslationV2<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV2<C>>> changeListeners = new ArrayList<>();
+  private final List<
+          ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV2<C>>>
+      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldForTranslationV2(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;
@@ -58,14 +63,14 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
   }
 
   @Override
-  public Map<String,C> getValue() {
+  public Map<String, C> getValue() {
     var loggerPrefix = getLoggerPrefix("generateModelValue");
     logger().debug(loggerPrefix + "Result =  " + dataProvider.getValues());
     return new HashMap<>(dataProvider.getValues());
   }
 
   @Override
-  public void setValue(Map<String,C> values) {
+  public void setValue(Map<String, C> values) {
     var loggerPrefix = getLoggerPrefix("setPresentationValue");
     logger().debug(loggerPrefix + "Param =  " + values);
     if (values != null) {
@@ -83,7 +88,8 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
 
   @Override
   public Registration addValueChangeListener(
-      ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV2<C>> valueChangeListener) {
+      ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV2<C>>
+          valueChangeListener) {
     changeListeners.add(valueChangeListener);
     return () -> changeListeners.remove(valueChangeListener);
   }
@@ -99,22 +105,42 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
     i18nGrid.setCancel(getTranslation("action.global.cancel", currentLocal));
     i18nGrid.setEditLabel(getTranslation("action.global.editButton", currentLocal));
 
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setTitle(getTranslation("element.global.cancel.title", currentLocal));
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setContent(getTranslation("element.global.cancel.content", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setDismiss(getTranslation("action.global.cancel.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setConfirm(getTranslation("action.global.cancel.confirmButton", currentLocal));
 
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setTitle(getTranslation("element.global.delete.title", currentLocal));
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setContent(getTranslation("element.global.delete.content", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setDismiss(getTranslation("action.global.delete.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setConfirm(getTranslation("action.global.delete.confirmButton", currentLocal));
 
     return i18nGrid;
@@ -126,8 +152,7 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
   }
 
   @Override
-  public void setReadOnly(boolean b) {
-  }
+  public void setReadOnly(boolean b) {}
 
   @Override
   public boolean isRequiredIndicatorVisible() {
@@ -135,12 +160,13 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
   }
 
   @Override
-  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-  }
+  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {}
 
-  public void updateValue(Map<String,C> oldValues, Map<String,C> newValues) {
-    changeListeners.forEach(valueChangeListener -> valueChangeListener
-        .valueChanged(new CustomListFieldValueChangeEventForTranslationV2<>(oldValues, newValues, this)));
+  public void updateValue(Map<String, C> oldValues, Map<String, C> newValues) {
+    changeListeners.forEach(
+        valueChangeListener ->
+            valueChangeListener.valueChanged(
+                new CustomListFieldValueChangeEventForTranslationV2<>(oldValues, newValues, this)));
   }
 
   public class Backend extends DefaultBackendForTranslationV2<C> {
@@ -150,26 +176,26 @@ public abstract class DefaultCustomListFieldForTranslationV2<C extends EntityTra
       return item.getId();
     }
 
-    public void setValues(Map<String,C> values) {
+    public void setValues(Map<String, C> values) {
       fieldsMap.clear();
       fieldsMap.putAll(values);
     }
 
     public void persist(C value) {
-      Map<String,C> previousValues = new HashMap<>(fieldsMap);
+      Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
       if (value.getId() == null) {
         value.setId(uniqueLong.incrementAndGet());
         value.setIsNew(true);
       }
       if (!fieldsMap.containsKey(value.getIso3Language())) {
-        fieldsMap.put(value.getIso3Language(),value);
+        fieldsMap.put(value.getIso3Language(), value);
       }
       updateValue(previousValues, fieldsMap);
     }
 
     public void delete(C value) {
-      Map<String,C>  previousValues = new HashMap<>(fieldsMap);
+      Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
       fieldsMap.remove(value.getIso3Language());
 

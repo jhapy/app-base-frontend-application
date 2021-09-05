@@ -1,18 +1,16 @@
 package org.jhapy.frontend.components.notification.entity;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
 import org.jhapy.frontend.components.notification.interfaces.Notification;
 
-/**
- * The default implementation of {@link Notification}.
- */
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/** The default implementation of {@link Notification}. */
 public class DefaultNotification implements Notification {
 
-  /**
-   * The title of the notification
-   */
+  /** The title of the notification */
   private String title;
+
   private String description;
   private String image;
   private Priority priority = Priority.MEDIUM;
@@ -42,8 +40,8 @@ public class DefaultNotification implements Notification {
     }
   }
 
-  public DefaultNotification(String title, String description, Priority priority,
-      boolean isSticky) {
+  public DefaultNotification(
+      String title, String description, Priority priority, boolean isSticky) {
     this(title, description, priority);
     this.isSticky = isSticky;
   }

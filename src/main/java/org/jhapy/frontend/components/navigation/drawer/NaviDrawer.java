@@ -38,8 +38,7 @@ import org.jhapy.frontend.utils.UIUtils;
 
 @CssImport("./styles/components/navi-drawer.css")
 @JsModule("./swipe-away.js")
-public class NaviDrawer extends Div
-    implements AfterNavigationObserver {
+public class NaviDrawer extends Div implements AfterNavigationObserver {
 
   private final String CLASS_NAME = "navi-drawer";
   private final String RAIL = "rail";
@@ -53,7 +52,6 @@ public class NaviDrawer extends Div
 
   private Button railButton;
   private NaviMenu menu;
-
 
   public NaviDrawer(boolean showSearchMenu, String version, String environement) {
     setClassName(CLASS_NAME);
@@ -76,9 +74,13 @@ public class NaviDrawer extends Div
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
     UI ui = attachEvent.getUI();
-    ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
-        mainContent.getElement(), this, "onSwipeAway",
-        scrim.getElement());
+    ui.getPage()
+        .executeJavaScript(
+            "window.addSwipeAway($0,$1,$2,$3)",
+            mainContent.getElement(),
+            this,
+            "onSwipeAway",
+            scrim.getElement());
   }
 
   @ClientCallable
@@ -140,8 +142,7 @@ public class NaviDrawer extends Div
       mainContent.add(l);
     }
 
-    railButton = UIUtils.createSmallButton("Collapse",
-        VaadinIcon.CHEVRON_LEFT_SMALL);
+    railButton = UIUtils.createSmallButton("Collapse", VaadinIcon.CHEVRON_LEFT_SMALL);
     railButton.addClassName(CLASS_NAME + "__footer");
     railButton.addClickListener(event -> toggleRailMode());
     railButton.getElement().setAttribute("aria-label", "Collapse menu");
@@ -159,11 +160,14 @@ public class NaviDrawer extends Div
       railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
       railButton.setText("Expand");
       UIUtils.setAriaLabel("Expand menu", railButton);
-      getUI().get().getPage().executeJs(
-          "var originalStyle = getComputedStyle($0).pointerEvents;" //
-              + "$0.style.pointerEvents='none';" //
-              + "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
-          getElement());
+      getUI()
+          .get()
+          .getPage()
+          .executeJs(
+              "var originalStyle = getComputedStyle($0).pointerEvents;" //
+                  + "$0.style.pointerEvents='none';" //
+                  + "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
+              getElement());
     }
   }
 
@@ -188,10 +192,14 @@ public class NaviDrawer extends Div
     // iOS 12.2 sometimes fails to animate the menu away.
     // It should be gone after 240ms
     // This will make sure it disappears even when the browser fails.
-    getUI().ifPresent(ui -> ui.getPage().executeJs(
-        "var originalStyle = getComputedStyle($0).transitionProperty;" //
-            + "setTimeout(function() {$0.style.transitionProperty='padding'; requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
-        mainContent.getElement()));
+    getUI()
+        .ifPresent(
+            ui ->
+                ui.getPage()
+                    .executeJs(
+                        "var originalStyle = getComputedStyle($0).transitionProperty;" //
+                            + "setTimeout(function() {$0.style.transitionProperty='padding'; requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
+                        mainContent.getElement()));
   }
 
   public NaviMenu getMenu() {
@@ -202,5 +210,4 @@ public class NaviDrawer extends Div
   public void afterNavigation(AfterNavigationEvent afterNavigationEvent) {
     close();
   }
-
 }

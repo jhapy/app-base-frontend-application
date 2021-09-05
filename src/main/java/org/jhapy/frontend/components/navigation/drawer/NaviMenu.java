@@ -24,6 +24,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.HasUrlParameter;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,74 +47,70 @@ public class NaviMenu extends Div {
   }
 
   public void filter(String filter) {
-    getNaviItems().forEach(naviItem -> {
-      boolean matches = naviItem.getText().toLowerCase()
-          .contains(filter.toLowerCase());
-      naviItem.setVisible(matches);
-    });
+    getNaviItems()
+        .forEach(
+            naviItem -> {
+              boolean matches = naviItem.getText().toLowerCase().contains(filter.toLowerCase());
+              naviItem.setVisible(matches);
+            });
   }
 
-  public NaviItem addNaviItem(String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(text, navigationTarget);
     addNaviItem(item);
     return item;
   }
 
-  public NaviItem addNaviItem(VaadinIcon icon, String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(
+      VaadinIcon icon, String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(icon, text, navigationTarget);
     addNaviItem(item);
     return item;
   }
 
-  public NaviItem addNaviItem(Image image, String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(
+      Image image, String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(image, text, navigationTarget);
     addNaviItem(item);
     return item;
   }
 
-  public NaviItem addNaviItem(NaviItem parent, Image image, String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(
+      NaviItem parent, Image image, String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(image, text, navigationTarget);
     addNaviItem(parent, item);
     return item;
   }
 
-  public NaviItem addNaviItem(NaviItem parent, VaadinIcon icon, String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(
+      NaviItem parent, VaadinIcon icon, String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(icon, text, navigationTarget);
     addNaviItem(parent, item);
     return item;
   }
 
-  public NaviItem addNaviItem(NaviItem parent, String text,
-      Class<? extends Component> navigationTarget) {
+  public NaviItem addNaviItem(
+      NaviItem parent, String text, Class<? extends Component> navigationTarget) {
     NaviItem item = new NaviItem(text, navigationTarget);
     addNaviItem(parent, item);
     return item;
   }
 
-  public <T, C extends Component & HasUrlParameter<T>> NaviItem addNaviItem(VaadinIcon icon,
-      String text,
-      Class<C> navigationTarget, T parameter) {
+  public <T, C extends Component & HasUrlParameter<T>> NaviItem addNaviItem(
+      VaadinIcon icon, String text, Class<C> navigationTarget, T parameter) {
     NaviItem item = new NaviItem(icon, text, navigationTarget, parameter);
     addNaviItem(item);
     return item;
   }
 
-  public <T, C extends Component & HasUrlParameter<T>> NaviItem addNaviItem(NaviItem parent,
-      String text,
-      Class<C> navigationTarget, T parameter) {
+  public <T, C extends Component & HasUrlParameter<T>> NaviItem addNaviItem(
+      NaviItem parent, String text, Class<C> navigationTarget, T parameter) {
     NaviItem item = new NaviItem(text, navigationTarget, parameter);
     addNaviItem(parent, item);
     return item;
   }
 
   public List<NaviItem> getNaviItems() {
-    return (List<NaviItem>) (List) getChildren()
-        .collect(Collectors.toList());
+    return (List<NaviItem>) (List) getChildren().collect(Collectors.toList());
   }
-
 }

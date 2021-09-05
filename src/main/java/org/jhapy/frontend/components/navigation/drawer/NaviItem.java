@@ -31,9 +31,10 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
+import org.jhapy.frontend.utils.UIUtils;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.jhapy.frontend.utils.UIUtils;
 
 @CssImport("./styles/components/navi-item.css")
 public class NaviItem extends Div {
@@ -54,8 +55,8 @@ public class NaviItem extends Div {
     link.getElement().insertChild(0, new Icon(icon).getElement());
   }
 
-  public <T, C extends Component & HasUrlParameter<T>> NaviItem(VaadinIcon icon, String text,
-      Class<C> navigationTarget, T parameters) {
+  public <T, C extends Component & HasUrlParameter<T>> NaviItem(
+      VaadinIcon icon, String text, Class<C> navigationTarget, T parameters) {
     this(text, navigationTarget, parameters);
     link.getElement().insertChild(0, new Icon(icon).getElement());
   }
@@ -65,8 +66,8 @@ public class NaviItem extends Div {
     link.getElement().insertChild(0, image.getElement());
   }
 
-  public <T, C extends Component & HasUrlParameter<T>> NaviItem(Image image, String text,
-      Class<C> navigationTarget, T parameters) {
+  public <T, C extends Component & HasUrlParameter<T>> NaviItem(
+      Image image, String text, Class<C> navigationTarget, T parameters) {
     this(text, navigationTarget, parameters);
     link.getElement().insertChild(0, image.getElement());
   }
@@ -90,9 +91,9 @@ public class NaviItem extends Div {
       this.link = div;
     }
 
-    expandCollapse = UIUtils
-        .createButton(VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL,
-            ButtonVariant.LUMO_TERTIARY);
+    expandCollapse =
+        UIUtils.createButton(
+            VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
     expandCollapse.addClickListener(event -> setSubItemsVisible(!subItemsVisible));
     expandCollapse.setVisible(false);
 
@@ -103,8 +104,8 @@ public class NaviItem extends Div {
     add(link, expandCollapse);
   }
 
-  public <T, C extends Component & HasUrlParameter<T>> NaviItem(String text,
-      Class<C> navigationTarget, T parameters) {
+  public <T, C extends Component & HasUrlParameter<T>> NaviItem(
+      String text, Class<C> navigationTarget, T parameters) {
     setClassName(CLASS_NAME);
     setLevel(0);
     this.text = text;
@@ -123,9 +124,9 @@ public class NaviItem extends Div {
       this.link = div;
     }
 
-    expandCollapse = UIUtils
-        .createButton(VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL,
-            ButtonVariant.LUMO_TERTIARY);
+    expandCollapse =
+        UIUtils.createButton(
+            VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
     expandCollapse.addClickListener(event -> setSubItemsVisible(!subItemsVisible));
     expandCollapse.setVisible(false);
 
@@ -142,8 +143,8 @@ public class NaviItem extends Div {
   }
 
   public boolean isHighlighted(AfterNavigationEvent e) {
-    return link instanceof RouterLink && ((RouterLink) link)
-        .getHighlightCondition().shouldHighlight((RouterLink) link, e);
+    return link instanceof RouterLink
+        && ((RouterLink) link).getHighlightCondition().shouldHighlight((RouterLink) link, e);
   }
 
   public int getLevel() {

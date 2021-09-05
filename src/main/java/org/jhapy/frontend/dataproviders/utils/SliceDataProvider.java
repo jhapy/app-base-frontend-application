@@ -22,17 +22,18 @@ import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
+import org.jhapy.dto.utils.Pageable;
+import org.jhapy.dto.utils.Pageable.Order;
+import org.jhapy.dto.utils.Pageable.Order.Direction;
+import org.jhapy.dto.utils.Slice;
+import org.jhapy.frontend.utils.Pair;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jhapy.dto.utils.Pageable;
-import org.jhapy.dto.utils.Pageable.Order;
-import org.jhapy.dto.utils.Pageable.Order.Direction;
-import org.jhapy.dto.utils.Slice;
-import org.jhapy.frontend.utils.Pair;
 
 /**
  * @author jHapy Lead Dev.
@@ -43,13 +44,12 @@ public abstract class SliceDataProvider<T extends Serializable, F>
     extends AbstractBackEndDataProvider<T, F> {
 
   private static Order queryOrderToSpringOrder(QuerySortOrder queryOrder) {
-    return new Order(queryOrder.getDirection() == SortDirection.ASCENDING
-        ? Direction.ASC
-        : Direction.DESC, queryOrder.getSorted());
+    return new Order(
+        queryOrder.getDirection() == SortDirection.ASCENDING ? Direction.ASC : Direction.DESC,
+        queryOrder.getSorted());
   }
 
-  public static Pair<Integer, Integer> limitAndOffsetToPageSizeAndNumber(
-      int offset, int limit) {
+  public static Pair<Integer, Integer> limitAndOffsetToPageSizeAndNumber(int offset, int limit) {
     int lastIndex = offset + limit - 1;
     int maxPageSize = lastIndex + 1;
 
@@ -76,10 +76,13 @@ public abstract class SliceDataProvider<T extends Serializable, F>
   protected abstract Slice<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable);
 
   private Pageable getPageable(Query<T, F> q) {
-    Pair<Integer, Integer> pageSizeAndNumber = limitAndOffsetToPageSizeAndNumber(
-        q.getOffset(), q.getLimit());
-    return new Pageable(pageSizeAndNumber.getSecond(),
-        pageSizeAndNumber.getFirst(), q.getOffset(), createSpringSort(q));
+    Pair<Integer, Integer> pageSizeAndNumber =
+        limitAndOffsetToPageSizeAndNumber(q.getOffset(), q.getLimit());
+    return new Pageable(
+        pageSizeAndNumber.getSecond(),
+        pageSizeAndNumber.getFirst(),
+        q.getOffset(),
+        createSpringSort(q));
   }
 
   private <T, F> Collection<Order> createSpringSort(Query<T, F> q) {
@@ -89,9 +92,10 @@ public abstract class SliceDataProvider<T extends Serializable, F>
     } else {
       sortOrders = q.getSortOrders();
     }
-    List<Order> orders = sortOrders.stream()
-        .map(SliceDataProvider::queryOrderToSpringOrder)
-        .collect(Collectors.toList());
+    List<Order> orders =
+        sortOrders.stream()
+            .map(SliceDataProvider::queryOrderToSpringOrder)
+            .collect(Collectors.toList());
     if (orders.isEmpty()) {
       return null;
     } else {
@@ -101,8 +105,8 @@ public abstract class SliceDataProvider<T extends Serializable, F>
 
   protected abstract List<QuerySortOrder> getDefaultSortOrders();
 
-  private <T extends Serializable> Stream<T> fromPageable(Slice<T> result, Pageable pageable,
-      Query<T, ?> query) {
+  private <T extends Serializable> Stream<T> fromPageable(
+      Slice<T> result, Pageable pageable, Query<T, ?> query) {
     List<T> items = result.getContent();
 
     int firstRequested = query.getOffset();
@@ -115,5 +119,4 @@ public abstract class SliceDataProvider<T extends Serializable, F>
     }
     return items.subList(firstReal, afterLastReal).stream();
   }
-
 }

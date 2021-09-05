@@ -20,11 +20,7 @@ package org.jhapy.frontend.client.reference;
 
 import org.jhapy.dto.domain.reference.Country;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.reference.country.GetByIso2OrIso3Query;
 import org.jhapy.dto.utils.Page;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -37,7 +33,11 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-03-27
  */
-@FeignClient(name = "${jhapy.remote-services.backend-server.name:null}", url = "${jhapy.remote-services.backend-server.url:}", path = "/api/countryService", fallback = CountryServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.backend-server.name:null}",
+    url = "${jhapy.remote-services.backend-server.url:}",
+    path = "/api/countryService",
+    fallback = CountryServiceFallback.class)
 @Primary
 public interface CountryService {
 

@@ -19,19 +19,20 @@
 package org.jhapy.frontend.components.events;
 
 import com.vaadin.flow.component.HasValue;
-import java.util.List;
 import org.jhapy.dto.domain.BaseInnerEntity;
 import org.jhapy.frontend.customFields.DefaultCustomListFieldFree;
 
-public class CustomListFieldFreeValueChangeEvent<C extends BaseInnerEntity> implements
-    HasValue.ValueChangeEvent<List<C>> {
+import java.util.List;
+
+public class CustomListFieldFreeValueChangeEvent<C extends BaseInnerEntity>
+    implements HasValue.ValueChangeEvent<List<C>> {
 
   private final List<C> oldValues;
   private final List<C> newValues;
   private final DefaultCustomListFieldFree src;
 
-  public CustomListFieldFreeValueChangeEvent(List<C> oldValues, List<C> newValues,
-      DefaultCustomListFieldFree src) {
+  public CustomListFieldFreeValueChangeEvent(
+      List<C> oldValues, List<C> newValues, DefaultCustomListFieldFree src) {
     this.oldValues = oldValues;
     this.newValues = newValues;
     this.src = src;

@@ -18,8 +18,6 @@
 
 package org.jhapy.frontend.crud;
 
-import java.util.function.Consumer;
-import javax.validation.ConstraintViolationException;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.domain.exception.DataIntegrityViolationException;
@@ -29,6 +27,9 @@ import org.jhapy.dto.domain.exception.UserFriendlyDataException;
 import org.jhapy.frontend.client.CrudService;
 import org.jhapy.frontend.utils.messages.CrudErrorMessage;
 import org.jhapy.frontend.views.HasNotifications;
+
+import javax.validation.ConstraintViolationException;
+import java.util.function.Consumer;
 
 /**
  * @author jHapy Lead Dev.
@@ -71,8 +72,7 @@ public class CrudEntityPresenter<E extends BaseEntity> implements HasLogger {
       consumeError(e, e.getMessage(), true);
     } catch (DataIntegrityViolationException e) {
       // Commit failed because of validation errors
-      consumeError(
-          e, CrudErrorMessage.OPERATION_PREVENTED_BY_REFERENCES, true);
+      consumeError(e, CrudErrorMessage.OPERATION_PREVENTED_BY_REFERENCES, true);
     } catch (OptimisticLockingFailureException e) {
       consumeError(e, CrudErrorMessage.CONCURRENT_UPDATE, true);
     } catch (EntityNotFoundException e) {

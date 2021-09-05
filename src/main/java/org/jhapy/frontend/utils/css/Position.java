@@ -19,8 +19,9 @@
 package org.jhapy.frontend.utils.css;
 
 public enum Position {
-
-  ABSOLUTE("absolute"), FIXED("fixed"), RELATIVE("relative");
+  ABSOLUTE("absolute"),
+  FIXED("fixed"),
+  RELATIVE("relative");
 
   private final String value;
 

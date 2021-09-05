@@ -31,22 +31,22 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Locale;
 import org.jhapy.dto.domain.reference.IntermediateRegionTrl;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.frontend.client.reference.ReferenceServices;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Locale;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class IntermediateRegionTrlListField extends
-    DefaultCustomListField<IntermediateRegionTrl> implements Serializable {
-
+public abstract class IntermediateRegionTrlListField
+    extends DefaultCustomListField<IntermediateRegionTrl> implements Serializable {
 
   public IntermediateRegionTrlListField() {
     super("intermediateRegionTrl.");
@@ -76,27 +76,30 @@ public abstract class IntermediateRegionTrlListField extends
     gridCrud.setI18n(createI18n());
     gridCrud.getGrid().setEnabled(false);
     gridCrud.setDataProvider(dataProvider);
-    gridCrud.addSaveListener(e -> {
-      if (e.getItem().getId() == null) {
-        dataProvider.getValues().add(e.getItem());
-      }
-    });
+    gridCrud.addSaveListener(
+        e -> {
+          if (e.getItem().getId() == null) {
+            dataProvider.getValues().add(e.getItem());
+          }
+        });
     gridCrud.addDeleteListener(e -> dataProvider.getValues().remove(e.getItem()));
 
-    editColumn = grid.addColumn(TemplateRenderer.of(createEditColumnTemplate("Edit")))
-        .setKey("vaadin-crud-edit-column").setWidth("4em").setFlexGrow(0);
+    editColumn =
+        grid.addColumn(TemplateRenderer.of(createEditColumnTemplate("Edit")))
+            .setKey("vaadin-crud-edit-column")
+            .setWidth("4em")
+            .setFlexGrow(0);
 
     grid.addColumn(IntermediateRegionTrl::getName)
         .setHeader(getTranslation("element." + i18nPrefix + "name"));
-    grid.addColumn(new TextRenderer<>(
-        row -> row.getIso3Language() == null ? "" : row.getIso3Language()))
+    grid.addColumn(
+            new TextRenderer<>(row -> row.getIso3Language() == null ? "" : row.getIso3Language()))
         .setHeader(getTranslation("element." + i18nPrefix + "language"));
 
     newButton = new Button(getTranslation("action.global.addButton"));
     newButton.getElement().setAttribute("theme", "primary");
-    newButton
-        .addClickListener(
-            event -> gridCrud.getElement().executeJs("$0.__openEditor($1)", gridCrud, "'new'"));
+    newButton.addClickListener(
+        event -> gridCrud.getElement().executeJs("$0.__openEditor($1)", gridCrud, "'new'"));
     gridCrud.setToolbar(newButton);
 
     newButton.setEnabled(false);
@@ -108,22 +111,29 @@ public abstract class IntermediateRegionTrlListField extends
   protected CrudEditor<IntermediateRegionTrl> createInterfaceTrlEditor() {
     TextField value = new TextField(getTranslation("element." + i18nPrefix + "value"));
 
-    ComboBox<Locale> language = new ComboBox<>(
-        getTranslation("element." + i18nPrefix + "language"),
-        MyI18NProvider.getAvailableLanguages(getLocale()));
+    ComboBox<Locale> language =
+        new ComboBox<>(
+            getTranslation("element." + i18nPrefix + "language"),
+            MyI18NProvider.getAvailableLanguages(getLocale()));
     language.setItemLabelGenerator(Locale::getDisplayLanguage);
 
     FormLayout form = new FormLayout(value, language);
 
-    Binder<IntermediateRegionTrl> binder = new BeanValidationBinder<>(
-        IntermediateRegionTrl.class);
-    binder.forField(value).asRequired()
+    Binder<IntermediateRegionTrl> binder = new BeanValidationBinder<>(IntermediateRegionTrl.class);
+    binder
+        .forField(value)
+        .asRequired()
         .bind(IntermediateRegionTrl::getName, IntermediateRegionTrl::setName);
-    binder.forField(language).asRequired()
-        .bind((intermediateRegionTrl) -> intermediateRegionTrl.getIso3Language() == null ? null
-                : new Locale(intermediateRegionTrl.getIso3Language()),
-            (intermediateRegionTrl, locale) -> intermediateRegionTrl
-                .setIso3Language(locale.getLanguage()));
+    binder
+        .forField(language)
+        .asRequired()
+        .bind(
+            (intermediateRegionTrl) ->
+                intermediateRegionTrl.getIso3Language() == null
+                    ? null
+                    : new Locale(intermediateRegionTrl.getIso3Language()),
+            (intermediateRegionTrl, locale) ->
+                intermediateRegionTrl.setIso3Language(locale.getLanguage()));
 
     return new BinderCrudEditor<>(binder, form);
   }
@@ -134,9 +144,10 @@ public abstract class IntermediateRegionTrlListField extends
       if (intermediateRegionTrls != null) {
         intermediateRegionTrls.forEach(
             intermediateRegionTrl -> {
-              IntermediateRegionTrl _intermediateRegionTrl = ReferenceServices
-                  .getIntermediateRegionTrlService()
-                  .getById(new GetByIdQuery(intermediateRegionTrl.getId())).getData();
+              IntermediateRegionTrl _intermediateRegionTrl =
+                  ReferenceServices.getIntermediateRegionTrlService()
+                      .getById(new GetByIdQuery(intermediateRegionTrl.getId()))
+                      .getData();
               if (_intermediateRegionTrl != null) {
                 fieldsMap.add(_intermediateRegionTrl);
               }
@@ -145,5 +156,3 @@ public abstract class IntermediateRegionTrlListField extends
     }
   }
 }
-
-

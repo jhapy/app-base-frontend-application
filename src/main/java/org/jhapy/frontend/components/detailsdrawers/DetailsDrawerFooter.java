@@ -79,23 +79,19 @@ public class DetailsDrawerFooter extends FlexBoxLayout {
     delete.setText(title);
   }
 
-  public Registration addSaveListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addSaveListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return save.addClickListener(listener);
   }
 
-  public Registration addSaveAndNewListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addSaveAndNewListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return saveAndNew.addClickListener(listener);
   }
 
-  public Registration addCancelListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addCancelListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return cancel.addClickListener(listener);
   }
 
-  public Registration addDeleteListener(
-      ComponentEventListener<ClickEvent<Button>> listener) {
+  public Registration addDeleteListener(ComponentEventListener<ClickEvent<Button>> listener) {
     return delete.addClickListener(listener);
   }
 

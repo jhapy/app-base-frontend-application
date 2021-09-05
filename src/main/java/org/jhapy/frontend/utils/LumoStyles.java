@@ -439,5 +439,4 @@ public class LumoStyles {
       public static final String XL = "spacing-wide-xl";
     }
   }
-
 }

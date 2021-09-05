@@ -10,17 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class OAuth2RouteAccessDeniedHandler
-    implements
-    RouteAccessDeniedHandler {
+public class OAuth2RouteAccessDeniedHandler implements RouteAccessDeniedHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(OAuth2RouteAccessDeniedHandler.class);
 
-
   private final String uiRootUrl;
-
 
   public OAuth2RouteAccessDeniedHandler(VaadinSecurityProperties vsp) {
     uiRootUrl = vsp.getUiRootUrl();
@@ -34,8 +29,8 @@ public class OAuth2RouteAccessDeniedHandler
         originalTarget = "";
       }
 
-      VaadinOAuth2RequestCache.saveOriginalTargetUrl(event.getUI().getSession(),
-          uiRootUrl + "/" + originalTarget);
+      VaadinOAuth2RequestCache.saveOriginalTargetUrl(
+          event.getUI().getSession(), uiRootUrl + "/" + originalTarget);
 
       LOG.debug("Redirecting to OAuth2 login at '{}'.", SecurityConfiguration.LOGIN_URL);
 
@@ -45,5 +40,4 @@ public class OAuth2RouteAccessDeniedHandler
       return;
     }
   }
-
 }

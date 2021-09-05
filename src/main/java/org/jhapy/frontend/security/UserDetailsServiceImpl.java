@@ -29,15 +29,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 /**
  * Implements the {@link UserDetailsService}.
  *
- * This implementation searches for {@link User} entities by the e-mail address supplied in the
+ * <p>This implementation searches for {@link User} entities by the e-mail address supplied in the
  * login screen.
  *
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-03-26
  */
-//@Service
-//@Primary
+// @Service
+// @Primary
 public class UserDetailsServiceImpl implements UserDetailsService {
 
   private final SecurityUserService securityUserService;
@@ -49,14 +49,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
   /**
    * Recovers the {@link SecurityUser} from the database using the e-mail address supplied in the
-   * login screen. If the user is found, returns a {@link org.springframework.security.core.userdetails.User}.
+   * login screen. If the user is found, returns a {@link
+   * org.springframework.security.core.userdetails.User}.
    *
    * @param username User's e-mail address
    */
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    SecurityUser securityUser = securityUserService
-        .getSecurityUserByUsername(new GetSecurityUserByUsernameQuery(username)).getData();
+    SecurityUser securityUser =
+        securityUserService
+            .getSecurityUserByUsername(new GetSecurityUserByUsernameQuery(username))
+            .getData();
 
     if (securityUser != null) {
       return securityUser;

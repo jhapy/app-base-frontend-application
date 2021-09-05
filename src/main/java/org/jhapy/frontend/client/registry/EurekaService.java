@@ -18,8 +18,6 @@
 
 package org.jhapy.frontend.client.registry;
 
-import java.util.List;
-import java.util.Map;
 import org.jhapy.dto.registry.EurekaInfo;
 import org.jhapy.dto.registry.EurekaStatus;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
@@ -29,12 +27,19 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-04-21
  */
-@FeignClient(name = "${jhapy.remote-services.registry-server.name:null}", url = "${jhapy.remote-services.registry-server.url:}", path = "/api/eureka", fallbackFactory = EurekaServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.registry-server.name:null}",
+    url = "${jhapy.remote-services.registry-server.url:}",
+    path = "/api/eureka",
+    fallbackFactory = EurekaServiceFallback.class)
 @Primary
 public interface EurekaService {
 

@@ -18,14 +18,9 @@
 
 package org.jhapy.frontend.config;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.EvictionPolicy;
-import com.hazelcast.config.ManagementCenterConfig;
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizePolicy;
+import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import javax.annotation.PreDestroy;
 import org.jhapy.commons.config.AppProperties;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.commons.utils.PrefixedKeyGenerator;
@@ -45,6 +40,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 
+import javax.annotation.PreDestroy;
+
 @Configuration
 @EnableCaching
 public class CacheConfiguration implements HasLogger {
@@ -59,8 +56,8 @@ public class CacheConfiguration implements HasLogger {
 
   private Registration registration;
 
-  public CacheConfiguration(Environment env, ServerProperties serverProperties,
-      DiscoveryClient discoveryClient) {
+  public CacheConfiguration(
+      Environment env, ServerProperties serverProperties, DiscoveryClient discoveryClient) {
     var loggerPrefix = getLoggerPrefix("CacheConfiguration");
     logger().info(loggerPrefix + "Startup");
     this.env = env;
@@ -92,8 +89,8 @@ public class CacheConfiguration implements HasLogger {
     var loggerPrefix = getLoggerPrefix("hazelcastInstance");
 
     logger().info(loggerPrefix + "Configuring Hazelcast");
-    HazelcastInstance hazelCastInstance = Hazelcast
-        .getHazelcastInstanceByName(env.getProperty("spring.application.name"));
+    HazelcastInstance hazelCastInstance =
+        Hazelcast.getHazelcastInstanceByName(env.getProperty("spring.application.name"));
     if (hazelCastInstance != null) {
       logger().info(loggerPrefix + "Hazelcast already initialized");
       return hazelCastInstance;
@@ -102,8 +99,9 @@ public class CacheConfiguration implements HasLogger {
     config.setInstanceName(env.getProperty("spring.application.name"));
     config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     if (this.registration == null) {
-      logger().warn(
-          loggerPrefix + "No discovery service is set up, Hazelcast cannot create a cluster.");
+      logger()
+          .warn(
+              loggerPrefix + "No discovery service is set up, Hazelcast cannot create a cluster.");
     } else {
       // The serviceId is by default the application's name,
       // see the "spring.application.name" standard Spring property
@@ -111,28 +109,33 @@ public class CacheConfiguration implements HasLogger {
       logger()
           .debug(loggerPrefix + "Configuring Hazelcast clustering for instanceId: {}", serviceId);
       // In development, everything goes through 127.0.0.1, with a different port
-      if (env
-          .acceptsProfiles(Profiles.of(SpringProfileConstants.SPRING_PROFILE_K8S))) {
+      if (env.acceptsProfiles(Profiles.of(SpringProfileConstants.SPRING_PROFILE_K8S))) {
         logger()
-            .debug(loggerPrefix
-                + "Application is running with the \"k8s\" profile, Hazelcast cluster will use Kubernetes Client");
+            .debug(
+                loggerPrefix
+                    + "Application is running with the \"k8s\" profile, Hazelcast cluster will use Kubernetes Client");
 
         config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(false);
         config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(false);
         config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true);
-        config.getNetworkConfig().getJoin().getKubernetesConfig()
+        config
+            .getNetworkConfig()
+            .getJoin()
+            .getKubernetesConfig()
             .setProperty("namespace", "thothee-test")
             .setProperty("service-name", "app-i18n-server");
 
-      } else if (env
-          .acceptsProfiles(Profiles.of(SpringProfileConstants.SPRING_PROFILE_TEST,
+      } else if (env.acceptsProfiles(
+          Profiles.of(
+              SpringProfileConstants.SPRING_PROFILE_TEST,
               SpringProfileConstants.SPRING_PROFILE_DEVELOPMENT,
               SpringProfileConstants.SPRING_PROFILE_STAGING,
               SpringProfileConstants.SPRING_PROFILE_PRODUCTION))) {
         logger()
-            .debug(loggerPrefix
-                + "Application is running with the \"docker swarm\" profile, Hazelcast cluster will use Eureka Client");
+            .debug(
+                loggerPrefix
+                    + "Application is running with the \"docker swarm\" profile, Hazelcast cluster will use Eureka Client");
 
         config.getNetworkConfig().setPort(5701);
         config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
@@ -144,15 +147,16 @@ public class CacheConfiguration implements HasLogger {
         }
       } else {
         logger()
-            .debug(loggerPrefix + "Application is running with the \"local\" profile, Hazelcast " +
-                "cluster will only work with localhost instances");
+            .debug(
+                loggerPrefix
+                    + "Application is running with the \"local\" profile, Hazelcast "
+                    + "cluster will only work with localhost instances");
 
         config.getNetworkConfig().setPort(serverProperties.getPort() + 5701);
         config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
         for (ServiceInstance instance : discoveryClient.getInstances(serviceId)) {
           String clusterMember = "127.0.0.1:" + (instance.getPort() + 5701);
-          logger()
-              .debug(loggerPrefix + "Adding Hazelcast (dev) cluster member {}", clusterMember);
+          logger().debug(loggerPrefix + "Adding Hazelcast (dev) cluster member {}", clusterMember);
           config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(clusterMember);
         }
       }
@@ -166,28 +170,28 @@ public class CacheConfiguration implements HasLogger {
   private MapConfig initializeDefaultMapConfig(AppProperties appProperties) {
     MapConfig mapConfig = new MapConfig("default");
 
-        /*
-        Number of backups. If 1 is set as the backup-count for example,
-        then all entries of the map will be copied to another JVM for
-        fail-safety. Valid numbers are 0 (no backup), 1, 2, 3.
-        */
+    /*
+    Number of backups. If 1 is set as the backup-count for example,
+    then all entries of the map will be copied to another JVM for
+    fail-safety. Valid numbers are 0 (no backup), 1, 2, 3.
+    */
     mapConfig.setBackupCount(appProperties.getHazelcast().getBackupCount());
 
-        /*
-        Valid values are:
-        NONE (no eviction),
-        LRU (Least Recently Used),
-        LFU (Least Frequently Used).
-        NONE is the default.
-        */
+    /*
+    Valid values are:
+    NONE (no eviction),
+    LRU (Least Recently Used),
+    LFU (Least Frequently Used).
+    NONE is the default.
+    */
     mapConfig.getEvictionConfig().setEvictionPolicy(EvictionPolicy.LRU);
 
-        /*
-        Maximum size of the map. When max size is reached,
-        map is evicted based on the policy defined.
-        Any integer between 0 and Integer.MAX_VALUE. 0 means
-        Integer.MAX_VALUE. Default is 0.
-        */
+    /*
+    Maximum size of the map. When max size is reached,
+    map is evicted based on the policy defined.
+    Any integer between 0 and Integer.MAX_VALUE. 0 means
+    Integer.MAX_VALUE. Default is 0.
+    */
     mapConfig.getEvictionConfig().setMaxSizePolicy(MaxSizePolicy.USED_HEAP_SIZE);
 
     return mapConfig;

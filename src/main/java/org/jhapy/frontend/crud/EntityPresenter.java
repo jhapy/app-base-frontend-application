@@ -20,8 +20,6 @@ package org.jhapy.frontend.crud;
 
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
-import java.util.function.UnaryOperator;
-import javax.validation.ConstraintViolationException;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.domain.exception.DataIntegrityViolationException;
@@ -35,13 +33,15 @@ import org.jhapy.frontend.utils.messages.CrudErrorMessage;
 import org.jhapy.frontend.utils.messages.Message;
 import org.jhapy.frontend.views.EntityView;
 
+import javax.validation.ConstraintViolationException;
+import java.util.function.UnaryOperator;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-03-26
  */
-public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
-    implements HasLogger {
+public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>> implements HasLogger {
 
   private final CrudService<T> crudService;
 
@@ -51,8 +51,7 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
 
   private final EntityPresenterState<T> state = new EntityPresenterState<>();
 
-  public EntityPresenter(
-      CrudService<T> crudService, CurrentUser currentUser) {
+  public EntityPresenter(CrudService<T> crudService, CurrentUser currentUser) {
     this.crudService = crudService;
     this.currentUser = currentUser;
   }
@@ -67,12 +66,15 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
 
   public void delete(CrudOperationListener<T> onSuccess) {
     Message CONFIRM_DELETE = Message.CONFIRM_DELETE.createMessage();
-    confirmIfNecessaryAndExecute(true, CONFIRM_DELETE, () -> {
-      if (executeOperation(() -> crudService.delete(state.getEntity()))) {
-        onSuccess.execute(state.getEntity());
-      }
-    }, () -> {
-    });
+    confirmIfNecessaryAndExecute(
+        true,
+        CONFIRM_DELETE,
+        () -> {
+          if (executeOperation(() -> crudService.delete(state.getEntity()))) {
+            onSuccess.execute(state.getEntity());
+          }
+        },
+        () -> {});
   }
 
   public void save(CrudOperationListener<T> onSuccess) {
@@ -94,8 +96,7 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
       consumeError(e, e.getMessage(), true);
     } catch (DataIntegrityViolationException e) {
       // Commit failed because of validation errors
-      consumeError(
-          e, CrudErrorMessage.OPERATION_PREVENTED_BY_REFERENCES, true);
+      consumeError(e, CrudErrorMessage.OPERATION_PREVENTED_BY_REFERENCES, true);
     } catch (OptimisticLockingFailureException e) {
       consumeError(e, CrudErrorMessage.CONCURRENT_UPDATE, true);
     } catch (EntityNotFoundException e) {
@@ -106,16 +107,13 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
     return false;
   }
 
-  private void consumeError(
-      Exception e, String message, boolean isPersistent) {
+  private void consumeError(Exception e, String message, boolean isPersistent) {
     logger().debug(message, e);
     view.showError(message, isPersistent);
   }
 
   private void saveEntity() {
-    state.updateEntity(
-        crudService.save(state.getEntity()),
-        isNew());
+    state.updateEntity(crudService.save(state.getEntity()), isNew());
   }
 
   public boolean writeEntity() {
@@ -142,12 +140,12 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
         () -> {
           view.clear();
           onConfirmed.run();
-        }, onCancelled);
+        },
+        onCancelled);
   }
 
   private void confirmIfNecessaryAndExecute(
-      boolean needsConfirmation, Message message, Runnable onConfirmed,
-      Runnable onCancelled) {
+      boolean needsConfirmation, Message message, Runnable onConfirmed, Runnable onCancelled) {
     if (needsConfirmation) {
       showConfirmationRequest(message, onConfirmed, onCancelled);
     } else {
@@ -155,26 +153,25 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
     }
   }
 
-  private void showConfirmationRequest(
-      Message message, Runnable onOk, Runnable onCancel) {
+  private void showConfirmationRequest(Message message, Runnable onOk, Runnable onCancel) {
     view.getConfirmDialog().setText(message.getMessage());
     view.getConfirmDialog().setHeader(message.getCaption());
     view.getConfirmDialog().setCancelText(message.getCancelText());
     view.getConfirmDialog().setConfirmText(message.getOkText());
     view.getConfirmDialog().setOpened(true);
 
-    final Registration okRegistration =
-        view.getConfirmDialog().addConfirmListener(e -> onOk.run());
+    final Registration okRegistration = view.getConfirmDialog().addConfirmListener(e -> onOk.run());
     final Registration cancelRegistration =
         view.getConfirmDialog().addCancelListener(e -> onCancel.run());
     state.updateRegistration(okRegistration, cancelRegistration);
   }
 
   public boolean loadEntity(Long id, CrudOperationListener<T> onSuccess) {
-    return executeOperation(() -> {
-      state.updateEntity(crudService.load(id), false);
-      onSuccess.execute(state.getEntity());
-    });
+    return executeOperation(
+        () -> {
+          state.updateEntity(crudService.load(id), false);
+          onSuccess.execute(state.getEntity());
+        });
   }
 
   public T getEntity() {
@@ -190,12 +187,9 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>>
 
     void execute(T entity);
   }
-
 }
 
-/**
- * Holds variables that change.
- */
+/** Holds variables that change. */
 class EntityPresenterState<T extends BaseEntity> {
 
   private T entity;
@@ -210,8 +204,7 @@ class EntityPresenterState<T extends BaseEntity> {
     this.isNew = isNew;
   }
 
-  void updateRegistration(
-      Registration okRegistration, Registration cancelRegistration) {
+  void updateRegistration(Registration okRegistration, Registration cancelRegistration) {
     clearRegistration(this.okRegistration);
     clearRegistration(this.cancelRegistration);
     this.okRegistration = okRegistration;
@@ -242,5 +235,4 @@ class EntityPresenterState<T extends BaseEntity> {
   public boolean isNew() {
     return isNew;
   }
-
 }

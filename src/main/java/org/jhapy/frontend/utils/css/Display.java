@@ -19,8 +19,10 @@
 package org.jhapy.frontend.utils.css;
 
 public enum Display {
-
-  BLOCK("block"), INLINE("inline"), FLEX("flex"), INLINE_FLEX("inline-flex");
+  BLOCK("block"),
+  INLINE("inline"),
+  FLEX("flex"),
+  INLINE_FLEX("inline-flex");
 
   private final String value;
 

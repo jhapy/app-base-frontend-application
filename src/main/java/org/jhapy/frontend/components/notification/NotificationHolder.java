@@ -4,32 +4,26 @@ import com.github.appreciated.app.layout.component.builder.interfaces.PairCompon
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.UI;
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.jhapy.frontend.components.notification.interfaces.Notification;
 import org.jhapy.frontend.components.notification.interfaces.NotificationsChangeListener;
 
-/**
- * This Class is a controller for multiple {@link Notification} instances
- */
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+/** This Class is a controller for multiple {@link Notification} instances */
 public abstract class NotificationHolder<T extends Notification> implements Serializable {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private PairComponentFactory<NotificationHolder<T>, T> componentProvider;
   private PairComponentFactory<NotificationHolder<T>, T> cardComponentProvider;
 
   private final List<T> notifications = new ArrayList<>();
-  private final List<NotificationsChangeListener<T>> notificationsChangeListeners = new ArrayList<>();
+  private final List<NotificationsChangeListener<T>> notificationsChangeListeners =
+      new ArrayList<>();
   private final List<NotificationClickListener<T>> clickListeners = new ArrayList<>();
   private Notification recentNotification;
   private final List<HasText> badgeHolderComponents = new ArrayList<>();
@@ -72,36 +66,35 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
     this.add(notifications);
   }
 
-  /**
-   * Needs to be called from UI Thread otherwise there will be issues.
-   */
+  /** Needs to be called from UI Thread otherwise there will be issues. */
   public void add(T... notifications) {
     if (UI.getCurrent() == null) {
       throw new IllegalStateException(
           "It seems like NotificationHolder::add wasn't called from the UI Thread. This should be done by using \"UI.getCurrent().access(() -> {})\"");
     }
-    Arrays.stream(notifications).forEach(notification -> {
-      recentNotification = notification;
-      this.notifications.add(notification);
-      notifyAddListeners(notification);
-      if (notificationComponents.stream()
-          .noneMatch(NotificationComponent::isDisplayingNotifications)) {
-        com.vaadin.flow.component.notification.Notification notificationView = new com.vaadin.flow.component.notification.Notification(
-            getComponent(notification));
-        notificationView
-            .setPosition(
-                com.vaadin.flow.component.notification.Notification.Position.TOP_END);
-        notificationView.setDuration(2000);
-        notificationView.open();
-      }
-    });
+    Arrays.stream(notifications)
+        .forEach(
+            notification -> {
+              recentNotification = notification;
+              this.notifications.add(notification);
+              notifyAddListeners(notification);
+              if (notificationComponents.stream()
+                  .noneMatch(NotificationComponent::isDisplayingNotifications)) {
+                com.vaadin.flow.component.notification.Notification notificationView =
+                    new com.vaadin.flow.component.notification.Notification(
+                        getComponent(notification));
+                notificationView.setPosition(
+                    com.vaadin.flow.component.notification.Notification.Position.TOP_END);
+                notificationView.setDuration(2000);
+                notificationView.open();
+              }
+            });
     notifyListeners();
     updateBadgeCaptions();
   }
 
   private void notifyAddListeners(T notification) {
-    notificationsChangeListeners
-        .forEach(listener -> listener.onNotificationAdded(notification));
+    notificationsChangeListeners.forEach(listener -> listener.onNotificationAdded(notification));
   }
 
   public Component getComponent(T message) {
@@ -158,7 +151,9 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
 
   public List<Component> getNotificationCards() {
     List<T> components = getNotifications();
-    return components.stream().sorted(comparator).map(this::getCardComponent)
+    return components.stream()
+        .sorted(comparator)
+        .map(this::getCardComponent)
         .collect(Collectors.toList());
   }
 
@@ -237,8 +232,7 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
   }
 
   private void notifyRemoveListeners(T notification) {
-    notificationsChangeListeners
-        .forEach(listener -> listener.onNotificationRemoved(notification));
+    notificationsChangeListeners.forEach(listener -> listener.onNotificationRemoved(notification));
   }
 
   public abstract Function<T, String> getDateTimeFormatter();
@@ -253,5 +247,4 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
 
     void onNotificationClicked(T notification);
   }
-
 }

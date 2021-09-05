@@ -18,13 +18,6 @@
 
 package org.jhapy.frontend.client.security.keycloak;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -42,12 +35,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.util.CollectionUtils;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 07/05/2020
  */
-
 @RequiredArgsConstructor
 public class KeycloakOauth2UserService extends OidcUserService {
 
@@ -61,8 +56,8 @@ public class KeycloakOauth2UserService extends OidcUserService {
    * Augments {@link OidcUserService#loadUser(OidcUserRequest)} to add authorities provided by
    * Keycloak.
    *
-   * Needed because {@link OidcUserService#loadUser(OidcUserRequest)} (currently) does not provide a
-   * hook for adding custom authorities from a {@link OidcUserRequest}.
+   * <p>Needed because {@link OidcUserService#loadUser(OidcUserRequest)} (currently) does not
+   * provide a hook for adding custom authorities from a {@link OidcUserRequest}.
    */
   @Override
   public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
@@ -73,8 +68,8 @@ public class KeycloakOauth2UserService extends OidcUserService {
     authorities.addAll(user.getAuthorities());
     authorities.addAll(extractKeycloakAuthorities(userRequest));
 
-    return new DefaultOidcUser(authorities, userRequest.getIdToken(), user.getUserInfo(),
-        "preferred_username");
+    return new DefaultOidcUser(
+        authorities, userRequest.getIdToken(), user.getUserInfo(), "preferred_username");
   }
 
   /**
@@ -112,8 +107,12 @@ public class KeycloakOauth2UserService extends OidcUserService {
       return authoritiesMapper.mapAuthorities(authorities);
     } else {
       @SuppressWarnings("unchecked")
-      var roles = (Collection<String>) claims.getOrDefault("groups",
-          claims.getOrDefault("roles", realmAccess.getOrDefault("roles", new ArrayList<>())));
+      var roles =
+          (Collection<String>)
+              claims.getOrDefault(
+                  "groups",
+                  claims.getOrDefault(
+                      "roles", realmAccess.getOrDefault("roles", new ArrayList<>())));
 
       return roles.stream()
           .filter(role -> role.startsWith("ROLE_"))

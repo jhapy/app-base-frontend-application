@@ -36,35 +36,21 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import java.net.URI;
-import java.text.DecimalFormat;
-import java.util.Collections;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.dto.registry.ActuatorHealth;
 import org.jhapy.dto.registry.EurekaApplication;
 import org.jhapy.dto.registry.EurekaApplicationInstance;
 import org.jhapy.dto.registry.EurekaInfo;
-import org.jhapy.dto.registry.actuate.AbstractHealthIndicator;
-import org.jhapy.dto.registry.actuate.ClientConfigServerHealthIndicator;
-import org.jhapy.dto.registry.actuate.ConfigServerHealthIndicator;
-import org.jhapy.dto.registry.actuate.DataSourceHealthIndicator;
-import org.jhapy.dto.registry.actuate.DiscoveryClientHealthIndicator;
-import org.jhapy.dto.registry.actuate.DiscoveryServerHealthIndicator;
-import org.jhapy.dto.registry.actuate.DiskSpaceHealthIndicator;
-import org.jhapy.dto.registry.actuate.HazelcastHealthIndicator;
-import org.jhapy.dto.registry.actuate.JmsHealthIndicator;
-import org.jhapy.dto.registry.actuate.LdapHealthIndicator;
-import org.jhapy.dto.registry.actuate.MongoHealthIndicator;
-import org.jhapy.dto.registry.actuate.Neo4jHealthIndicator;
+import org.jhapy.dto.registry.actuate.*;
 import org.jhapy.frontend.components.Badge;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.lumo.BadgeColor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+
+import java.net.URI;
+import java.text.DecimalFormat;
+import java.util.Collections;
 
 /**
  * @author jHapy Lead Dev.

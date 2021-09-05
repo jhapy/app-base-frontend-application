@@ -18,11 +18,7 @@
 
 package org.jhapy.frontend.utils.i18n;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -47,7 +43,8 @@ public class DateTimeFormatter {
       return "";
     } else {
       return java.time.format.DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-          .withLocale(currentLocal).format(localDate);
+          .withLocale(currentLocal)
+          .format(localDate);
     }
   }
 
@@ -55,8 +52,10 @@ public class DateTimeFormatter {
     if (localDateTime == null) {
       return "";
     } else {
-      return java.time.format.DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT,
-          FormatStyle.MEDIUM).withLocale(currentLocal).format(localDateTime);
+      return java.time.format.DateTimeFormatter.ofLocalizedDateTime(
+              FormatStyle.SHORT, FormatStyle.MEDIUM)
+          .withLocale(currentLocal)
+          .format(localDateTime);
     }
   }
 
@@ -64,9 +63,10 @@ public class DateTimeFormatter {
     if (instant == null) {
       return "";
     } else {
-      return java.time.format.DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT,
-          FormatStyle.MEDIUM).withLocale(currentLocal).format(LocalDateTime
-          .ofInstant(instant, ZoneOffset.systemDefault()));
+      return java.time.format.DateTimeFormatter.ofLocalizedDateTime(
+              FormatStyle.SHORT, FormatStyle.MEDIUM)
+          .withLocale(currentLocal)
+          .format(LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault()));
     }
   }
 
@@ -76,7 +76,8 @@ public class DateTimeFormatter {
     } else {
       return java.time.format.DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
           .withLocale(currentLocal)
-          .withZone(ZoneId.systemDefault()).format(date.toInstant());
+          .withZone(ZoneId.systemDefault())
+          .format(date.toInstant());
     }
   }
 }

@@ -19,8 +19,8 @@
 package org.jhapy.frontend.utils.css;
 
 public enum PointerEvents {
-
-  AUTO("auto"), NONE("none");
+  AUTO("auto"),
+  NONE("none");
 
   private final String value;
 

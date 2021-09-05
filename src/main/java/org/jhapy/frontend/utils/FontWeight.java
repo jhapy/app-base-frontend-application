@@ -19,7 +19,6 @@
 package org.jhapy.frontend.utils;
 
 public enum FontWeight {
-
   LIGHTER("lighter"),
   NORMAL("normal"),
   BOLD("bold"),
@@ -44,4 +43,3 @@ public enum FontWeight {
     return value;
   }
 }
-

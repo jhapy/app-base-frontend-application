@@ -18,8 +18,6 @@
 
 package org.jhapy.frontend.client.reference;
 
-import java.util.Collections;
-import java.util.List;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.reference.SubRegion;
 import org.jhapy.dto.serviceQuery.ServiceResult;
@@ -30,6 +28,9 @@ import org.jhapy.dto.serviceQuery.reference.subRegion.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.reference.subRegion.FindAnyMatchingQuery;
 import org.jhapy.dto.utils.Page;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author jHapy Lead Dev.
@@ -43,8 +44,7 @@ public class SubRegionServiceFallback implements SubRegionService, HasLogger {
   public ServiceResult<List<SubRegion>> findAll() {
     logger().error(getLoggerPrefix("findAll") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server",
-        Collections.emptyList());
+    return new ServiceResult<>(false, "Cannot connect to server", Collections.emptyList());
   }
 
   @Override

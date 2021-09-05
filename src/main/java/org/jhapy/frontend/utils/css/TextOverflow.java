@@ -19,7 +19,6 @@
 package org.jhapy.frontend.utils.css;
 
 public enum TextOverflow {
-
   CLIP("clip"),
   ELLIPSIS("ellipsis");
 

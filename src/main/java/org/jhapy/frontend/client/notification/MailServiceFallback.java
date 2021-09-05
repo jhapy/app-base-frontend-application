@@ -36,8 +36,8 @@ import org.springframework.stereotype.Component;
  * @since 2019-06-04
  */
 @Component
-public class MailServiceFallback implements MailService, HasLogger,
-    FallbackFactory<MailServiceFallback> {
+public class MailServiceFallback
+    implements MailService, HasLogger, FallbackFactory<MailServiceFallback> {
 
   final Throwable cause;
 
@@ -52,8 +52,10 @@ public class MailServiceFallback implements MailService, HasLogger,
   @Override
   public MailServiceFallback create(Throwable cause) {
     if (cause != null) {
-      String errMessage = StringUtils.isNotBlank(cause.getMessage()) ? cause.getMessage()
-          : "Unknown error occurred : " + cause;
+      String errMessage =
+          StringUtils.isNotBlank(cause.getMessage())
+              ? cause.getMessage()
+              : "Unknown error occurred : " + cause;
       // I don't see this log statement
       logger().debug("Client fallback called for the cause : {}", errMessage);
     }

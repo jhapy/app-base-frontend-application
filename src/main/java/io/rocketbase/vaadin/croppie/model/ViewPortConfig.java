@@ -36,10 +36,9 @@ public class ViewPortConfig extends SizeConfig {
     this.type = type;
   }
 
-
   public String getJsonString() {
-    return String
-        .format("{\"width\": %d,\"height\": %d, \"type\": \"%s\" }", getWidth(), getHeight(),
-            getType().getKey());
+    return String.format(
+        "{\"width\": %d,\"height\": %d, \"type\": \"%s\" }",
+        getWidth(), getHeight(), getType().getKey());
   }
 }

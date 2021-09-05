@@ -86,7 +86,7 @@ public class DetailsDrawer extends FlexBoxLayout {
   }
 
   public enum Position {
-    BOTTOM, RIGHT
+    BOTTOM,
+    RIGHT
   }
-
 }

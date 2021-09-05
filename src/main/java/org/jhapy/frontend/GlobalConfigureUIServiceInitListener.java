@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 package org.jhapy.frontend;
 
 import com.vaadin.flow.component.dependency.CssImport;
@@ -38,14 +37,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 @CssImport(value = "./styles/loading-indicator.css")
 public class GlobalConfigureUIServiceInitListener implements VaadinServiceInitListener, HasLogger {
 
-  @Autowired
-  private AppProperties appProperties;
+  @Autowired private AppProperties appProperties;
 
   @Override
   public void serviceInit(ServiceInitEvent event) {
-    event.getSource().addUIInitListener(uiEvent -> {
-      var ui = uiEvent.getUI();
-      ui.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
-    });
+    event
+        .getSource()
+        .addUIInitListener(
+            uiEvent -> {
+              var ui = uiEvent.getUI();
+              ui.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
+            });
   }
 }

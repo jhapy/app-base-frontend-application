@@ -20,9 +20,10 @@ package org.jhapy.frontend.client;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import java.util.Optional;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class TokenRelayRequestInterceptor implements RequestInterceptor {

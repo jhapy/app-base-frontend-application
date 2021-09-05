@@ -18,14 +18,11 @@
 
 package org.jhapy.frontend.client;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.core.annotation.AliasFor;
+
+import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -39,7 +36,7 @@ public @interface AuthorizedFeignClient {
   /**
    * A custom {@code @Configuration} for the feign client.
    *
-   * Can contain override {@code @Bean} definition for the pieces that make up the client, for
+   * <p>Can contain override {@code @Bean} definition for the pieces that make up the client, for
    * instance {@link feign.codec.Decoder}, {@link feign.codec.Encoder}, {@link feign.Contract}.
    *
    * @return the custom {@code @Configuration} for the feign client.
@@ -79,7 +76,6 @@ public @interface AuthorizedFeignClient {
    * @see feign.hystrix.FallbackFactory for details.
    */
   Class<?> fallbackFactory() default void.class;
-
 
   /**
    * Path prefix to be used by all method-level mappings. Can be used with or without {@code

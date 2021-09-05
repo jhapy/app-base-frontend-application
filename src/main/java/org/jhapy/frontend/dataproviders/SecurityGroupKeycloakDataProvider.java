@@ -21,7 +21,6 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
 import org.jhapy.dto.domain.security.SecurityKeycloakGroup;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
@@ -31,6 +30,8 @@ import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.Serializable;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -38,41 +39,38 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @SpringComponent
 @UIScope
-public class SecurityGroupKeycloakDataProvider extends
-    DefaultDataProvider<SecurityKeycloakGroup, DefaultFilter> implements
-    Serializable {
+public class SecurityGroupKeycloakDataProvider
+    extends DefaultDataProvider<SecurityKeycloakGroup, DefaultFilter> implements Serializable {
 
   @Autowired
   public SecurityGroupKeycloakDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION,
-        AppConst.DEFAULT_SORT_FIELDS);
+    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
   }
 
   @Override
   protected Page<SecurityKeycloakGroup> fetchFromBackEnd(
-      Query<SecurityKeycloakGroup, DefaultFilter> query,
-      Pageable pageable) {
+      Query<SecurityKeycloakGroup, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
+    String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
-    Page<SecurityKeycloakGroup> page = SecurityServices.getKeycloakClient().findGroups(
-        new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable)).getData();
+    Page<SecurityKeycloakGroup> page =
+        SecurityServices.getKeycloakClient()
+            .findGroups(new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable))
+            .getData();
     if (getPageObserver() != null) {
       getPageObserver().accept(page);
     }
     return page;
   }
 
-
   @Override
   protected int sizeInBackEnd(Query<SecurityKeycloakGroup, DefaultFilter> query) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    String filterStr =
-        filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
+    String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
     return SecurityServices.getKeycloakClient()
-        .countGroups(new CountAnyMatchingQuery(filterStr, filter.isShowInactive())).getData()
+        .countGroups(new CountAnyMatchingQuery(filterStr, filter.isShowInactive()))
+        .getData()
         .intValue();
   }
 }

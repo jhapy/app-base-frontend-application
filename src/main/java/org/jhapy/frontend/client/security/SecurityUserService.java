@@ -20,11 +20,7 @@ package org.jhapy.frontend.client.security;
 
 import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.security.securityUser.GetSecurityUserByUsernameQuery;
 import org.jhapy.dto.utils.Page;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -38,13 +34,20 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-04-16
  */
-@FeignClient(name = "${jhapy.remote-services.authorization-server.name:null}", url = "${jhapy.remote-services.authorization-server.url:}", path = "/uaa/securityUser", fallbackFactory = SecurityUserServiceFallback.class)
+@FeignClient(
+    name = "${jhapy.remote-services.authorization-server.name:null}",
+    url = "${jhapy.remote-services.authorization-server.url:}",
+    path = "/uaa/securityUser",
+    fallbackFactory = SecurityUserServiceFallback.class)
 @Primary
 public interface SecurityUserService {
 
-  @PostMapping(value = "/getSecurityUserByUsername", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  ServiceResult<SecurityUser> getSecurityUserByUsername(@RequestBody
-      GetSecurityUserByUsernameQuery query);
+  @PostMapping(
+      value = "/getSecurityUserByUsername",
+      produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+      consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  ServiceResult<SecurityUser> getSecurityUserByUsername(
+      @RequestBody GetSecurityUserByUsernameQuery query);
 
   @PostMapping(value = "/findAnyMatching")
   ServiceResult<Page<SecurityUser>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);

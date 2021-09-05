@@ -22,12 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.notification.MailTemplate;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByNameQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.utils.Page;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
@@ -38,8 +33,8 @@ import org.springframework.stereotype.Component;
  * @since 2019-06-04
  */
 @Component
-public class MailTemplateServiceFallback implements MailTemplateService, HasLogger,
-    FallbackFactory<MailTemplateServiceFallback> {
+public class MailTemplateServiceFallback
+    implements MailTemplateService, HasLogger, FallbackFactory<MailTemplateServiceFallback> {
 
   final Throwable cause;
 
@@ -54,8 +49,10 @@ public class MailTemplateServiceFallback implements MailTemplateService, HasLogg
   @Override
   public MailTemplateServiceFallback create(Throwable cause) {
     if (cause != null) {
-      String errMessage = StringUtils.isNotBlank(cause.getMessage()) ? cause.getMessage()
-          : "Unknown error occurred : " + cause;
+      String errMessage =
+          StringUtils.isNotBlank(cause.getMessage())
+              ? cause.getMessage()
+              : "Unknown error occurred : " + cause;
       // I don't see this log statement
       logger().debug("Client fallback called for the cause : {}", errMessage);
     }

@@ -19,8 +19,8 @@
 package org.jhapy.frontend.utils.css.lumo;
 
 public enum BadgeShape {
-
-  NORMAL("normal"), PILL("pill");
+  NORMAL("normal"),
+  PILL("pill");
 
   private final String style;
 
@@ -31,5 +31,4 @@ public enum BadgeShape {
   public String getThemeName() {
     return style;
   }
-
 }

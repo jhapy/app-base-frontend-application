@@ -19,11 +19,12 @@
 package org.jhapy.frontend.client.security;
 
 import com.vaadin.flow.spring.SpringServlet;
-import javax.servlet.ServletContext;
 import org.jhapy.frontend.client.security.keycloak.KeycloakClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author jHapy Lead Dev.
@@ -39,6 +40,14 @@ public class SecurityServices {
 
   public static SecurityRoleService getSecurityRoleService() {
     return getApplicationContext().getBean(SecurityRoleService.class);
+  }
+
+  public static ClientService getClientService() {
+    return getApplicationContext().getBean(ClientService.class);
+  }
+
+  public static DbTableService getTableService() {
+    return getApplicationContext().getBean(DbTableService.class);
   }
 
   public static KeycloakClient getKeycloakClient() {

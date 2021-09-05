@@ -18,8 +18,6 @@
 
 package org.jhapy.frontend.client.security.keycloak;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jhapy.commons.utils.HasLogger;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +27,9 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author jHapy Lead Dev.
@@ -42,8 +43,8 @@ public class KeycloakLogoutHandler extends SecurityContextLogoutHandler implemen
   private final RestTemplate restTemplate;
 
   @Override
-  public void logout(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication) {
+  public void logout(
+      HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     super.logout(request, response, authentication);
 
     propagateLogoutToKeycloak((OidcUser) authentication.getPrincipal());
@@ -53,12 +54,13 @@ public class KeycloakLogoutHandler extends SecurityContextLogoutHandler implemen
     var loggerPrefix = getLoggerPrefix("propagateLogoutToKeycloak");
     String endSessionEndpoint = user.getIssuer() + "/protocol/openid-connect/logout";
 
-    UriComponentsBuilder builder = UriComponentsBuilder //
-        .fromUriString(endSessionEndpoint) //
-        .queryParam("id_token_hint", user.getIdToken().getTokenValue());
+    UriComponentsBuilder builder =
+        UriComponentsBuilder //
+            .fromUriString(endSessionEndpoint) //
+            .queryParam("id_token_hint", user.getIdToken().getTokenValue());
 
-    ResponseEntity<String> logoutResponse = restTemplate
-        .getForEntity(builder.toUriString(), String.class);
+    ResponseEntity<String> logoutResponse =
+        restTemplate.getForEntity(builder.toUriString(), String.class);
     if (logoutResponse.getStatusCode().is2xxSuccessful()) {
       logger().info(loggerPrefix + "Successfully logged out in Keycloak");
     } else {

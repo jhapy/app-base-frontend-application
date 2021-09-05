@@ -20,6 +20,7 @@ package org.jhapy.frontend.components.navigation.tab;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.tabs.Tab;
+
 import java.util.Objects;
 
 public class NaviTab extends Tab {
@@ -35,8 +36,7 @@ public class NaviTab extends Tab {
     return navigationTarget;
   }
 
-  public void setNavigationTarget(
-      Class<? extends Component> navigationTarget) {
+  public void setNavigationTarget(Class<? extends Component> navigationTarget) {
     this.navigationTarget = Objects.requireNonNull(navigationTarget);
   }
 }

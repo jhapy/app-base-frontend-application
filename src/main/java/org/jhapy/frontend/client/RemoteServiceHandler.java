@@ -2,9 +2,6 @@ package org.jhapy.frontend.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,18 +9,12 @@ import org.apache.logging.log4j.ThreadContext;
 import org.jhapy.commons.exception.ErrorConstants;
 import org.jhapy.commons.exception.JHapyProblem;
 import org.jhapy.commons.security.SecurityUtils;
-import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.AppContextThread;
-import org.jhapy.dto.utils.Page;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.zalando.problem.ProblemModule;
+
+import java.text.MessageFormat;
+import java.util.Arrays;
 
 /**
  * @author Alexandre Clavaud.
@@ -38,8 +29,12 @@ public interface RemoteServiceHandler {
     objectMapper.registerModule(new ProblemModule());
     try {
       if (e instanceof FeignException) {
-        var responseBody = new String(((FeignException) e).responseBody()
-            .orElseThrow(() -> new Exception("Cannot decode body")).array());
+        var responseBody =
+            new String(
+                ((FeignException) e)
+                    .responseBody()
+                    .orElseThrow(() -> new Exception("Cannot decode body"))
+                    .array());
         JHapyProblem problem = objectMapper.readValue(responseBody, JHapyProblem.class);
 
         ServiceResult result;
@@ -52,11 +47,17 @@ public interface RemoteServiceHandler {
           result = new ServiceResult<>(false, message, defaultResult);
           result.setMessageTitle(serviceName);
         } else {
-          result = new ServiceResult<>(false,
-              StringUtils.isNotBlank(problem.getDetail()) ? problem.getDetail()
-                  : problem.getMessage(), defaultResult);
-          result.setMessageTitle(StringUtils.isNotBlank(problem.getTitle()) ? problem.getTitle()
-              : problem.getStatus().getReasonPhrase());
+          result =
+              new ServiceResult<>(
+                  false,
+                  StringUtils.isNotBlank(problem.getDetail())
+                      ? problem.getDetail()
+                      : problem.getMessage(),
+                  defaultResult);
+          result.setMessageTitle(
+              StringUtils.isNotBlank(problem.getTitle())
+                  ? problem.getTitle()
+                  : problem.getStatus().getReasonPhrase());
         }
 
         if (problem.getStacktrace() != null) {
@@ -67,17 +68,21 @@ public interface RemoteServiceHandler {
         return new ServiceResult<>(false, e.getLocalizedMessage(), defaultResult);
       }
     } catch (Exception exception) {
-      error(loggerPrefix, "Unexpected error {0} while decoding remote exception",
+      error(
+          loggerPrefix,
+          "Unexpected error {0} while decoding remote exception",
           exception.getLocalizedMessage());
       return new ServiceResult<>(false, e.getLocalizedMessage(), defaultResult);
     }
   }
 
   default String getLoggerPrefix(final String methodName) {
-    String username = SecurityUtils.getCurrentUserLogin()
-        .orElse(AppContextThread.getCurrentUsername());
-    String sessionId = AppContextThread.getCurrentSessionId() == null ? "local"
-        : AppContextThread.getCurrentSessionId();
+    String username =
+        SecurityUtils.getCurrentUserLogin().orElse(AppContextThread.getCurrentUsername());
+    String sessionId =
+        AppContextThread.getCurrentSessionId() == null
+            ? "local"
+            : AppContextThread.getCurrentSessionId();
     ThreadContext.put("jhapy.username", username);
     ThreadContext.put("jhapy.sessionId", sessionId);
     var params = "";
@@ -89,10 +94,12 @@ public interface RemoteServiceHandler {
   }
 
   default String getLoggerPrefix(final String methodName, Object... params) {
-    String username = SecurityUtils.getCurrentUserLogin()
-        .orElse(AppContextThread.getCurrentUsername());
-    String sessionId = AppContextThread.getCurrentSessionId() == null ? "local"
-        : AppContextThread.getCurrentSessionId();
+    String username =
+        SecurityUtils.getCurrentUserLogin().orElse(AppContextThread.getCurrentUsername());
+    String sessionId =
+        AppContextThread.getCurrentSessionId() == null
+            ? "local"
+            : AppContextThread.getCurrentSessionId();
     ThreadContext.put("jhapy.username", username);
     ThreadContext.put("jhapy.sessionId", sessionId);
     var paramsStr = new StringBuilder();
@@ -141,7 +148,8 @@ public interface RemoteServiceHandler {
 
   default void warn(String prefix, Throwable exception, String message, Object... params) {
     logger()
-        .warn(() -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
+        .warn(
+            () -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
             exception);
   }
 
@@ -152,7 +160,8 @@ public interface RemoteServiceHandler {
 
   default void error(String prefix, Throwable exception, String message, Object... params) {
     logger()
-        .error(() -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
+        .error(
+            () -> MessageFormat.format("{0}{1}", prefix, MessageFormat.format(message, params)),
             exception);
   }
 

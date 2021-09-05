@@ -25,16 +25,14 @@ import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudI18n;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.shared.Registration;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.events.CustomListFieldValueChangeEvent;
 import org.jhapy.frontend.dataproviders.DefaultBackend;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
@@ -49,7 +47,8 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
   protected Button newButton;
   protected DefaultBackend<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldValueChangeEvent<C>>> changeListeners = new ArrayList<>();
+  private final List<ValueChangeListener<? super CustomListFieldValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListField(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;
@@ -93,22 +92,42 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
     i18nGrid.setCancel(getTranslation("action.global.cancel", currentLocal));
     i18nGrid.setEditLabel(getTranslation("action.global.editButton", currentLocal));
 
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setTitle(getTranslation("element.global.cancel.title", currentLocal));
-    i18nGrid.getConfirm().getCancel()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
         .setContent(getTranslation("element.global.cancel.content", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setDismiss(getTranslation("action.global.cancel.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getCancel().getButton()
+    i18nGrid
+        .getConfirm()
+        .getCancel()
+        .getButton()
         .setConfirm(getTranslation("action.global.cancel.confirmButton", currentLocal));
 
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setTitle(getTranslation("element.global.delete.title", currentLocal));
-    i18nGrid.getConfirm().getDelete()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
         .setContent(getTranslation("element.global.delete.content", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setDismiss(getTranslation("action.global.delete.dismissButton", currentLocal));
-    i18nGrid.getConfirm().getDelete().getButton()
+    i18nGrid
+        .getConfirm()
+        .getDelete()
+        .getButton()
         .setConfirm(getTranslation("action.global.delete.confirmButton", currentLocal));
 
     return i18nGrid;
@@ -120,8 +139,7 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
   }
 
   @Override
-  public void setReadOnly(boolean b) {
-  }
+  public void setReadOnly(boolean b) {}
 
   @Override
   public boolean isRequiredIndicatorVisible() {
@@ -129,19 +147,29 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
   }
 
   @Override
-  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-  }
+  public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {}
 
   public void updateValue(List<C> oldValues, List<C> newValues) {
-    changeListeners.forEach(valueChangeListener -> valueChangeListener
-        .valueChanged(new CustomListFieldValueChangeEvent<>(oldValues, newValues, this)));
+    changeListeners.forEach(
+        valueChangeListener ->
+            valueChangeListener.valueChanged(
+                new CustomListFieldValueChangeEvent<>(oldValues, newValues, this)));
   }
 
   public class Backend extends DefaultBackend<C> {
+    public Backend() {}
+
+    public Backend(Comparator<C> comparator) {
+      super(comparator);
+    }
 
     @Override
     public Object getId(C item) {
       return item.getId();
+    }
+
+    public C getById(Long id) {
+      return fieldsMap.stream().filter(c -> c.getId().equals(id)).findFirst().orElse(null);
     }
 
     public void setValues(Collection<C> values) {

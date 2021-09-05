@@ -19,7 +19,6 @@
 package org.jhapy.frontend.utils;
 
 public enum FontSize {
-
   XXS("var(--lumo-font-size-xxs)"),
   XS("var(--lumo-font-size-xs)"),
   S("var(--lumo-font-size-s)"),
@@ -38,5 +37,4 @@ public enum FontSize {
   public String getValue() {
     return value;
   }
-
 }

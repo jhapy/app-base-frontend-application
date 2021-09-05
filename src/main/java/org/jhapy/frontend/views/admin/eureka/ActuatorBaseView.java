@@ -27,11 +27,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.registry.EurekaApplication;
@@ -47,6 +42,12 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 /**
  * @author jHapy Lead Dev.
@@ -69,8 +70,8 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
   protected ScheduledExecutorService timer;
   protected final UI ui;
 
-  public ActuatorBaseView(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public ActuatorBaseView(
+      UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     this.ui = ui;
     this.I18N_PREFIX = I18N_PREFIX;
     this.authorizationHeaderUtil = authorizationHeaderUtil;
@@ -79,8 +80,7 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
 
   public abstract Component getContent(EurekaInfo eurekaInfo);
 
-  public void refresh() {
-  }
+  public void refresh() {}
 
   public void setRefreshRate(Integer refreshRate) {
     var loggerPrefix = getLoggerPrefix("setRefreshRate");
@@ -105,9 +105,10 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
   }
 
   protected FlexBoxLayout createHeader(VaadinIcon icon, String title, Component... buttons) {
-    FlexBoxLayout header = new FlexBoxLayout(
-        UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, icon),
-        titleLabel = UIUtils.createH3Label(title));
+    FlexBoxLayout header =
+        new FlexBoxLayout(
+            UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, icon),
+            titleLabel = UIUtils.createH3Label(title));
     header.setWidthFull();
     if (buttons.length > 0) {
       header.add(buttons);
@@ -118,98 +119,102 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
     return header;
   }
 
-  protected Component getEurekaInstancesList(boolean displayInstanceListAsMenu,
+  protected Component getEurekaInstancesList(
+      boolean displayInstanceListAsMenu,
       List<EurekaApplication> eurekaApplicationList,
       BiConsumer<EurekaApplication, EurekaApplicationInstance> instanceSelectedFunction) {
     MenuBar menuBar = new MenuBar();
     menuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY);
 
     if (displayInstanceListAsMenu) {
-      MenuItem applicationInstance = menuBar
-          .addItem(getTranslation("element.actuator.eurekaInstance"));
+      MenuItem applicationInstance =
+          menuBar.addItem(getTranslation("element.actuator.eurekaInstance"));
       SubMenu eurekaApplicationSubMenu = applicationInstance.getSubMenu();
       for (EurekaApplication eurekaApplication : eurekaApplicationList) {
-        MenuItem eurekaApplicationMenuItem = eurekaApplicationSubMenu
-            .addItem(eurekaApplication.getName());
-        //eurekaApplicationMenuItem.setCheckable(true);
-        //eurekaApplicationMenuItem.addClickListener(event -> setMenuItemChecked( eurekaApplicationSubMenu, eurekaApplicationMenuItem ));
+        MenuItem eurekaApplicationMenuItem =
+            eurekaApplicationSubMenu.addItem(eurekaApplication.getName());
+        // eurekaApplicationMenuItem.setCheckable(true);
+        // eurekaApplicationMenuItem.addClickListener(event -> setMenuItemChecked(
+        // eurekaApplicationSubMenu, eurekaApplicationMenuItem ));
         SubMenu eurekaApplicationInstanceSubMenu = eurekaApplicationMenuItem.getSubMenu();
-        for (EurekaApplicationInstance eurekaApplicationInstance : eurekaApplication
-            .getInstances()) {
-          MenuItem subMenu = eurekaApplicationInstanceSubMenu
-              .addItem(eurekaApplicationInstance.getInstanceId());
-          subMenu
-              .addClickListener(menuItemClickEvent -> {
+        for (EurekaApplicationInstance eurekaApplicationInstance :
+            eurekaApplication.getInstances()) {
+          MenuItem subMenu =
+              eurekaApplicationInstanceSubMenu.addItem(eurekaApplicationInstance.getInstanceId());
+          subMenu.addClickListener(
+              menuItemClickEvent -> {
                 setMenuItemChecked(eurekaApplicationInstanceSubMenu, subMenu);
                 currentEurekaApplication = eurekaApplication;
                 currentEurekaApplicationInstance = eurekaApplicationInstance;
-                UI.getCurrent().getSession()
+                UI.getCurrent()
+                    .getSession()
                     .setAttribute(EurekaApplication.class, eurekaApplication);
-                UI.getCurrent().getSession()
-                    .setAttribute(EurekaApplicationInstance.class,
-                        eurekaApplicationInstance);
-                instanceSelectedFunction
-                    .accept(eurekaApplication, eurekaApplicationInstance);
+                UI.getCurrent()
+                    .getSession()
+                    .setAttribute(EurekaApplicationInstance.class, eurekaApplicationInstance);
+                instanceSelectedFunction.accept(eurekaApplication, eurekaApplicationInstance);
               });
         }
       }
     }
     MenuItem refreshNow = menuBar.addItem(getTranslation("action.actuator.refreshNow"));
     refreshNow.addClickListener(menuItemClickEvent -> refresh());
-    MenuItem refreshRate = menuBar
-        .addItem(getTranslation("action.actuator.refreshRate"));
+    MenuItem refreshRate = menuBar.addItem(getTranslation("action.actuator.refreshRate"));
     SubMenu refreshRateSubMenu = refreshRate.getSubMenu();
-    refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.title"))
+    refreshRateSubMenu
+        .addItem(getTranslation("action.actuator.refreshRate.title"))
         .setEnabled(false);
 
-    MenuItem disabledMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.disabled"));
-    disabledMenuItem.addClickListener(menuItemClickEvent -> {
-      setMenuItemChecked(refreshRateSubMenu, disabledMenuItem);
-      setRefreshRate(null);
-    });
+    MenuItem disabledMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.disabled"));
+    disabledMenuItem.addClickListener(
+        menuItemClickEvent -> {
+          setMenuItemChecked(refreshRateSubMenu, disabledMenuItem);
+          setRefreshRate(null);
+        });
     disabledMenuItem.setCheckable(true);
     disabledMenuItem.setChecked(true);
 
-    MenuItem refreshRate5sMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.5s"));
-    refreshRate5sMenuItem.addClickListener(menuItemClickEvent -> {
-      setMenuItemChecked(refreshRateSubMenu, refreshRate5sMenuItem);
-      setRefreshRate(5);
-    });
+    MenuItem refreshRate5sMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.5s"));
+    refreshRate5sMenuItem.addClickListener(
+        menuItemClickEvent -> {
+          setMenuItemChecked(refreshRateSubMenu, refreshRate5sMenuItem);
+          setRefreshRate(5);
+        });
     refreshRate5sMenuItem.setCheckable(true);
 
-    MenuItem refreshRate10sMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.10s"));
-    refreshRate10sMenuItem
-        .addClickListener(menuItemClickEvent -> {
+    MenuItem refreshRate10sMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.10s"));
+    refreshRate10sMenuItem.addClickListener(
+        menuItemClickEvent -> {
           setMenuItemChecked(refreshRateSubMenu, refreshRate10sMenuItem);
           setRefreshRate(10);
         });
     refreshRate10sMenuItem.setCheckable(true);
 
-    MenuItem refreshRate30sMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.30s"));
-    refreshRate30sMenuItem
-        .addClickListener(menuItemClickEvent -> {
+    MenuItem refreshRate30sMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.30s"));
+    refreshRate30sMenuItem.addClickListener(
+        menuItemClickEvent -> {
           setMenuItemChecked(refreshRateSubMenu, refreshRate30sMenuItem);
           setRefreshRate(30);
         });
     refreshRate30sMenuItem.setCheckable(true);
 
-    MenuItem refreshRate60sMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.60s"));
-    refreshRate60sMenuItem
-        .addClickListener(menuItemClickEvent -> {
+    MenuItem refreshRate60sMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.60s"));
+    refreshRate60sMenuItem.addClickListener(
+        menuItemClickEvent -> {
           setMenuItemChecked(refreshRateSubMenu, refreshRate60sMenuItem);
           setRefreshRate(60);
         });
     refreshRate60sMenuItem.setCheckable(true);
 
-    MenuItem refreshRate300sMenuItem = refreshRateSubMenu
-        .addItem(getTranslation("action.actuator.refreshRate.300s"));
-    refreshRate300sMenuItem
-        .addClickListener(menuItemClickEvent -> {
+    MenuItem refreshRate300sMenuItem =
+        refreshRateSubMenu.addItem(getTranslation("action.actuator.refreshRate.300s"));
+    refreshRate300sMenuItem.addClickListener(
+        menuItemClickEvent -> {
           setMenuItemChecked(refreshRateSubMenu, refreshRate300sMenuItem);
           setRefreshRate(300);
         });
@@ -219,7 +224,8 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
   }
 
   protected void setMenuItemChecked(SubMenu parent, MenuItem checked) {
-    parent.getItems().stream().filter(menuItem -> !menuItem.equals(checked))
+    parent.getItems().stream()
+        .filter(menuItem -> !menuItem.equals(checked))
         .forEach(menuItem -> menuItem.setChecked(false));
   }
 

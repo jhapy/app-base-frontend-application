@@ -18,11 +18,6 @@
 
 package org.jhapy.frontend.security;
 
-import java.io.IOException;
-import java.time.Instant;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
@@ -34,6 +29,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Instant;
+
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
@@ -44,9 +45,8 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
   private final SecurityUserService securityUserService;
   private final SessionService sessionService;
 
-  public AuthenticationFailureHandler(String failureUrl,
-      SecurityUserService securityUserService,
-      SessionService sessionService) {
+  public AuthenticationFailureHandler(
+      String failureUrl, SecurityUserService securityUserService, SessionService sessionService) {
     super(failureUrl);
     this.sessionService = sessionService;
     setUseForward(true);
@@ -54,13 +54,16 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
   }
 
   @Override
-  public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException exception) throws IOException, ServletException {
+  public void onAuthenticationFailure(
+      HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
+      throws IOException, ServletException {
     String username = request.getParameter("username");
 
     if (exception instanceof BadCredentialsException) {
-      SecurityUser securityUser = securityUserService
-          .getSecurityUserByUsername(new GetSecurityUserByUsernameQuery(username)).getData();
+      SecurityUser securityUser =
+          securityUserService
+              .getSecurityUserByUsername(new GetSecurityUserByUsernameQuery(username))
+              .getData();
       if (securityUser != null) {
         securityUser.setFailedLoginAttempts(securityUser.getFailedLoginAttempts() + 1);
         if (securityUser.getFailedLoginAttempts() > 4) {
@@ -70,8 +73,14 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
       }
     }
     AuditServices.getAuditServiceQueue()
-        .newSession(new NewSession(request.getRequestedSessionId(), username, null,
-            Instant.now(), false, exception.getLocalizedMessage()));
+        .newSession(
+            new NewSession(
+                request.getRequestedSessionId(),
+                username,
+                null,
+                Instant.now(),
+                false,
+                exception.getLocalizedMessage()));
 
     if (request.getSession() != null) {
       request.changeSessionId();

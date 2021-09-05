@@ -19,7 +19,6 @@
 package org.jhapy.frontend.utils;
 
 public enum LineHeight {
-
   XS("var(--lumo-line-height-xs)"),
   S("var(--lumo-line-height-s)"),
   M("var(--lumo-line-height-m)");
@@ -33,5 +32,4 @@ public enum LineHeight {
   public String getValue() {
     return value;
   }
-
 }

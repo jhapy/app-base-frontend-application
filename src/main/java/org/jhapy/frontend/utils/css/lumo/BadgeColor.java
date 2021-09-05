@@ -19,13 +19,14 @@
 package org.jhapy.frontend.utils.css.lumo;
 
 public enum BadgeColor {
-
-  NORMAL("badge"), NORMAL_PRIMARY("badge primary"), SUCCESS(
-      "badge success"), SUCCESS_PRIMARY("badge success primary"), ERROR(
-      "badge error"), ERROR_PRIMARY(
-      "badge error primary"), CONTRAST(
-      "badge contrast"), CONTRAST_PRIMARY(
-      "badge contrast primary");
+  NORMAL("badge"),
+  NORMAL_PRIMARY("badge primary"),
+  SUCCESS("badge success"),
+  SUCCESS_PRIMARY("badge success primary"),
+  ERROR("badge error"),
+  ERROR_PRIMARY("badge error primary"),
+  CONTRAST("badge contrast"),
+  CONTRAST_PRIMARY("badge contrast primary");
 
   private final String style;
 
@@ -36,5 +37,4 @@ public enum BadgeColor {
   public String getThemeName() {
     return style;
   }
-
 }

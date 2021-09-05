@@ -46,9 +46,9 @@ public class Token extends FlexBoxLayout {
     setSpacing(Right.XS);
 
     Label label = UIUtils.createLabel(FontSize.S, TextColor.BODY, text);
-    Button button = UIUtils.createButton(VaadinIcon.CLOSE_SMALL,
-        ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
+    Button button =
+        UIUtils.createButton(
+            VaadinIcon.CLOSE_SMALL, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
     add(label, button);
   }
-
 }

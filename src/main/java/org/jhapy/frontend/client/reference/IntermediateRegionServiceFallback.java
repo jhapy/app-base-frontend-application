@@ -18,19 +18,16 @@
 
 package org.jhapy.frontend.client.reference;
 
-import java.util.Collections;
-import java.util.List;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.reference.IntermediateRegion;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
+import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.utils.Page;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author jHapy Lead Dev.
@@ -44,8 +41,7 @@ public class IntermediateRegionServiceFallback implements IntermediateRegionServ
   public ServiceResult<List<IntermediateRegion>> findAll(BaseRemoteQuery query) {
     logger().error(getLoggerPrefix("findAll") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server",
-        Collections.emptyList());
+    return new ServiceResult<>(false, "Cannot connect to server", Collections.emptyList());
   }
 
   @Override

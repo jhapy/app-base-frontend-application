@@ -41,15 +41,17 @@ public class ApiTabContent extends ActuatorBaseView {
   protected FlexBoxLayout content;
   protected Component component;
 
-  public ApiTabContent(UI ui, String I18N_PREFIX,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public ApiTabContent(UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {
     super(ui, I18N_PREFIX + "apis.", authorizationHeaderUtil);
   }
 
   public Component getContent(EurekaInfo eurekaInfo) {
-    content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
-        getTranslation("element." + I18N_PREFIX + "title"),
-        getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
+    content =
+        new FlexBoxLayout(
+            createHeader(
+                VaadinIcon.SEARCH,
+                getTranslation("element." + I18N_PREFIX + "title"),
+                getEurekaInstancesList(true, eurekaInfo.getApplicationList(), this::getDetails)));
     content.setAlignItems(FlexComponent.Alignment.CENTER);
     content.setFlexDirection(FlexDirection.COLUMN);
     content.setSizeFull();
@@ -57,10 +59,11 @@ public class ApiTabContent extends ActuatorBaseView {
     return content;
   }
 
-  protected void getDetails(EurekaApplication eurekaApplication,
-      EurekaApplicationInstance eurekaApplicationInstance) {
+  protected void getDetails(
+      EurekaApplication eurekaApplication, EurekaApplicationInstance eurekaApplicationInstance) {
     titleLabel.setText(
-        getTranslation("element." + I18N_PREFIX + "title") + " - " + eurekaApplicationInstance
-            .getInstanceId());
+        getTranslation("element." + I18N_PREFIX + "title")
+            + " - "
+            + eurekaApplicationInstance.getInstanceId());
   }
 }

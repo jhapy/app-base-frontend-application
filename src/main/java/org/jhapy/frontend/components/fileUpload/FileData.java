@@ -23,9 +23,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-/**
- * Class containing file information for upload.
- */
+/** Class containing file information for upload. */
 public class FileData implements Serializable {
 
   private final String fileName, mimeType;
@@ -38,8 +36,7 @@ public class FileData implements Serializable {
    * @param mimeType the file MIME type
    * @param outputBuffer the output buffer where to write the file
    */
-  public FileData(String fileName, String mimeType,
-      ObjectOutputStream outputBuffer) {
+  public FileData(String fileName, String mimeType, ObjectOutputStream outputBuffer) {
     this.fileName = fileName;
     this.mimeType = mimeType;
     this.outputBuffer = outputBuffer;

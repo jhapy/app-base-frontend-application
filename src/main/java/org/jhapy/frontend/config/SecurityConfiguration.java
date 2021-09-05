@@ -18,12 +18,8 @@
 
 package org.jhapy.frontend.config;
 
-import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
-
 import de.codecamp.vaadin.security.spring.autoconfigure.VaadinSecurityProperties;
 import de.codecamp.vaadin.security.spring.config.VaadinSecurityConfigurerAdapter;
-import java.util.Arrays;
-import java.util.List;
 import org.jhapy.commons.security.oauth2.AudienceValidator;
 import org.jhapy.commons.security.oauth2.JwtGrantedAuthorityConverter;
 import org.jhapy.commons.utils.HasLogger;
@@ -55,17 +51,18 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.access.expression.WebExpressionVoter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.client.RestTemplate;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -88,12 +85,12 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
   private final boolean forceHttpsForRealm;
   private final ClientRegistrationRepository clientRegistrationRepository;
 
-  @Autowired
-  private KeycloakOauth2UserService keycloakOidcUserService;
+  @Autowired private KeycloakOauth2UserService keycloakOidcUserService;
 
   private final RestTemplate restTemplate = new RestTemplate();
 
-  public SecurityConfiguration(VaadinSecurityProperties properties,
+  public SecurityConfiguration(
+      VaadinSecurityProperties properties,
       AppProperties appProperties,
       SecurityProblemSupport problemSupport,
       SecurityRoleService securityRoleService,
@@ -109,35 +106,37 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
 
   @Override
   public void configure(WebSecurity web) {
-    web.ignoring().antMatchers(
-        // Vaadin Flow static resources
-        "/VAADIN/**",
-        // the standard favicon URI
-        "/favicon.ico",
+    web.ignoring()
+        .antMatchers(
+            // Vaadin Flow static resources
+            "/VAADIN/**",
+            // the standard favicon URI
+            "/favicon.ico",
 
-        // the robots exclusion standard
-        "/robots.txt",
+            // the robots exclusion standard
+            "/robots.txt",
 
-        // web application manifest
-        "/manifest.webmanifest",
-        "/sw.js",
-        "/offline-page.html",
+            // web application manifest
+            "/manifest.webmanifest",
+            "/sw.js",
+            "/offline-page.html",
 
-        // icons and images
-        "/icons/**",
-        "/images/**",
+            // icons and images
+            "/icons/**",
+            "/images/**",
 
-        // (development mode) static resources
-        "/frontend/**",
+            // (development mode) static resources
+            "/frontend/**",
 
-        // (development mode) webjars
-        "/webjars/**",
+            // (development mode) webjars
+            "/webjars/**",
 
-        // (development mode) H2 debugging console
-        "/h2-console/**",
+            // (development mode) H2 debugging console
+            "/h2-console/**",
 
-        // (production mode) static resources
-        "/frontend-es5/**", "/frontend-es6/**");
+            // (production mode) static resources
+            "/frontend-es5/**",
+            "/frontend-es6/**");
   }
 
   @Override
@@ -147,8 +146,7 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
     super.configure(http);
 
     // @formatter:off
-    http
-        .headers()
+    http.headers()
         .contentSecurityPolicy(appProperties.getSecurity().getContentSecurityPolicy())
         .and()
         .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
@@ -161,39 +159,59 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
         .and()
-        .requestCache().requestCache(new VaadinOAuth2RequestCache())
+        .requestCache()
+        .requestCache(new VaadinOAuth2RequestCache())
         .and()
         .authorizeRequests()
-        .antMatchers("/").permitAll()
-        .antMatchers("/api/auth-info").permitAll()
-        .antMatchers("/api/**").authenticated()
-        .antMatchers("/management/health").permitAll()
-        .antMatchers("/management/health/**").permitAll()
-        .antMatchers("/management/info").permitAll()
-        .antMatchers("/management/prometheus").permitAll()
-        .antMatchers("/management/**").hasAuthority("ROLE_ADMIN")
-        .anyRequest().fullyAuthenticated()
+        .antMatchers("/")
+        .permitAll()
+        .antMatchers("/api/auth-info")
+        .permitAll()
+        .antMatchers("/api/**")
+        .authenticated()
+        .antMatchers("/management/health")
+        .permitAll()
+        .antMatchers("/management/health/**")
+        .permitAll()
+        .antMatchers("/management/info")
+        .permitAll()
+        .antMatchers("/management/prometheus")
+        .permitAll()
+        .antMatchers("/management/**")
+        .hasAuthority("ROLE_ADMIN")
+        .anyRequest()
+        .fullyAuthenticated()
         .and()
-        .logout().logoutSuccessHandler(oidcLogoutSuccessHandler())
+        .logout()
+        .logoutSuccessHandler(oidcLogoutSuccessHandler())
         .and()
-        .oauth2Login().authorizationEndpoint()
+        .oauth2Login()
+        .authorizationEndpoint()
         .authorizationRequestResolver(
-            new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository,
-                "/oauth2/authorization", forceHttpsForRealm))
-        .and().userInfoEndpoint()
-        .oidcUserService(keycloakOidcUserService).and()
-        .loginPage(appProperties.getAuthorization().getLoginRootUrl()
-            + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/" + realm);
+            new CustomOAuth2AuthorizationRequestResolver(
+                clientRegistrationRepository, "/oauth2/authorization", forceHttpsForRealm))
+        .and()
+        .userInfoEndpoint()
+        .oidcUserService(keycloakOidcUserService)
+        .and()
+        .loginPage(
+            appProperties.getAuthorization().getLoginRootUrl()
+                + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+                + "/"
+                + realm);
     // @formatter:on
-    debug(loggerPrefix, "Using login root url : {0}{1}/{2}",
-        appProperties.getAuthorization().getLoginRootUrl(), DEFAULT_AUTHORIZATION_REQUEST_BASE_URI,
+    debug(
+        loggerPrefix,
+        "Using login root url : {0}{1}/{2}",
+        appProperties.getAuthorization().getLoginRootUrl(),
+        DEFAULT_AUTHORIZATION_REQUEST_BASE_URI,
         realm);
   }
 
   Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {
     var jwtAuthenticationConverter = new JwtAuthenticationConverter();
-    jwtAuthenticationConverter
-        .setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
+        new JwtGrantedAuthorityConverter());
     return jwtAuthenticationConverter;
   }
 
@@ -208,9 +226,12 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
   public KeycloakOauth2UserService keycloakOidcUserService(
       OAuth2ClientProperties oauth2ClientProperties) {
 
-    var jwtDecoder = (NimbusJwtDecoder) JwtDecoders
-        .fromIssuerLocation(oauth2ClientProperties.getProvider().get("oidc").getIssuerUri());
-    //NimbusJwtDecoderJwkSupport jwtDecoder = new NimbusJwtDecoderJwkSupport(oauth2ClientProperties.getProvider().get("keycloak").getJwkSetUri());
+    var jwtDecoder =
+        (NimbusJwtDecoder)
+            JwtDecoders.fromIssuerLocation(
+                oauth2ClientProperties.getProvider().get("oidc").getIssuerUri());
+    // NimbusJwtDecoderJwkSupport jwtDecoder = new
+    // NimbusJwtDecoderJwkSupport(oauth2ClientProperties.getProvider().get("keycloak").getJwkSetUri());
 
     var authoritiesMapper = new SimpleAuthorityMapper();
     authoritiesMapper.setConvertToUpperCase(true);
@@ -220,14 +241,12 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
 
   @Bean
   JwtDecoder jwtDecoder() {
-    var jwtDecoder = (NimbusJwtDecoder) JwtDecoders
-        .fromOidcIssuerLocation(issuerUri);
+    var jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
-    var audienceValidator = new AudienceValidator(
-        appProperties.getSecurity().getOauth2().getAudience());
+    var audienceValidator =
+        new AudienceValidator(appProperties.getSecurity().getOauth2().getAudience());
     var withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-    var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer,
-        audienceValidator);
+    var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
 
     jwtDecoder.setJwtValidator(withAudience);
 
@@ -241,12 +260,12 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
 
   @Bean
   public AccessDecisionManager accessDecisionManager() {
-    List<AccessDecisionVoter<?>> decisionVoters
-        = Arrays.asList(
-        new WebExpressionVoter(),
-        new RoleVoter(),
-        new AuthenticatedVoter(),
-        new JHapyAccessDecisionVoter(securityRoleService));
+    List<AccessDecisionVoter<?>> decisionVoters =
+        Arrays.asList(
+            new WebExpressionVoter(),
+            new RoleVoter(),
+            new AuthenticatedVoter(),
+            new JHapyAccessDecisionVoter(securityRoleService));
     return new UnanimousBased(decisionVoters);
   }
 }

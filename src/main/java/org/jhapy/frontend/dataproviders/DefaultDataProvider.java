@@ -21,21 +21,22 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
-import java.io.Serializable;
-import java.util.List;
-import java.util.function.Consumer;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.utils.DirectionEnum;
 import org.jhapy.dto.utils.Page;
 import org.jhapy.frontend.dataproviders.utils.FilterablePageableDataProvider;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class DefaultDataProvider<T extends BaseEntity, F extends DefaultFilter> extends
-    FilterablePageableDataProvider<T, F> implements Serializable {
+public abstract class DefaultDataProvider<T extends BaseEntity, F extends DefaultFilter>
+    extends FilterablePageableDataProvider<T, F> implements Serializable {
 
   private List<QuerySortOrder> defaultSortOrder;
   private Consumer<Page<T>> pageObserver;
@@ -61,8 +62,7 @@ public abstract class DefaultDataProvider<T extends BaseEntity, F extends Defaul
     return currentQuery;
   }
 
-  public void setCurrentQuery(
-      Query<T, F> currentQuery) {
+  public void setCurrentQuery(Query<T, F> currentQuery) {
     this.currentQuery = currentQuery;
   }
 
@@ -83,5 +83,4 @@ public abstract class DefaultDataProvider<T extends BaseEntity, F extends Defaul
   public Object getId(T item) {
     return item.getId();
   }
-
 }

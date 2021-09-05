@@ -18,9 +18,10 @@
 
 package org.jhapy.frontend.utils;
 
-import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.io.Serializable;
 
 @Data
 @AllArgsConstructor

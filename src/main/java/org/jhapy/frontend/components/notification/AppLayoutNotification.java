@@ -4,14 +4,14 @@ import com.github.appreciated.app.layout.addons.notification.NotificationHolder;
 import com.github.appreciated.app.layout.addons.notification.interfaces.Notification;
 import com.github.appreciated.app.layout.session.UIAttributes;
 import com.vaadin.flow.component.UI;
+
 import java.util.Optional;
 
 public class AppLayoutNotification {
 
   public static <T extends Notification> void show(T notification) {
-    getNotificationHolder().ifPresent(holder ->
-        UI.getCurrent().access(() -> holder.add(notification))
-    );
+    getNotificationHolder()
+        .ifPresent(holder -> UI.getCurrent().access(() -> holder.add(notification)));
   }
 
   public static <T extends Notification> Optional<NotificationHolder<T>> getNotificationHolder() {

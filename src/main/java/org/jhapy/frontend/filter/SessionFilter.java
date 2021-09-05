@@ -1,19 +1,16 @@
 package org.jhapy.frontend.filter;
 
 import com.hazelcast.core.HazelcastInstance;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.concurrent.ConcurrentMap;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.frontend.utils.SessionInfo;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Alexandre Clavaud.
@@ -47,5 +44,4 @@ public class SessionFilter implements Filter, HasLogger {
   private ConcurrentMap<String, SessionInfo> retrieveMap() {
     return hazelcastInstance.getMap("userSessions");
   }
-
 }

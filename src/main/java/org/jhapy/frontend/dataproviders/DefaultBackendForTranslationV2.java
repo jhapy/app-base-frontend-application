@@ -35,17 +35,15 @@ import java.util.stream.Stream;
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class DefaultBackendForTranslationV2<C extends EntityTranslationV2> extends
-    AbstractBackEndDataProvider<C, CrudFilter> implements
-    Serializable {
+public abstract class DefaultBackendForTranslationV2<C extends EntityTranslationV2>
+    extends AbstractBackEndDataProvider<C, CrudFilter> implements Serializable {
 
-  protected final Map<String,C> fieldsMap = new HashMap<>();
+  protected final Map<String, C> fieldsMap = new HashMap<>();
   protected final AtomicLong uniqueLong = new AtomicLong();
   private Comparator<C> comparator;
   private SerializablePredicate<C> filter;
 
-  public DefaultBackendForTranslationV2() {
-  }
+  public DefaultBackendForTranslationV2() {}
 
   public DefaultBackendForTranslationV2(Comparator<C> comparator) {
     this.comparator = comparator;
@@ -54,11 +52,11 @@ public abstract class DefaultBackendForTranslationV2<C extends EntityTranslation
   @Override
   public abstract Object getId(C value);
 
-  public Map<String,C> getValues() {
-      return fieldsMap;
+  public Map<String, C> getValues() {
+    return fieldsMap;
   }
 
-  public abstract void setValues(Map<String,C> values);
+  public abstract void setValues(Map<String, C> values);
 
   public abstract void persist(C value);
 
@@ -81,7 +79,6 @@ public abstract class DefaultBackendForTranslationV2<C extends EntityTranslation
       SerializablePredicate<C> oldFilter = this.getFilter();
       this.setFilter((item) -> oldFilter.test(item) && filter.test(item));
     }
-
   }
 
   @Override
@@ -93,16 +90,18 @@ public abstract class DefaultBackendForTranslationV2<C extends EntityTranslation
   protected Stream<C> fetchFromBackEnd(Query<C, CrudFilter> query) {
     Stream<C> stream = fieldsMap.values().stream();
 
-    Optional<Comparator<C>> comparing = Stream.of(query.getInMemorySorting(), comparator)
-        .filter(Objects::nonNull).reduce(Comparator::thenComparing);
+    Optional<Comparator<C>> comparing =
+        Stream.of(query.getInMemorySorting(), comparator)
+            .filter(Objects::nonNull)
+            .reduce(Comparator::thenComparing);
     if (comparing.isPresent()) {
       stream = stream.sorted();
     }
     long maxId = 0;
     List<C> result = stream.collect(Collectors.toList());
     for (C c : result) {
-      if (c.getId() != null && (long) c.getId() > maxId) {
-        maxId = (long) c.getId();
+      if (c.getId() != null && c.getId() > maxId) {
+        maxId = c.getId();
       }
     }
     uniqueLong.set(maxId + 1);

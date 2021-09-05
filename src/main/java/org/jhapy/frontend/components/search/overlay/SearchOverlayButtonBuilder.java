@@ -2,15 +2,14 @@ package org.jhapy.frontend.components.search.overlay;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.data.provider.Query;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.frontend.dataproviders.DefaultSearchDataProvider;
 
-/**
- * A class to build a {@link SearchOverlayButton} with a fluent API
- */
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+/** A class to build a {@link SearchOverlayButton} with a fluent API */
 public class SearchOverlayButtonBuilder<T extends SearchQueryResult, F extends SearchQuery> {
 
   private Function<SearchOverlayView.SearchQuery, Query<T, F>> queryFunction;
@@ -19,8 +18,7 @@ public class SearchOverlayButtonBuilder<T extends SearchQueryResult, F extends S
   private Consumer<T> queryResultListener;
   private Boolean closeOnQueryResult;
 
-  public SearchOverlayButtonBuilder() {
-  }
+  public SearchOverlayButtonBuilder() {}
 
   public SearchOverlayButtonBuilder<T, F> withQueryProvider(
       Function<SearchOverlayView.SearchQuery, Query<T, F>> queryFunction) {
@@ -52,8 +50,7 @@ public class SearchOverlayButtonBuilder<T extends SearchQueryResult, F extends S
     return appBarSearchButton;
   }
 
-  public SearchOverlayButtonBuilder<T, F> withQueryResultListener(
-      Consumer<T> queryResultListener) {
+  public SearchOverlayButtonBuilder<T, F> withQueryResultListener(Consumer<T> queryResultListener) {
     this.queryResultListener = queryResultListener;
     return this;
   }

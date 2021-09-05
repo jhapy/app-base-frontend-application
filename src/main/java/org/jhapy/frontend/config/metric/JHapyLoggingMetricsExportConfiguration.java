@@ -25,7 +25,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.dropwizard.DropwizardConfig;
 import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
 import io.micrometer.core.instrument.util.HierarchicalNameMapper;
-import java.util.concurrent.TimeUnit;
 import org.jhapy.frontend.config.AppProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,25 +34,26 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Console Reporter Configuration
- * <p>
- * Pass the metrics to the logs with Dropwizard Reporter implementation see
+ *
+ * <p>Pass the metrics to the logs with Dropwizard Reporter implementation see
  * https://github.com/micrometer-metrics/micrometer-docs/blob/9fedeb5/src/docs/guide/console-reporter.adoc
  *
- * From JHipster Project https://www.jhipster.tech/
+ * <p>From JHipster Project https://www.jhipster.tech/
  */
 @Configuration
 @ConditionalOnProperty("jhapy.metrics.logs.enabled")
 public class JHapyLoggingMetricsExportConfiguration {
 
-  private final Logger log = LoggerFactory
-      .getLogger(JHapyLoggingMetricsExportConfiguration.class);
+  private final Logger log = LoggerFactory.getLogger(JHapyLoggingMetricsExportConfiguration.class);
 
   private final AppProperties appProperties;
 
   /**
-   * <p>Constructor for JHapyLoggingMetricsExportConfiguration.</p>
+   * Constructor for JHapyLoggingMetricsExportConfiguration.
    *
    * @param appProperties a {@link org.jhapy.commons.config.AppProperties} object.
    */
@@ -62,7 +62,7 @@ public class JHapyLoggingMetricsExportConfiguration {
   }
 
   /**
-   * <p>dropwizardRegistry.</p>
+   * dropwizardRegistry.
    *
    * @return a {@link com.codahale.metrics.MetricRegistry} object.
    */
@@ -72,7 +72,7 @@ public class JHapyLoggingMetricsExportConfiguration {
   }
 
   /**
-   * <p>consoleReporter.</p>
+   * consoleReporter.
    *
    * @param dropwizardRegistry a {@link com.codahale.metrics.MetricRegistry} object.
    * @return a {@link com.codahale.metrics.Slf4jReporter} object.
@@ -81,14 +81,14 @@ public class JHapyLoggingMetricsExportConfiguration {
   public Slf4jReporter consoleReporter(MetricRegistry dropwizardRegistry) {
     log.info("Initializing Metrics Log reporting");
     Marker metricsMarker = MarkerFactory.getMarker("metrics");
-    final Slf4jReporter reporter = Slf4jReporter.forRegistry(dropwizardRegistry)
-        .outputTo(LoggerFactory.getLogger("metrics"))
-        .markWith(metricsMarker)
-        .convertRatesTo(TimeUnit.SECONDS)
-        .convertDurationsTo(TimeUnit.MILLISECONDS)
-        .build();
-    reporter
-        .start(appProperties.getMetrics().getLogs().getReportFrequency(), TimeUnit.SECONDS);
+    final Slf4jReporter reporter =
+        Slf4jReporter.forRegistry(dropwizardRegistry)
+            .outputTo(LoggerFactory.getLogger("metrics"))
+            .markWith(metricsMarker)
+            .convertRatesTo(TimeUnit.SECONDS)
+            .convertDurationsTo(TimeUnit.MILLISECONDS)
+            .build();
+    reporter.start(appProperties.getMetrics().getLogs().getReportFrequency(), TimeUnit.SECONDS);
     return reporter;
   }
 
@@ -96,27 +96,28 @@ public class JHapyLoggingMetricsExportConfiguration {
   // https://github.com/micrometer-metrics/micrometer-docs/blob/9fedeb5/src/docs/guide/console-reporter.adoc
 
   /**
-   * <p>consoleLoggingRegistry.</p>
+   * consoleLoggingRegistry.
    *
    * @param dropwizardRegistry a {@link com.codahale.metrics.MetricRegistry} object.
    * @return a {@link MeterRegistry} object.
    */
   @Bean
   public MeterRegistry consoleLoggingRegistry(MetricRegistry dropwizardRegistry) {
-    DropwizardConfig dropwizardConfig = new DropwizardConfig() {
-      @Override
-      public String prefix() {
-        return "console";
-      }
+    DropwizardConfig dropwizardConfig =
+        new DropwizardConfig() {
+          @Override
+          public String prefix() {
+            return "console";
+          }
 
-      @Override
-      public String get(String key) {
-        return null;
-      }
-    };
+          @Override
+          public String get(String key) {
+            return null;
+          }
+        };
 
-    return new DropwizardMeterRegistry(dropwizardConfig, dropwizardRegistry,
-        HierarchicalNameMapper.DEFAULT, Clock.SYSTEM) {
+    return new DropwizardMeterRegistry(
+        dropwizardConfig, dropwizardRegistry, HierarchicalNameMapper.DEFAULT, Clock.SYSTEM) {
       @Override
       protected Double nullGaugeValue() {
         return null;

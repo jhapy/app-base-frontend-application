@@ -19,7 +19,6 @@
 package org.jhapy.frontend.utils;
 
 public enum TextColor {
-
   HEADER("var(--lumo-header-text-color)"),
   BODY("var(--lumo-body-text-color)"),
   SECONDARY("var(--lumo-secondary-text-color)"),
@@ -41,5 +40,4 @@ public enum TextColor {
   public String getValue() {
     return value;
   }
-
 }

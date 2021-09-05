@@ -23,10 +23,6 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.security.SecurityKeycloakUser;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
@@ -35,7 +31,10 @@ import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
 import org.jhapy.frontend.utils.AppConst;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author jHapy Lead Dev.
@@ -44,27 +43,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @SpringComponent
 @UIScope
-public class SecurityUserKeycloakStringDataProvider extends
-    PageableDataProvider<SecurityKeycloakUser, String> implements
-    Serializable {
+public class SecurityUserKeycloakStringDataProvider
+    extends PageableDataProvider<SecurityKeycloakUser, String> implements Serializable {
 
   @Override
   protected Page<SecurityKeycloakUser> fetchFromBackEnd(
-      Query<SecurityKeycloakUser, String> query,
-      Pageable pageable) {
-    return SecurityServices.getKeycloakClient().findUsers(
-        new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable)).getData();
+      Query<SecurityKeycloakUser, String> query, Pageable pageable) {
+    return SecurityServices.getKeycloakClient()
+        .findUsers(new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable))
+        .getData();
   }
 
   @Override
   protected List<QuerySortOrder> getDefaultSortOrders() {
-    return Collections.singletonList(new QuerySortOrder(AppConst.DEFAULT_USER_SORT_FIELDS[0], SortDirection.ASCENDING));
+    return Collections.singletonList(
+        new QuerySortOrder(AppConst.DEFAULT_USER_SORT_FIELDS[0], SortDirection.ASCENDING));
   }
 
   @Override
   protected int sizeInBackEnd(Query<SecurityKeycloakUser, String> query) {
     return SecurityServices.getKeycloakClient()
         .countUsers(new CountAnyMatchingQuery(query.getFilter().orElse(null), true))
-        .getData().intValue();
+        .getData()
+        .intValue();
   }
 }

@@ -31,5 +31,4 @@ public interface Size {
 
   // Returns the size variable (Lumo custom property)
   String getVariable();
-
 }

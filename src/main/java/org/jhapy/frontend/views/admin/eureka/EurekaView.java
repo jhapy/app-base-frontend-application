@@ -34,18 +34,16 @@ import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.registry.RegistryServices;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
 import org.jhapy.frontend.layout.ViewFrame;
 import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
-import org.jhapy.frontend.views.JHapyMainView3;
 import org.springframework.core.env.Environment;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_EUREKA_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class EurekaView extends ViewFrame implements HasLogger {
 
-  private final static String I18N_PREFIX = "eureka.";
+  private static final String I18N_PREFIX = "eureka.";
   private EurekaInfo eurekaInfo;
   private final Environment env;
 
@@ -73,8 +71,7 @@ public class EurekaView extends ViewFrame implements HasLogger {
 
   private final AuthorizationHeaderUtil authorizationHeaderUtil;
 
-  public EurekaView(Environment env,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public EurekaView(Environment env, AuthorizationHeaderUtil authorizationHeaderUtil) {
     this.env = env;
     this.authorizationHeaderUtil = authorizationHeaderUtil;
   }
@@ -85,15 +82,14 @@ public class EurekaView extends ViewFrame implements HasLogger {
 
     ui = attachEvent.getUI();
 
-    this.homeTabContent = new HomeTabContent(ui, I18N_PREFIX,
-        authorizationHeaderUtil);
-    this.eurekaInstancesTabContent = new EurekaInstancesTabContent(ui, I18N_PREFIX,
-        authorizationHeaderUtil);
-    this.eurekaHistoryTabContent = new EurekaHistoryTabContent(ui, I18N_PREFIX,
-        authorizationHeaderUtil);
+    this.homeTabContent = new HomeTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
+    this.eurekaInstancesTabContent =
+        new EurekaInstancesTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
+    this.eurekaHistoryTabContent =
+        new EurekaHistoryTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
     this.healthTabContent = new HealthTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
-    this.configurationsTabContent = new ConfigurationTabContent(ui, I18N_PREFIX,
-        authorizationHeaderUtil);
+    this.configurationsTabContent =
+        new ConfigurationTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
     this.loggersTabContent = new LoggersTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
     this.logsTabContent = new LogsTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
     this.meticsTabContent = new MetricsTabContent(ui, I18N_PREFIX, authorizationHeaderUtil);
@@ -117,7 +113,7 @@ public class EurekaView extends ViewFrame implements HasLogger {
   }
 
   private void initAppBar() {
-    AppBar appBar = JHapyMainView3.get().getAppBar();
+    /*AppBar appBar = JHapyMainView3.get().getAppBar();
     home = appBar.addTab(getTranslation("element." + I18N_PREFIX + "tab.home"));
     eurekaHistory = appBar
         .addTab(getTranslation("element." + I18N_PREFIX + "tab.eurekaHistory"));
@@ -140,6 +136,8 @@ public class EurekaView extends ViewFrame implements HasLogger {
     });
     setViewContent(homeTabContent.getContent(eurekaInfo));
     appBar.centerTabs();
+
+     */
   }
 
   protected ActuatorBaseView getTab(Tab tab) {
@@ -167,14 +165,14 @@ public class EurekaView extends ViewFrame implements HasLogger {
   }
 
   protected void lookupData() {
-    ServiceResult<EurekaInfo> applicationServiceResult = RegistryServices.getEurekaService()
-        .getApplications(new BaseRemoteQuery());
+    ServiceResult<EurekaInfo> applicationServiceResult =
+        RegistryServices.getEurekaService().getApplications(new BaseRemoteQuery());
 
     if (applicationServiceResult.getIsSuccess() && applicationServiceResult.getData() != null) {
       eurekaInfo = applicationServiceResult.getData();
 
-      ServiceResult<EurekaStatus> statusResult = RegistryServices.getEurekaService()
-          .status(new BaseRemoteQuery());
+      ServiceResult<EurekaStatus> statusResult =
+          RegistryServices.getEurekaService().status(new BaseRemoteQuery());
       if (statusResult.getIsSuccess() && statusResult.getData() != null) {
         eurekaInfo.setStatus(statusResult.getData());
       }

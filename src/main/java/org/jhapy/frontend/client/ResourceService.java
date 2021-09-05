@@ -34,7 +34,10 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-05-15
  */
-@FeignClient(name = "${jhapy.remote-services.resource-server.name:null}", url = "${jhapy.remote-services.resource-server.url:}", path = "/api/resourceService")
+@FeignClient(
+    name = "${jhapy.remote-services.resource-server.name:null}",
+    url = "${jhapy.remote-services.resource-server.url:}",
+    path = "/api/resourceService")
 @Primary
 public interface ResourceService extends RemoteServiceHandler {
 
@@ -55,7 +58,9 @@ public interface ResourceService extends RemoteServiceHandler {
   }
 
   @PostMapping(value = "/getByIdNoContent")
-  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getByIdNoContentFallback")
+  @CircuitBreaker(
+      name = "defaultServiceCircuitBreaker",
+      fallbackMethod = "getByIdNoContentFallback")
   ServiceResult<StoredFile> getByIdNoContent(@RequestBody GetByStrIdQuery query);
 
   default ServiceResult<StoredFile> getByIdNoContentFallback(GetByStrIdQuery query, Exception e) {
@@ -63,7 +68,9 @@ public interface ResourceService extends RemoteServiceHandler {
   }
 
   @PostMapping(value = "/getByIdPdfContent")
-  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getByIdPdfContentFallback")
+  @CircuitBreaker(
+      name = "defaultServiceCircuitBreaker",
+      fallbackMethod = "getByIdPdfContentFallback")
   ServiceResult<StoredFile> getByIdPdfContent(@RequestBody GetByStrIdQuery query);
 
   default ServiceResult<StoredFile> getByIdPdfContentFallback(GetByStrIdQuery query, Exception e) {

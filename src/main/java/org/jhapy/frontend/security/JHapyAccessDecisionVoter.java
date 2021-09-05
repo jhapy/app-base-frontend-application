@@ -18,9 +18,6 @@
 
 package org.jhapy.frontend.security;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.security.SecurityRole;
 import org.jhapy.frontend.client.security.SecurityRoleService;
@@ -29,6 +26,10 @@ import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author jHapy Lead Dev.
@@ -41,10 +42,8 @@ public class JHapyAccessDecisionVoter implements AccessDecisionVoter, HasLogger 
   private final SecurityRoleService securityRoleService;
   private List<String> allowedRoles;
 
-  public JHapyAccessDecisionVoter(
-      SecurityRoleService securityRoleService) {
+  public JHapyAccessDecisionVoter(SecurityRoleService securityRoleService) {
     this.securityRoleService = securityRoleService;
-
   }
 
   @Override
@@ -56,24 +55,29 @@ public class JHapyAccessDecisionVoter implements AccessDecisionVoter, HasLogger 
   public int vote(Authentication authentication, Object object, Collection collection) {
     var loggerPrefix = getLoggerPrefix("vote");
 
-    int result = authentication.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .filter(getAllowedRoles()::contains)
-        .findAny()
-        .map(s -> ACCESS_GRANTED)
-        .orElse(ACCESS_ABSTAIN);
+    int result =
+        authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .filter(getAllowedRoles()::contains)
+            .findAny()
+            .map(s -> ACCESS_GRANTED)
+            .orElse(ACCESS_ABSTAIN);
 
-    logger().trace(loggerPrefix + "Result = " + (result == ACCESS_GRANTED ? " Access Granted"
-        : " Abstain voting"));
+    logger()
+        .trace(
+            loggerPrefix
+                + "Result = "
+                + (result == ACCESS_GRANTED ? " Access Granted" : " Abstain voting"));
 
     return result;
   }
 
   protected List<String> getAllowedRoles() {
     if (allowedRoles == null) {
-      allowedRoles = securityRoleService.getAllowedLoginRoles().getData().stream().map(
-          SecurityRole::getName).collect(
-          Collectors.toList());
+      allowedRoles =
+          securityRoleService.getAllowedLoginRoles().getData().stream()
+              .map(SecurityRole::getName)
+              .collect(Collectors.toList());
     }
 
     return allowedRoles;

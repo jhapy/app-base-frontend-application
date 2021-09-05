@@ -19,7 +19,6 @@
 package org.jhapy.frontend.views.admin.security;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -34,7 +33,6 @@ import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.security.SecurityServices;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.SecurityRoleKeycloakDataProvider;
 import org.jhapy.frontend.utils.AppConst;
@@ -43,15 +41,18 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
-import org.jhapy.frontend.views.JHapyMainView3;
 
 @I18NPageTitle(messageKey = AppConst.TITLE_SECURITY_ROLES)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SecurityKeycloakRolesView extends
-    DefaultMasterDetailsView<SecurityKeycloakRole, DefaultFilter, SearchQuery, SearchQueryResult> {
+public class SecurityKeycloakRolesView
+    extends DefaultMasterDetailsView<
+        SecurityKeycloakRole, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public SecurityKeycloakRolesView(MyI18NProvider myI18NProvider) {
-    super("securityRole.", SecurityKeycloakRole.class, new SecurityRoleKeycloakDataProvider(),
+    super(
+        "securityRole.",
+        SecurityKeycloakRole.class,
+        new SecurityRoleKeycloakDataProvider(),
         (e) -> SecurityServices.getKeycloakClient().saveRole(new SaveQuery<>(e)),
         e -> SecurityServices.getKeycloakClient().deleteRole(new DeleteByStrIdQuery(e.getId())),
         myI18NProvider);
@@ -60,43 +61,48 @@ public class SecurityKeycloakRolesView extends
   @Override
   protected void initHeader() {
     super.initHeader();
+    /*
+       AppBar appBar = JHapyMainView3.get().getAppBar();
 
-    AppBar appBar = JHapyMainView3.get().getAppBar();
+       Button clearCacheButton = new Button(getTranslation("action.sync.clearCache"));
+       clearCacheButton.addClickListener(buttonClickEvent -> {
+         SecurityServices.getKeycloakClient().cleanRoleCache();
+         dataProvider.refreshAll();
+       });
 
-    Button clearCacheButton = new Button(getTranslation("action.sync.clearCache"));
-    clearCacheButton.addClickListener(buttonClickEvent -> {
-      SecurityServices.getKeycloakClient().cleanRoleCache();
-      dataProvider.refreshAll();
-    });
+       appBar.addActionItem(clearCacheButton);
 
-    appBar.addActionItem(clearCacheButton);
+    */
   }
 
   protected Grid createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
-    grid.addSelectionListener(event -> event.getFirstSelectedItem()
-        .ifPresent(this::showDetails));
+    grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
 
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
 
     grid.addColumn(SecurityKeycloakRole::getName).setKey("name");
 
-    grid.getColumns().forEach(column -> {
-      if (column.getKey() != null) {
-        column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
-        column.setResizable(true);
-      }
-    });
+    grid.getColumns()
+        .forEach(
+            column -> {
+              if (column.getKey() != null) {
+                column.setHeader(getTranslation("element." + I18N_PREFIX + column.getKey()));
+                column.setResizable(true);
+              }
+            });
     return grid;
   }
 
   protected Component createDetails(SecurityKeycloakRole securityRole) {
     boolean isNew = securityRole.getId() == null;
-    detailsDrawerHeader.setTitle(isNew ? getTranslation("element.global.new") + " : "
-        : getTranslation("element.global.update") + " : " + securityRole.getName());
+    detailsDrawerHeader.setTitle(
+        isNew
+            ? getTranslation("element.global.new") + " : "
+            : getTranslation("element.global.update") + " : " + securityRole.getName());
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
@@ -112,28 +118,25 @@ public class SecurityKeycloakRolesView extends
 
     // Form layout
     FormLayout editingForm = new FormLayout();
-    editingForm.addClassNames(LumoStyles.Padding.Bottom.L,
-        LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
-        new FormLayout.ResponsiveStep("0", 1,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP),
-        new FormLayout.ResponsiveStep("26em", 2,
-            FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem nameItem = editingForm
-        .addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
-    editingForm
-        .addFormItem(description, getTranslation("element." + I18N_PREFIX + "description"));
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+    FormLayout.FormItem nameItem =
+        editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
+    editingForm.addFormItem(description, getTranslation("element." + I18N_PREFIX + "description"));
     editingForm.addFormItem(canLogin, getTranslation("element." + I18N_PREFIX + "canLogin"));
-    FormLayout.FormItem isActiveItem = editingForm
-        .addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
+    FormLayout.FormItem isActiveItem =
+        editingForm.addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
 
     UIUtils.setColSpan(2, nameItem);
 
     binder.setBean(securityRole);
 
     binder.bind(name, SecurityKeycloakRole::getName, SecurityKeycloakRole::setName);
-    binder.bind(description, SecurityKeycloakRole::getDescription,
-        SecurityKeycloakRole::setDescription);
+    binder.bind(
+        description, SecurityKeycloakRole::getDescription, SecurityKeycloakRole::setDescription);
     binder.bind(canLogin, SecurityKeycloakRole::getCanLogin, SecurityKeycloakRole::setCanLogin);
     binder.bind(isActive, SecurityKeycloakRole::getIsActive, SecurityKeycloakRole::setIsActive);
 
@@ -141,9 +144,7 @@ public class SecurityKeycloakRolesView extends
   }
 
   protected void filter(String filter) {
-    dataProvider
-        .setFilter(new DefaultFilter(
-            StringUtils.isBlank(filter) ? null : "*" + filter + "*",
-            Boolean.TRUE));
+    dataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", Boolean.TRUE));
   }
 }

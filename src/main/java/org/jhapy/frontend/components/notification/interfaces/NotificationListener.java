@@ -5,5 +5,4 @@ public interface NotificationListener {
   void onClick();
 
   void onDismiss();
-
 }

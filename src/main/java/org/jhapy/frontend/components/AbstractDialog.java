@@ -12,6 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.theme.lumo.Lumo;
+
 import java.util.List;
 
 /**
@@ -37,8 +38,7 @@ public abstract class AbstractDialog extends Dialog {
 
   protected Button saveButton = null;
 
-  public AbstractDialog() {
-  }
+  public AbstractDialog() {}
 
   public void open() {
     super.setDraggable(isDraggable());
@@ -47,7 +47,7 @@ public abstract class AbstractDialog extends Dialog {
     super.setCloseOnOutsideClick(false);
     // Dialog theming
     getElement().getThemeList().add("my-dialog");
-    //setWidth("600px");
+    // setWidth("600px");
 
     // Accessibility
     getElement().setAttribute("aria-labelledby", "dialog-title");
@@ -75,27 +75,30 @@ public abstract class AbstractDialog extends Dialog {
     content.setAlignItems(Alignment.STRETCH);
     add(content);
 
-    close.addClickListener(event -> {
-      if (onClose()) {
-        close();
-      }
-    });
+    close.addClickListener(
+        event -> {
+          if (onClose()) {
+            close();
+          }
+        });
 
     // Footer
     Button cancelButton = new Button(getTranslation("action.global.cancel"));
-    cancelButton.addClickListener(event -> {
-      if (onClose()) {
-        close();
-      }
-    });
+    cancelButton.addClickListener(
+        event -> {
+          if (onClose()) {
+            close();
+          }
+        });
 
     if (hasSaveButton()) {
       saveButton = new Button(getSaveButtonLabel());
-      saveButton.addClickListener(event -> {
-        if (onSave()) {
-          close();
-        }
-      });
+      saveButton.addClickListener(
+          event -> {
+            if (onSave()) {
+              close();
+            }
+          });
       saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
     }
     footer = new Footer(cancelButton);
@@ -109,7 +112,7 @@ public abstract class AbstractDialog extends Dialog {
     add(footer);
 
     // Button theming
-    for (Button button : new Button[]{max, close}) {
+    for (Button button : new Button[] {max, close}) {
       button.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
     }
 
@@ -124,8 +127,7 @@ public abstract class AbstractDialog extends Dialog {
     return true;
   }
 
-  protected void afterOpen() {
-  }
+  protected void afterOpen() {}
 
   protected abstract String getTitle();
 
@@ -139,8 +141,7 @@ public abstract class AbstractDialog extends Dialog {
 
   protected abstract Component getContent();
 
-  protected void onDialogResized(DialogResizeEvent event) {
-  }
+  protected void onDialogResized(DialogResizeEvent event) {}
 
   protected boolean onClose() {
     return true;

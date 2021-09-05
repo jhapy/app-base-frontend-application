@@ -1,9 +1,10 @@
 package org.jhapy.frontend.security;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Alexandre Clavaud.
@@ -12,12 +13,12 @@ import org.springframework.security.core.AuthenticationException;
  */
 public interface AuthenticationListener {
 
-  void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication);
+  void onAuthenticationSuccess(
+      HttpServletRequest request, HttpServletResponse response, Authentication authentication);
 
-  void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException exception);
+  void onAuthenticationFailure(
+      HttpServletRequest request, HttpServletResponse response, AuthenticationException exception);
 
-  void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication);
+  void onLogoutSuccess(
+      HttpServletRequest request, HttpServletResponse response, Authentication authentication);
 }

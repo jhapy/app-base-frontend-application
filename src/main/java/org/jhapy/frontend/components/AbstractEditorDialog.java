@@ -29,6 +29,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
+
 import java.io.Serializable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -36,26 +37,26 @@ import java.util.function.Consumer;
 /**
  * Abstract base class for dialogs adding, editing or deleting items.
  *
- * Subclasses are expected to
+ * <p>Subclasses are expected to
+ *
  * <ul>
- * <li>add, during construction, the needed UI components to
- * {@link #getFormLayout()} and bind them using {@link #getBinder()}, as well as</li>
- * <li>override {@link #confirmDelete()} to open the confirmation dialog with
- * the desired message (by calling {@link #openConfirmationDialog(String, String, String)}.</li>
+ *   <li>add, during construction, the needed UI components to {@link #getFormLayout()} and bind
+ *       them using {@link #getBinder()}, as well as
+ *   <li>override {@link #confirmDelete()} to open the confirmation dialog with the desired message
+ *       (by calling {@link #openConfirmationDialog(String, String, String)}.
  * </ul>
  *
  * @param <T> the type of the item to be added, edited or deleted
  */
-public abstract class AbstractEditorDialog<T extends Serializable>
-    extends Dialog {
+public abstract class AbstractEditorDialog<T extends Serializable> extends Dialog {
 
   private final H3 titleField = new H3();
   private final Button saveButton = new Button("Save");
   private final Button cancelButton = new Button("Cancel");
   private final Button deleteButton = new Button("Delete");
   private final FormLayout formLayout = new FormLayout();
-  private final HorizontalLayout buttonBar = new HorizontalLayout(saveButton, cancelButton,
-      deleteButton);
+  private final HorizontalLayout buttonBar =
+      new HorizontalLayout(saveButton, cancelButton, deleteButton);
   private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
   private final String itemType;
   private final BiConsumer<T, Operation> itemSaver;
@@ -74,8 +75,8 @@ public abstract class AbstractEditorDialog<T extends Serializable>
    * @param itemSaver Callback to save the edited item
    * @param itemDeleter Callback to delete the edited item
    */
-  protected AbstractEditorDialog(String itemType,
-      BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+  protected AbstractEditorDialog(
+      String itemType, BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
     this.itemType = itemType;
     this.itemSaver = itemSaver;
     this.itemDeleter = itemDeleter;
@@ -92,8 +93,8 @@ public abstract class AbstractEditorDialog<T extends Serializable>
   }
 
   private void initFormLayout() {
-    formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-        new FormLayout.ResponsiveStep("26em", 2));
+    formLayout.setResponsiveSteps(
+        new FormLayout.ResponsiveStep("0", 1), new FormLayout.ResponsiveStep("26em", 2));
     Div div = new Div(formLayout);
     div.addClassName("has-padding");
     add(div);
@@ -155,8 +156,7 @@ public abstract class AbstractEditorDialog<T extends Serializable>
     if (registrationForSave != null) {
       registrationForSave.remove();
     }
-    registrationForSave = saveButton
-        .addClickListener(e -> saveClicked(operation));
+    registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
     binder.readBean(currentItem);
 
     deleteButton.setEnabled(operation.isDeleteEnabled());
@@ -189,19 +189,25 @@ public abstract class AbstractEditorDialog<T extends Serializable>
   /**
    * Opens the confirmation dialog before deleting the current item.
    *
-   * The dialog will display the given title and message(s), then call {@link
+   * <p>The dialog will display the given title and message(s), then call {@link
    * #deleteConfirmed(Serializable)} if the Delete button is clicked.
    *
    * @param title The title text
    * @param message Detail message (optional, may be empty)
    * @param additionalMessage Additional message (optional, may be empty)
    */
-  protected final void openConfirmationDialog(String title, String message,
-      String additionalMessage, boolean enableShortCuts) {
+  protected final void openConfirmationDialog(
+      String title, String message, String additionalMessage, boolean enableShortCuts) {
     this.enableShortCuts = enableShortCuts;
     disableShortcuts();
-    confirmationDialog.open(title, message, additionalMessage, "Delete",
-        true, getCurrentItem(), this::deleteConfirmed,
+    confirmationDialog.open(
+        title,
+        message,
+        additionalMessage,
+        "Delete",
+        true,
+        getCurrentItem(),
+        this::deleteConfirmed,
         this::deleteCancelled);
   }
 
@@ -236,8 +242,7 @@ public abstract class AbstractEditorDialog<T extends Serializable>
     disableShortcuts();
     saveShortcutRegistration = saveButton.addClickShortcut(Key.ENTER);
     if (deleteButton.isEnabled()) {
-      deleteShortcutRegistration =
-          deleteButton.addClickShortcut(Key.DELETE);
+      deleteShortcutRegistration = deleteButton.addClickShortcut(Key.DELETE);
     }
   }
 
@@ -260,14 +265,14 @@ public abstract class AbstractEditorDialog<T extends Serializable>
    * item.
    */
   public enum Operation {
-    ADD("New", "add", false), EDIT("Edit", "edit", true);
+    ADD("New", "add", false),
+    EDIT("Edit", "edit", true);
 
     private final String nameInTitle;
     private final String nameInText;
     private final boolean deleteEnabled;
 
-    Operation(String nameInTitle, String nameInText,
-        boolean deleteEnabled) {
+    Operation(String nameInTitle, String nameInText, boolean deleteEnabled) {
       this.nameInTitle = nameInTitle;
       this.nameInText = nameInText;
       this.deleteEnabled = deleteEnabled;

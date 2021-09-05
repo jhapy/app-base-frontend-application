@@ -33,7 +33,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import elemental.json.JsonObject;
-import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.frontend.components.dragger.Dragger;
@@ -44,14 +43,16 @@ import org.jhapy.frontend.views.menu.MenuData;
 import org.jhapy.frontend.views.menu.MenuEntry;
 import org.vaadin.tatu.Tree;
 
+import java.util.Collection;
+
 @CssImport("./styles/components/navi-drawer.css")
 @JsModule("./swipe-away.js")
 public class NaviDrawerWithTreeMenu extends HorizontalLayout
     implements AfterNavigationObserver, HasLogger {
 
-  private final static String CLASS_NAME = "navi-drawer";
-  private final static String RAIL = "rail";
-  private final static String OPEN = "open";
+  private static final String CLASS_NAME = "navi-drawer";
+  private static final String RAIL = "rail";
+  private static final String OPEN = "open";
 
   private Div scrim;
 
@@ -66,8 +67,11 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
   private Dragger dragger;
   private final Div main = new Div();
 
-  public NaviDrawerWithTreeMenu(MenuHierarchicalDataProvider menuDataProvider,
-      boolean showSearchMenu, Component altSearchMenu, String version,
+  public NaviDrawerWithTreeMenu(
+      MenuHierarchicalDataProvider menuDataProvider,
+      boolean showSearchMenu,
+      Component altSearchMenu,
+      String version,
       String environment) {
     this.dataProvider = menuDataProvider;
     setClassName(CLASS_NAME);
@@ -101,9 +105,13 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
     var ui = attachEvent.getUI();
-    ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
-        mainContent.getElement(), this, "onSwipeAway",
-        scrim.getElement());
+    ui.getPage()
+        .executeJavaScript(
+            "window.addSwipeAway($0,$1,$2,$3)",
+            mainContent.getElement(),
+            this,
+            "onSwipeAway",
+            scrim.getElement());
   }
 
   @ClientCallable
@@ -135,8 +143,11 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
 
   private void initSearch() {
     search = new TextField();
-    search.addValueChangeListener(e -> menu.getDataProvider().withConvertedFilter(
-        filterValue -> item -> item.getTitle().startsWith(e.getValue())));
+    search.addValueChangeListener(
+        e ->
+            menu.getDataProvider()
+                .withConvertedFilter(
+                    filterValue -> item -> item.getTitle().startsWith(e.getValue())));
     search.setClearButtonVisible(true);
     search.setPlaceholder("Search");
     search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
@@ -162,8 +173,7 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
       dataProvider.setRootMenu(menuData);
       dataProvider.refreshAll();
     } else {
-      menu.setItems(menuData.getRootItems(),
-          menuData::getChildItems);
+      menu.setItems(menuData.getRootItems(), menuData::getChildItems);
     }
   }
 
@@ -192,74 +202,81 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
     menu.getStyle().set("font-size", "0.8em");
     menu.setItemIconProvider(MenuEntry::getVaadinIcon);
     menu.setItemTitleProvider(MenuEntry::getTitle);
-    menu.addItemClickListener(event -> {
-      MenuEntry selectedItem = getSelectedItem();
-      if (selectedItem != null) {
-        navigate(selectedItem);
-      }
-    });
-    menu.addExpandListener(menuEntryTreeGridExpandEvent -> {
-      if (!menuEntryTreeGridExpandEvent.isFromClient()) {
-        return;
-      }
+    menu.addItemClickListener(
+        event -> {
+          MenuEntry selectedItem = getSelectedItem();
+          if (selectedItem != null) {
+            navigate(selectedItem);
+          }
+        });
+    menu.addExpandListener(
+        menuEntryTreeGridExpandEvent -> {
+          if (!menuEntryTreeGridExpandEvent.isFromClient()) {
+            return;
+          }
 
-      Collection<MenuEntry> items = menuEntryTreeGridExpandEvent.getItems();
+          Collection<MenuEntry> items = menuEntryTreeGridExpandEvent.getItems();
 
-      if (!items.isEmpty()) {
-        var item = items.iterator().next();
-        menu.select(item);
-        if (item.getTargetClass() != null && !item.equals(lastMenuEntry)) {
-          navigate(item);
-        }
-      }
-    });
-    menu.addCollapseListener(menuEntryTreeGridCollapseEvent -> {
-      if (!menuEntryTreeGridCollapseEvent.isFromClient()) {
-        return;
-      }
-      var items = menuEntryTreeGridCollapseEvent.getItems();
+          if (!items.isEmpty()) {
+            var item = items.iterator().next();
+            menu.select(item);
+            if (item.getTargetClass() != null && !item.equals(lastMenuEntry)) {
+              navigate(item);
+            }
+          }
+        });
+    menu.addCollapseListener(
+        menuEntryTreeGridCollapseEvent -> {
+          if (!menuEntryTreeGridCollapseEvent.isFromClient()) {
+            return;
+          }
+          var items = menuEntryTreeGridCollapseEvent.getItems();
 
-      if (!items.isEmpty()) {
-        var item = items.iterator().next();
-        menu.select(item);
-        if (item.getTargetClass() != null && !item.equals(lastMenuEntry)) {
-          navigate(item);
-        }
-      }
-    });
+          if (!items.isEmpty()) {
+            var item = items.iterator().next();
+            menu.select(item);
+            if (item.getTargetClass() != null && !item.equals(lastMenuEntry)) {
+              navigate(item);
+            }
+          }
+        });
 
     var contextMenu = menu.addContextMenu();
-    contextMenu.setDynamicContentHandler(menuEntry -> {
-      if (menuEntry == null) {
-        return false;
-      }
-      if (menuEntry.getContextMenu() == null) {
-        return false;
-      }
-
-      contextMenu.removeAll();
-
-      menuEntry.getContextMenu().forEach(menuItem -> {
-        if (menuItem.getClickListener() == null) {
-          if (menuItem.getComponent() != null) {
-            contextMenu.add(menuItem.getComponent());
-          } else {
-            contextMenu.add(menuItem.getTitle());
+    contextMenu.setDynamicContentHandler(
+        menuEntry -> {
+          if (menuEntry == null) {
+            return false;
           }
-        } else {
-          if (menuItem.getComponent() != null) {
-            contextMenu
-                .addItem(menuItem.getComponent(),
-                    clickedMenu -> menuItem.getClickListener().accept(clickedMenu));
-          } else {
-            contextMenu
-                .addItem(menuItem.getTitle(),
-                    clickedMenu -> menuItem.getClickListener().accept(clickedMenu));
+          if (menuEntry.getContextMenu() == null) {
+            return false;
           }
-        }
-      });
-      return true;
-    });
+
+          contextMenu.removeAll();
+
+          menuEntry
+              .getContextMenu()
+              .forEach(
+                  menuItem -> {
+                    if (menuItem.getClickListener() == null) {
+                      if (menuItem.getComponent() != null) {
+                        contextMenu.add(menuItem.getComponent());
+                      } else {
+                        contextMenu.add(menuItem.getTitle());
+                      }
+                    } else {
+                      if (menuItem.getComponent() != null) {
+                        contextMenu.addItem(
+                            menuItem.getComponent(),
+                            clickedMenu -> menuItem.getClickListener().accept(clickedMenu));
+                      } else {
+                        contextMenu.addItem(
+                            menuItem.getTitle(),
+                            clickedMenu -> menuItem.getClickListener().accept(clickedMenu));
+                      }
+                    }
+                  });
+          return true;
+        });
     scrollableArea.add(menu);
   }
 
@@ -275,6 +292,10 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
     return selected.getTargetId().equalsIgnoreCase(targetId);
   }
 
+  public void navigate(Class<? extends Component> targetClass) {
+    UI.getCurrent().navigate(targetClass);
+  }
+
   public void navigate(MenuEntry menuEntry) {
     if (menuEntry == null) {
       return;
@@ -288,13 +309,16 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
     if (menuEntry.getTargetParams() != null) {
       debug(loggerPrefix, "Navigate with Target Params");
       var params = menuEntry.getTargetParams().toString();
-      debug(loggerPrefix, "Target Class = {0}, Parameter = {1}", menuEntry.getTargetClass(),
-          params);
+      debug(
+          loggerPrefix, "Target Class = {0}, Parameter = {1}", menuEntry.getTargetClass(), params);
       UI.getCurrent().navigate(menuEntry.getTargetClass(), params);
     } else if (menuEntry.getTargetId() != null) {
       debug(loggerPrefix, "Navigate with Target ID");
       var targetId = menuEntry.getTargetId();
-      debug(loggerPrefix, "Target Class = {0}, Parameter = {1}", menuEntry.getTargetClass(),
+      debug(
+          loggerPrefix,
+          "Target Class = {0}, Parameter = {1}",
+          menuEntry.getTargetClass(),
           targetId);
       UI.getCurrent().navigate(menuEntry.getTargetClass(), targetId);
     } else {
@@ -313,8 +337,7 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
       mainContent.add(l);
     }
 
-    railButton = UIUtils.createSmallButton("Collapse",
-        VaadinIcon.CHEVRON_LEFT_SMALL);
+    railButton = UIUtils.createSmallButton("Collapse", VaadinIcon.CHEVRON_LEFT_SMALL);
     railButton.addClassName(CLASS_NAME + "__footer");
     railButton.addClickListener(event -> toggleRailMode());
     railButton.getElement().setAttribute("aria-label", "Collapse menu");
@@ -332,11 +355,14 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
       railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
       railButton.setText("Expand");
       UIUtils.setAriaLabel("Expand menu", railButton);
-      getUI().get().getPage().executeJs(
-          "var originalStyle = getComputedStyle($0).pointerEvents;" //
-              + "$0.style.pointerEvents='none';" //
-              + "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
-          getElement());
+      getUI()
+          .get()
+          .getPage()
+          .executeJs(
+              "var originalStyle = getComputedStyle($0).pointerEvents;" //
+                  + "$0.style.pointerEvents='none';" //
+                  + "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
+              getElement());
     }
   }
 
@@ -361,10 +387,14 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
     // iOS 12.2 sometimes fails to animate the menu away.
     // It should be gone after 240ms
     // This will make sure it disappears even when the browser fails.
-    getUI().ifPresent(ui -> ui.getPage().executeJs(
-        "var originalStyle = getComputedStyle($0).transitionProperty;" //
-            + "setTimeout(function() {$0.style.transitionProperty='padding'; requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
-        mainContent.getElement()));
+    getUI()
+        .ifPresent(
+            ui ->
+                ui.getPage()
+                    .executeJs(
+                        "var originalStyle = getComputedStyle($0).transitionProperty;" //
+                            + "setTimeout(function() {$0.style.transitionProperty='padding'; requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
+                        mainContent.getElement()));
   }
 
   public MenuData getFreshMenu() {

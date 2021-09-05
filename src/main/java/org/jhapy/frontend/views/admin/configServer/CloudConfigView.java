@@ -25,11 +25,9 @@ import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.jhapy.commons.security.oauth2.AuthorizationHeaderUtil;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.utils.SecurityConst;
-import org.jhapy.frontend.components.navigation.bar.AppBar;
 import org.jhapy.frontend.layout.ViewFrame;
 import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
-import org.jhapy.frontend.views.JHapyMainView3;
 import org.springframework.core.env.Environment;
 
 /**
@@ -41,7 +39,7 @@ import org.springframework.core.env.Environment;
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class CloudConfigView extends ViewFrame implements HasLogger {
 
-  private final static String I18N_PREFIX = "cloudConfig.";
+  private static final String I18N_PREFIX = "cloudConfig.";
 
   private final Environment env;
 
@@ -55,8 +53,7 @@ public class CloudConfigView extends ViewFrame implements HasLogger {
 
   private final AuthorizationHeaderUtil authorizationHeaderUtil;
 
-  public CloudConfigView(Environment env,
-      AuthorizationHeaderUtil authorizationHeaderUtil) {
+  public CloudConfigView(Environment env, AuthorizationHeaderUtil authorizationHeaderUtil) {
     this.env = env;
     this.authorizationHeaderUtil = authorizationHeaderUtil;
   }
@@ -67,15 +64,16 @@ public class CloudConfigView extends ViewFrame implements HasLogger {
 
     ui = attachEvent.getUI();
 
-    this.configurationTabContent = new CloudConfigurationTabContent(env, ui, I18N_PREFIX,
-        authorizationHeaderUtil);
-    this.encryptionTabContent = new EncryptionTabContent(env, ui, I18N_PREFIX,
-        authorizationHeaderUtil);
+    this.configurationTabContent =
+        new CloudConfigurationTabContent(env, ui, I18N_PREFIX, authorizationHeaderUtil);
+    this.encryptionTabContent =
+        new EncryptionTabContent(env, ui, I18N_PREFIX, authorizationHeaderUtil);
 
     initAppBar();
   }
 
   private void initAppBar() {
+    /*
     AppBar appBar = JHapyMainView3.get().getAppBar();
     configurationTab = appBar
         .addTab(getTranslation("element." + I18N_PREFIX + "tab.cloudConfig"));
@@ -91,6 +89,8 @@ public class CloudConfigView extends ViewFrame implements HasLogger {
     });
     setViewContent(configurationTabContent.getContent());
     appBar.centerTabs();
+
+     */
   }
 
   protected CloudConfigBaseView getTab(Tab tab) {

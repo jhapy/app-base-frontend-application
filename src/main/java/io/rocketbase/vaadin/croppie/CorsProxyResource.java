@@ -19,25 +19,28 @@
 package io.rocketbase.vaadin.croppie;
 
 import com.vaadin.flow.server.StreamResource;
-import java.io.IOException;
-import java.net.URL;
 import org.jhapy.commons.utils.HasLoggerStatic;
 
+import java.io.IOException;
+import java.net.URL;
 
 public class CorsProxyResource extends StreamResource {
 
   public CorsProxyResource(String filename, String url) {
-    super(filename,
+    super(
+        filename,
         () -> {
           try {
             return new URL(url).openStream();
           } catch (IOException e) {
-            HasLoggerStatic.error(CorsProxyResource.class,
-                HasLoggerStatic.getLoggerPrefix("InputStreamFactory()"), e, "Unexpected error {0}",
+            HasLoggerStatic.error(
+                CorsProxyResource.class,
+                HasLoggerStatic.getLoggerPrefix("InputStreamFactory()"),
+                e,
+                "Unexpected error {0}",
                 e.getLocalizedMessage());
             return null;
           }
-        }
-    );
+        });
   }
 }

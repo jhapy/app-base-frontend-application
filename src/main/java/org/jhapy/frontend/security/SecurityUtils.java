@@ -18,22 +18,11 @@
 
 package org.jhapy.frontend.security;
 
-import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
-import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ID_ATTRIBUTE;
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
-
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import de.codecamp.vaadin.security.spring.access.VaadinSecurity;
 import de.codecamp.vaadin.security.spring.access.rules.PermitAll;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.messageQueue.EndSession;
 import org.jhapy.dto.messageQueue.NewSession;
@@ -45,6 +34,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
+
+import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
+import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ID_ATTRIBUTE;
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 /**
  * SecurityUtils takes care of all such static operations that have to do with security and querying
@@ -148,18 +145,24 @@ public final class SecurityUtils {
 
   public static void newSession(SecurityUser securityUser) {
     SecurityContextHolder.getContext()
-        .setAuthentication(new UsernamePasswordAuthenticationToken(securityUser, null,
-            securityUser.getAuthorities()));
+        .setAuthentication(
+            new UsernamePasswordAuthenticationToken(
+                securityUser, null, securityUser.getAuthorities()));
 
-    VaadinSession.getCurrent().getSession()
+    VaadinSession.getCurrent()
+        .getSession()
         .setAttribute(SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
     VaadinSession.getCurrent().setAttribute(SECURITY_USER_ATTRIBUTE, securityUser);
 
-    AuditServices.getAuditServiceQueue().newSession(
-        new NewSession(VaadinRequest.getCurrent().getWrappedSession().getId(),
-            securityUser.getUsername(), VaadinRequest.getCurrent().getRemoteAddr(),
-            Instant.now(),
-            true, null));
+    AuditServices.getAuditServiceQueue()
+        .newSession(
+            new NewSession(
+                VaadinRequest.getCurrent().getWrappedSession().getId(),
+                securityUser.getUsername(),
+                VaadinRequest.getCurrent().getRemoteAddr(),
+                Instant.now(),
+                true,
+                null));
   }
 
   public static void endSession(String jSessionId) {

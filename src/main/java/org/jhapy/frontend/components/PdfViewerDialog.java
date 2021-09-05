@@ -8,7 +8,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.ContentAlignment;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.server.StreamResource;
-import java.io.ByteArrayInputStream;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
@@ -16,6 +15,8 @@ import org.jhapy.dto.utils.PdfConvert;
 import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.client.BaseServices;
 import org.jhapy.frontend.utils.UIUtils;
+
+import java.io.ByteArrayInputStream;
 
 /**
  * @author Alexandre Clavaud.
@@ -31,8 +32,8 @@ public class PdfViewerDialog extends AbstractDialog implements HasLogger {
   public PdfViewerDialog(StoredFile storedFile) {
     this.storedFile = storedFile;
     if (storedFile != null && storedFile.getId() != null) {
-      ServiceResult<StoredFile> _storedFile = BaseServices
-          .getResourceService().getById(new GetByStrIdQuery(storedFile.getId()));
+      ServiceResult<StoredFile> _storedFile =
+          BaseServices.getResourceService().getById(new GetByStrIdQuery(storedFile.getId()));
       if (_storedFile.getIsSuccess() && _storedFile.getData() != null) {
         storedFile.setContent(_storedFile.getData().getContent());
         storedFile.setPdfContent(_storedFile.getData().getPdfContent());
@@ -61,15 +62,21 @@ public class PdfViewerDialog extends AbstractDialog implements HasLogger {
       byte[] fileContent = storedFile.getContent();
       String filename = storedFile.getFilename();
       if (!storedFile.getMimeType().contains("pdf")) {
-        if (!storedFile.getPdfConvertStatus().equals(
-            PdfConvert.CONVERTED)) {
-          Button downloadButton = UIUtils
-              .createButton(getTranslation(storedFile.getPdfConvertStatus().equals(
-                  PdfConvert.NOT_CONVERTED) ? "error.docConvert.notConvertedYet"
-                      : "error.docConvert.cannotConvert"), VaadinIcon.DOWNLOAD,
+        if (!storedFile.getPdfConvertStatus().equals(PdfConvert.CONVERTED)) {
+          Button downloadButton =
+              UIUtils.createButton(
+                  getTranslation(
+                      storedFile.getPdfConvertStatus().equals(PdfConvert.NOT_CONVERTED)
+                          ? "error.docConvert.notConvertedYet"
+                          : "error.docConvert.cannotConvert"),
+                  VaadinIcon.DOWNLOAD,
                   ButtonVariant.LUMO_ERROR);
-          Anchor downloadLink = new Anchor(new StreamResource(storedFile.getFilename(),
-              () -> new ByteArrayInputStream(storedFile.getContent())), "");
+          Anchor downloadLink =
+              new Anchor(
+                  new StreamResource(
+                      storedFile.getFilename(),
+                      () -> new ByteArrayInputStream(storedFile.getContent())),
+                  "");
           downloadLink.getElement().setAttribute("download", true);
           downloadLink.add(downloadButton);
           contentLayout.setAlignContent(ContentAlignment.CENTER);
@@ -82,8 +89,9 @@ public class PdfViewerDialog extends AbstractDialog implements HasLogger {
       }
       if (fileContent != null) {
         byte[] finalFileContent = fileContent;
-        pdfViewer = new PdfViewer(new StreamResource(
-            filename, () -> new ByteArrayInputStream(finalFileContent)));
+        pdfViewer =
+            new PdfViewer(
+                new StreamResource(filename, () -> new ByteArrayInputStream(finalFileContent)));
         pdfViewer.setHeight("100%");
         contentLayout.add(pdfViewer);
       }
@@ -98,8 +106,7 @@ public class PdfViewerDialog extends AbstractDialog implements HasLogger {
   }
 
   @Override
-  protected void onDialogResized(DialogResizeEvent event) {
-  }
+  protected void onDialogResized(DialogResizeEvent event) {}
 
   @Override
   public boolean canMaximize() {

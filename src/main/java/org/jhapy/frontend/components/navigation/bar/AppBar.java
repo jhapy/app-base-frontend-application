@@ -18,16 +18,7 @@
 
 package org.jhapy.frontend.components.navigation.bar;
 
-
-import static org.jhapy.frontend.utils.AppConst.THEME_ATTRIBUTE;
-import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
-
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Direction;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -54,13 +45,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.lumo.Lumo;
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
-import javax.servlet.http.Cookie;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
@@ -81,6 +65,13 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.JHapyMainView3;
 
+import javax.servlet.http.Cookie;
+import java.io.ByteArrayInputStream;
+import java.util.*;
+
+import static org.jhapy.frontend.utils.AppConst.THEME_ATTRIBUTE;
+import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+
 @CssImport("./styles/components/app-bar.css")
 @SpringComponent
 @UIScope
@@ -91,21 +82,23 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
   static {
 
     // Yiddish
-    rtlSet = Set.of("ar", // Arabic
-        "dv", // Divehi
-        "fa", // Persian
-        "ha", // Hausa
-        "he", // Hebrew
-        "iw", // Hebrew
-        "ji", // Yiddish
-        "ps", // Pushto
-        "sd", // Sindhi
-        "ug", // Uighur
-        "ur", // Urdu
-        "yi");
+    rtlSet =
+        Set.of(
+            "ar", // Arabic
+            "dv", // Divehi
+            "fa", // Persian
+            "ha", // Hausa
+            "he", // Hebrew
+            "iw", // Hebrew
+            "ji", // Yiddish
+            "ps", // Pushto
+            "sd", // Sindhi
+            "ug", // Uighur
+            "ur", // Urdu
+            "yi");
   }
 
-  private final static String CLASS_NAME = "app-bar";
+  private static final String CLASS_NAME = "app-bar";
 
   private FlexBoxLayout container;
 
@@ -141,8 +134,8 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     this(appProperties, false, false);
   }
 
-  public AppBar(AppProperties appProperties, boolean hasGlobalSearch,
-      boolean hasGlobalNotification) {
+  public AppBar(
+      AppProperties appProperties, boolean hasGlobalSearch, boolean hasGlobalNotification) {
     this.appProperties = appProperties;
     setClassName(CLASS_NAME);
     initMenuIcon();
@@ -187,14 +180,13 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
   private void initMenuIcon() {
     menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
     menuIcon.addClassName(CLASS_NAME + "__navi-icon");
-    menuIcon.addClickListener(e -> JHapyMainView3.get().getNaviDrawer().toggle());
+    // menuIcon.addClickListener(e -> JHapyMainView3.get().getNaviDrawer().toggle());
     UIUtils.setAriaLabel("Menu", menuIcon);
     UIUtils.setLineHeight("1", menuIcon);
   }
 
   private void initContextIcon() {
-    contextIcon = UIUtils
-        .createTertiaryInlineButton(VaadinIcon.ARROW_LEFT);
+    contextIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.ARROW_LEFT);
     contextIcon.addClassNames(CLASS_NAME + "__context-icon");
     contextIcon.setVisible(false);
     UIUtils.setAriaLabel("Back", contextIcon);
@@ -229,7 +221,9 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
   private void initNotification() {
     notifications = new DefaultNotificationHolder();
     notifications.addClickListener(
-        notification -> {/* Use the listener to react on the click on the notification */});
+        notification -> {
+          /* Use the listener to react on the click on the notification */
+        });
     notificationButton = new NotificationButton<>(VaadinIcon.BELL, notifications);
   }
 
@@ -261,8 +255,8 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
   private void resetSearchArea() {
     List<Component> toRemove = new ArrayList<>();
     for (var i = 0; i < searchArea.getComponentCount(); i++) {
-      if (!searchArea.getComponentAt(i).equals(search) && !searchArea.getComponentAt(i)
-          .equals(activeFilter)) {
+      if (!searchArea.getComponentAt(i).equals(search)
+          && !searchArea.getComponentAt(i).equals(activeFilter)) {
         toRemove.add(searchArea.getComponentAt(i));
       }
     }
@@ -288,8 +282,9 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
 
     StoredFile userAvatar = AppContext.getInstance().getCurrentAvatar();
     if (userAvatar != null) {
-      avatar.setSrc(new StreamResource(userAvatar.getFilename(),
-          () -> new ByteArrayInputStream(userAvatar.getContent())));
+      avatar.setSrc(
+          new StreamResource(
+              userAvatar.getFilename(), () -> new ByteArrayInputStream(userAvatar.getContent())));
     }
 
     Optional<String> currentUserLogin = SecurityUtils.getCurrentUserLogin();
@@ -297,71 +292,94 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     var contextMenu = new ContextMenu(avatar);
     contextMenu.setOpenOnClick(true);
 
-    var languageButton = UIUtils
-        .createButton(getTranslation("action.settings.language"), VaadinIcon.GLOBE,
+    var languageButton =
+        UIUtils.createButton(
+            getTranslation("action.settings.language"),
+            VaadinIcon.GLOBE,
             ButtonVariant.LUMO_TERTIARY_INLINE);
     var currentLocale = UI.getCurrent().getSession().getLocale();
     debug(loggerPrefix, "Current locale : {0}", currentLocale.getLanguage());
     languageMenu = contextMenu.addItem(languageButton);
 
     List<MenuItem> menuItems = new ArrayList<>();
-    MyI18NProvider.getAvailableLanguagesInDB(getLocale()).forEach(locale -> {
-      MenuItem menu = languageMenu.getSubMenu()
-          .addItem(new Label(locale.getDisplayLanguage(getLocale())));
-      menu.setCheckable(true);
-      logger()
-          .debug(loggerPrefix, "Add locale : {0} - {1}", locale, locale.getLanguage());
-      menu.setChecked(currentLocale.getLanguage().equals(locale.getLanguage()));
-      menu.addClickListener(event -> {
-        setLanguage(locale);
-        menuItems.forEach(menuItem -> {
-          if (!menuItem.equals(menu)) {
-            menuItem.setChecked(false);
-          }
-        });
-      });
-      menuItems.add(menu);
-    });
+    MyI18NProvider.getAvailableLanguagesInDB(getLocale())
+        .forEach(
+            locale -> {
+              MenuItem menu =
+                  languageMenu
+                      .getSubMenu()
+                      .addItem(new Label(locale.getDisplayLanguage(getLocale())));
+              menu.setCheckable(true);
+              logger().debug(loggerPrefix, "Add locale : {0} - {1}", locale, locale.getLanguage());
+              menu.setChecked(currentLocale.getLanguage().equals(locale.getLanguage()));
+              menu.addClickListener(
+                  event -> {
+                    setLanguage(locale);
+                    menuItems.forEach(
+                        menuItem -> {
+                          if (!menuItem.equals(menu)) {
+                            menuItem.setChecked(false);
+                          }
+                        });
+                  });
+              menuItems.add(menu);
+            });
     var themeList = UI.getCurrent().getElement().getThemeList();
-    var switchDarkThemeButton = UIUtils
-        .createButton(getTranslation("action.global.darkTheme"), VaadinIcon.CIRCLE_THIN,
+    var switchDarkThemeButton =
+        UIUtils.createButton(
+            getTranslation("action.global.darkTheme"),
+            VaadinIcon.CIRCLE_THIN,
             ButtonVariant.LUMO_TERTIARY_INLINE);
     if (VaadinSession.getCurrent().getAttribute(THEME_ATTRIBUTE) != null) {
       switchDarkThemeButton.setIcon(VaadinIcon.CHECK_CIRCLE_O.create());
     }
 
-    contextMenu.addItem(switchDarkThemeButton, event -> {
-      if (themeList.contains(Lumo.DARK)) {
-        themeList.remove(Lumo.DARK);
-        switchDarkThemeButton.setIcon(VaadinIcon.CIRCLE_THIN.create());
-        VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, null);
-      } else {
-        themeList.add(Lumo.DARK);
-        switchDarkThemeButton.setIcon(VaadinIcon.CHECK_CIRCLE_O.create());
-        VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, Lumo.DARK);
-      }
-    });
+    contextMenu.addItem(
+        switchDarkThemeButton,
+        event -> {
+          if (themeList.contains(Lumo.DARK)) {
+            themeList.remove(Lumo.DARK);
+            switchDarkThemeButton.setIcon(VaadinIcon.CIRCLE_THIN.create());
+            VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, null);
+          } else {
+            themeList.add(Lumo.DARK);
+            switchDarkThemeButton.setIcon(VaadinIcon.CHECK_CIRCLE_O.create());
+            VaadinSession.getCurrent().setAttribute(THEME_ATTRIBUTE, Lumo.DARK);
+          }
+        });
     if (SecurityUtils.isUserLoggedIn()) {
-      var settingsButton = UIUtils
-          .createButton(currentUserLogin.orElse("-- Unknown --"), VaadinIcon.USER,
+      var settingsButton =
+          UIUtils.createButton(
+              currentUserLogin.orElse("-- Unknown --"),
+              VaadinIcon.USER,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      contextMenu.addItem(settingsButton, event -> {
-        if (JHapyMainView3.get().getUserSettingsView() != null) {
-          getUI().ifPresent(ui -> ui.navigate(JHapyMainView3.get().getUserSettingsView()));
-        }
-      });
+      contextMenu.addItem(
+          settingsButton,
+          event -> {
+            if (JHapyMainView3.get().getUserSettingsView() != null) {
+              getUI().ifPresent(ui -> ui.navigate(JHapyMainView3.get().getUserSettingsView()));
+            }
+          });
 
-      var exitButton = UIUtils
-          .createButton(getTranslation("action.global.logout"), VaadinIcon.EXIT,
+      var exitButton =
+          UIUtils.createButton(
+              getTranslation("action.global.logout"),
+              VaadinIcon.EXIT,
               ButtonVariant.LUMO_TERTIARY_INLINE);
       contextMenu.addItem(new Anchor("logout", exitButton));
     } else {
-      var loginButton = UIUtils
-          .createButton(getTranslation("action.global.login"), VaadinIcon.USER,
+      var loginButton =
+          UIUtils.createButton(
+              getTranslation("action.global.login"),
+              VaadinIcon.USER,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      contextMenu.addItem(new Anchor(appProperties.getAuthorization().getLoginRootUrl()
-          + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/" + appProperties.getSecurity()
-          .getRealm(), loginButton));
+      contextMenu.addItem(
+          new Anchor(
+              appProperties.getAuthorization().getLoginRootUrl()
+                  + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+                  + "/"
+                  + appProperties.getSecurity().getRealm(),
+              loginButton));
     }
   }
 
@@ -407,8 +425,10 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
 
   private void initTabs(NaviTab... tabs) {
     addTab = UIUtils.createSmallButton(VaadinIcon.PLUS);
-    addTab.addClickListener(e -> this.tabs
-        .setSelectedTab(addClosableNaviTab("New Tab", JHapyMainView3.get().getHomePage())));
+    addTab.addClickListener(
+        e ->
+            this.tabs.setSelectedTab(
+                addClosableNaviTab("New Tab", JHapyMainView3.get().getHomePage())));
     addTab.setVisible(false);
 
     this.tabs = tabs.length > 0 ? new NaviTabs(tabs) : new NaviTabs();
@@ -467,8 +487,7 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
   /* === ACTION ITEMS === */
 
   public Button addActionItem(VaadinIcon icon) {
-    var button = UIUtils.createButton(icon, ButtonVariant.LUMO_SMALL,
-        ButtonVariant.LUMO_TERTIARY);
+    var button = UIUtils.createButton(icon, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
     addActionItem(button);
     return button;
   }
@@ -508,15 +527,13 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     return tab;
   }
 
-  public Tab addTab(String text,
-      Class<? extends Component> navigationTarget) {
+  public Tab addTab(String text, Class<? extends Component> navigationTarget) {
     var tab = tabs.addTab(text, navigationTarget);
     configureTab(tab);
     return tab;
   }
 
-  public Tab addClosableNaviTab(String text,
-      Class<? extends Component> navigationTarget) {
+  public Tab addClosableNaviTab(String text, Class<? extends Component> navigationTarget) {
     var tab = tabs.addClosableTab(text, navigationTarget);
     configureTab(tab);
     return tab;
@@ -534,8 +551,7 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     tabs.setSelectedIndex(selectedTabIdex);
   }
 
-  public void updateSelectedTab(String text,
-      Class<? extends Component> navigationTarget) {
+  public void updateSelectedTab(String text, Class<? extends Component> navigationTarget) {
     tabs.updateSelectedTab(text, navigationTarget);
   }
 
@@ -543,8 +559,7 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     tabs.navigateToSelectedTab();
   }
 
-  public void addTabSelectionListener(
-      ComponentEventListener<Tabs.SelectedChangeEvent> listener) {
+  public void addTabSelectionListener(ComponentEventListener<Tabs.SelectedChangeEvent> listener) {
     var registration = tabs.addSelectedChangeListener(listener);
     tabSelectionListeners.add(registration);
   }
@@ -574,13 +589,14 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
 
     contextIcon.setIcon(new Icon(VaadinIcon.ARROW_BACKWARD));
     contextIcon.setVisible(true);
-    searchRegistration = contextIcon
-        .addClickListener(e -> searchModeOff());
+    searchRegistration = contextIcon.addClickListener(e -> searchModeOff());
 
     searchArea.setVisible(true);
-    searchEscRegistration = search.getElement().addEventListener("keypress",
-        event -> searchModeOff())
-        .setFilter("event.key == 'Escape'");
+    searchEscRegistration =
+        search
+            .getElement()
+            .addEventListener("keypress", event -> searchModeOff())
+            .setFilter("event.key == 'Escape'");
     search.focus();
   }
 
@@ -638,7 +654,6 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
       searchValueChangedListeners.forEach(Registration::remove);
       searchValueChangedListeners.clear();
     }
-
   }
 
   /* === UPDATE VISIBILITY === */
@@ -681,9 +696,8 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     }
   }
 
-
   public enum NaviMode {
-    MENU, CONTEXTUAL
+    MENU,
+    CONTEXTUAL
   }
-
 }

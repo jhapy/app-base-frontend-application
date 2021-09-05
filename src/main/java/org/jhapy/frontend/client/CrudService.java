@@ -18,7 +18,6 @@
 
 package org.jhapy.frontend.client;
 
-
 import org.jhapy.dto.domain.BaseEntity;
 
 /**

@@ -46,5 +46,4 @@ public class Divider extends FlexBoxLayout implements HasSize, HasStyle {
     divider.setWidthFull();
     add(divider);
   }
-
 }

@@ -2,28 +2,27 @@ package org.jhapy.frontend.components.notification;
 
 import com.github.appreciated.app.layout.component.builder.interfaces.PairComponentFactory;
 import com.vaadin.flow.server.Command;
+import org.jhapy.frontend.components.notification.entity.DefaultNotification;
+import org.jhapy.frontend.components.notification.interfaces.Notification;
+import org.ocpsoft.prettytime.PrettyTime;
+
 import java.io.Serial;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.function.Function;
-import org.jhapy.frontend.components.notification.entity.DefaultNotification;
-import org.jhapy.frontend.components.notification.interfaces.Notification;
-import org.ocpsoft.prettytime.PrettyTime;
 
-/**
- * This class is the default implementation of {@link NotificationHolder}
- */
-
+/** This class is the default implementation of {@link NotificationHolder} */
 public class DefaultNotificationHolder extends NotificationHolder<DefaultNotification> {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
-  private Function<DefaultNotification, String> dateTimeFormatter = notification -> new PrettyTime()
-      .
-          format(Date.from(notification.getCreationTime().atZone(ZoneId.systemDefault()).
-              toInstant()));
+  private Function<DefaultNotification, String> dateTimeFormatter =
+      notification ->
+          new PrettyTime()
+              .format(
+                  Date.from(
+                      notification.getCreationTime().atZone(ZoneId.systemDefault()).toInstant()));
 
   public DefaultNotificationHolder(NotificationClickListener<DefaultNotification> listener) {
     super(listener);
@@ -37,12 +36,14 @@ public class DefaultNotificationHolder extends NotificationHolder<DefaultNotific
     super(notifications);
   }
 
-  public DefaultNotificationHolder(NotificationClickListener<DefaultNotification> listener,
+  public DefaultNotificationHolder(
+      NotificationClickListener<DefaultNotification> listener,
       DefaultNotification... notifications) {
     super(listener, notifications);
   }
 
-  public DefaultNotificationHolder(NotificationClickListener<DefaultNotification> listener,
+  public DefaultNotificationHolder(
+      NotificationClickListener<DefaultNotification> listener,
       Collection<DefaultNotification> notifications) {
     super(listener, notifications);
   }
@@ -61,12 +62,14 @@ public class DefaultNotificationHolder extends NotificationHolder<DefaultNotific
   }
 
   @Override
-  PairComponentFactory<NotificationHolder<DefaultNotification>, DefaultNotification> getComponentProvider() {
+  PairComponentFactory<NotificationHolder<DefaultNotification>, DefaultNotification>
+      getComponentProvider() {
     return new DefaultNotificationComponentFactory<>();
   }
 
   @Override
-  PairComponentFactory<NotificationHolder<DefaultNotification>, DefaultNotification> getCardComponentProvider() {
+  PairComponentFactory<NotificationHolder<DefaultNotification>, DefaultNotification>
+      getCardComponentProvider() {
     return new DefaultNotificationCardComponentFactory<>();
   }
 

@@ -34,7 +34,9 @@ public class AccessTokenReceivedEvent extends ComponentEvent<MyOAuth2Signin> {
    * @param source the source component
    * @param fromClient <code>true</code> if the event originated from the client
    */
-  public AccessTokenReceivedEvent(MyOAuth2Signin source, boolean fromClient,
+  public AccessTokenReceivedEvent(
+      MyOAuth2Signin source,
+      boolean fromClient,
       @EventData("event.detail.token") String accessToken) {
     super(source, fromClient);
     this.accessToken = accessToken;
