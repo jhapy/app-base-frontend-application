@@ -23,6 +23,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -44,6 +46,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.*;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.lumo.Lumo;
 import de.codecamp.vaadin.components.messagedialog.MessageDialog;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +64,7 @@ import org.jhapy.frontend.components.AppCookieConsent;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.navigation.menubar.*;
 import org.jhapy.frontend.components.search.overlay.SearchOverlayButton;
+import org.jhapy.frontend.components.unload.UnloadObserver;
 import org.jhapy.frontend.config.AppProperties;
 import org.jhapy.frontend.security.SecurityUtils;
 import org.jhapy.frontend.utils.*;
@@ -82,7 +86,6 @@ import org.jhapy.frontend.views.admin.security.SecurityKeycloakGroupsView;
 import org.jhapy.frontend.views.admin.security.SecurityKeycloakRolesView;
 import org.jhapy.frontend.views.admin.security.SecurityKeycloakUsersView;
 import org.springframework.core.env.Environment;
-import org.vaadin.miki.superfields.unload.UnloadObserver;
 
 import javax.servlet.http.Cookie;
 import java.io.ByteArrayInputStream;
@@ -95,8 +98,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
-import static org.jhapy.frontend.utils.AppConst.THEME_ATTRIBUTE;
+import static org.jhapy.frontend.utils.AppConst.*;
 import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 
 @NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
@@ -235,7 +237,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
   public void showRouterLayoutContent(HasElement content) {
     String loggerPrefix = getLoggerPrefix("showRouterLayoutContent");
     debug(loggerPrefix, "Show content ...");
-    displayView((View) content);
+    displayViewFromNavigation((View) content);
   }
 
   public void addAttributeContextListener(AttributeContextListener contextListener) {
@@ -759,41 +761,49 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
     mainMenu.getSubMenu().add(new Hr());
     if (SecurityUtils.isUserLoggedIn()) {
-      var avatar = new Image();
-      avatar.setClassName(CLASS_NAME + "__avatar");
-      avatar.setAlt("User menu");
-      avatar.setSrc(UIUtils.IMG_PATH + "icons8-question-mark-64.png");
-      avatar.setWidth("32px");
-      avatar.setHeight("32px");
-
-      StoredFile userAvatar = AppContext.getInstance().getCurrentAvatar();
-      if (userAvatar != null) {
-        avatar.setSrc(
+      Avatar ownAvatar = new Avatar();
+      ownAvatar.setName((String) VaadinSession.getCurrent().getAttribute(NICKNAME_ATTRIBUTE));
+      String userId = (String) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
+      StoredFile storedFile =
+          ((StoredFile) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
+      if (storedFile != null) {
+        StreamResource streamResource =
             new StreamResource(
-                userAvatar.getFilename(), () -> new ByteArrayInputStream(userAvatar.getContent())));
+                "avatar_" + userId, () -> new ByteArrayInputStream(storedFile.getContent()));
+        streamResource.setContentType(storedFile.getMimeType());
+        ownAvatar.setImageResource(streamResource);
+      } else {
+        ownAvatar.setImage(UIUtils.IMG_PATH + "icons8-question-mark-64.png");
       }
-
-      var settingsButton =
-          UIUtils.createButton(
-              AppContext.getInstance().getCurrentUsername(),
-              avatar,
-              ButtonVariant.LUMO_TERTIARY_INLINE);
+      HorizontalLayout hLayout = new HorizontalLayout();
+      hLayout.setWidthFull();
+      hLayout.setDefaultVerticalComponentAlignment(Alignment.START);
+      hLayout.add(
+          ownAvatar,
+          UIUtils.createLabel(TextColor.PRIMARY, AppContext.getInstance().getCurrentUsername()));
+      hLayout.setAlignItems(Alignment.CENTER);
       mainMenu
           .getSubMenu()
           .addItem(
-              settingsButton,
+              hLayout,
               event -> {
                 if (JHapyMainView3.get().getUserSettingsView() != null) {
                   getUI().ifPresent(ui -> ui.navigate(JHapyMainView3.get().getUserSettingsView()));
                 }
               });
-
       var exitButton =
           UIUtils.createButton(
               getTranslation("action.global.logout"),
               VaadinIcon.EXIT,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      mainMenu.getSubMenu().addItem(new Anchor("logout", exitButton));
+      mainMenu
+          .getSubMenu()
+          .addItem(
+              exitButton,
+              event -> {
+                UI.getCurrent().getPushConfiguration().setPushMode(PushMode.DISABLED);
+                UI.getCurrent().navigate("logout");
+              });
     } else {
       var loginButton =
           UIUtils.createButton(
@@ -814,6 +824,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     header.removeAll();
     header.addClassName("header");
     header.add(menuBar);
+
     UIUtils.setTheme(Lumo.DARK, header);
     return header;
   }
@@ -845,8 +856,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               if (menu.getBrowser() != null)
                 menuItem.addClickListener(
                     event -> {
-                      ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
-                      views.add(viewMenu);
                       ModuleTab lastTab = null;
                       for (ModuleTab moduleTab : tabList) {
                         if (moduleTab.isLastTab()) {
@@ -854,7 +863,11 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
                           break;
                         }
                       }
-                      displayView(
+                      ViewMenu viewMenu =
+                          new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
+                      views.add(viewMenu);
+
+                      displayViewFromMenu(
                           menu.getBrowser(),
                           menu.getMenuName(),
                           menu.getParentId(),
@@ -873,11 +886,11 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     tabs.add(newTab);
     tabs.add(newTabButton);
 
-    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), newTab);
     viewMenu.setSizeFull();
     viewMenu.addModuleSelectedListener(
         (className, menuName, menuParentId, currentViewMenu) ->
-            displayView(className, menuName, menuParentId, viewMenu, newTab));
+            displayViewFromMenu(className, menuName, menuParentId, viewMenu, newTab));
     viewMenu.addCaptionChangedListener(newTab::setCaption);
     views.add(viewMenu);
 
@@ -955,11 +968,11 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     tabs.add(newTabButton);
     tabs.setSelectedTab(lastTab);
 
-    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
+    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
     viewMenu.setSizeFull();
     viewMenu.addModuleSelectedListener(
         (className, menuName, menuParentId, currentViewMenu) ->
-            displayView(className, menuName, menuParentId, viewMenu, lastTab));
+            displayViewFromMenu(className, menuName, menuParentId, viewMenu, lastTab));
     viewMenu.addCaptionChangedListener(lastTab::setCaption);
     views.add(viewMenu);
 
@@ -967,20 +980,19 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     viewContainer.add(viewMenu);
   }
 
-  public boolean displayView(View view) {
+  public boolean displayViewFromNavigation(View view) {
     String loggerPrefix = getLoggerPrefix("displayView");
     try {
       ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
-      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, "xxx"));
+      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, "xxx"));
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);
-            ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList());
-            viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
-            viewMenu.getBreadcrumb().pull();
+            ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), currentTab);
+            currentTab.getBreadcrumb().pull();
             viewMenu.addModuleSelectedListener(
                 (className1, menuName1, menuParentId1, currentViewMenu1) ->
-                    displayView(
+                    displayViewFromMenu(
                         className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
             viewMenu.addCaptionChangedListener(currentTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
@@ -1022,52 +1034,62 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     }
   }
 
-  public boolean displayView(
-      View parentView, Object parentParams, Class<? extends View> newView, Object newViewParams) {
+  public boolean displayViewFromParentView(
+      View parentView,
+      Object parentParams,
+      Class<? extends View> newViewClass,
+      Object newViewParams) {
     String loggerPrefix = getLoggerPrefix("displayView");
 
     debug(
         loggerPrefix,
         "New View : {0} with parameter(s) {1}, Parent View : {2} with parameter(s) : {3}",
-        newView.getSimpleName(),
+        newViewClass.getSimpleName(),
         newViewParams == null ? "None" : newViewParams,
         parentView.getClass().getSimpleName(),
         parentParams == null ? "None" : parentParams);
     try {
-      if (newView == null) {
+      if (newViewClass == null) {
         Dialogs.notifyError("Module not yet available.");
         return false;
       }
 
-      View view = newViewInstance(newView);
-      view.getBreadcrumb().setBreadcrumbs(parentView.getBreadcrumb().getBreadcrumbs());
-      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
+      ModuleTab currentTab = parentView.getParentTab();
+      View view = newViewInstance(newViewClass);
+      view.setParentTab(parentView.getParentTab());
+      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
 
       if (newViewParams != null) {
         debug(loggerPrefix, "New View has parameter, set them");
         view.setParameter(newViewParams);
       }
-      final ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
+
+      String route = null;
+      for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
+        if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
+      }
+      if (route != null) UI.getCurrent().getPage().getHistory().pushState(null, route);
+
       view.setGoBackListener(
           () -> {
             if (parentView.getNavigationRootClass() != null
-                && parentView.getNavigationRootClass().equals(newView)) {
+                && parentView.getNavigationRootClass().equals(newViewClass)) {
 
-              long parentId = -1;
+              long menuParentId = -1;
               for (Menu menu1 : getMenuList()) {
                 if (menu1.getBrowser() != null
                     && menu1.getBrowser().equals(parentView.getNavigationRootClass())) {
-                  parentId = menu1.getParentId();
+                  menuParentId = menu1.getParentId();
                   break;
                 }
               }
               viewContainer.remove(view);
-              ViewMenu viewMenu = new ViewMenu(getMenuList(), parentId, getTopMenuItemList());
-              viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
-              viewMenu.getBreadcrumb().pull();
+              ViewMenu viewMenu =
+                  new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
+              currentTab.getBreadcrumb().pull();
               viewMenu.addModuleSelectedListener(
                   (className1, menuName1, menuParentId1, currentViewMenu1) ->
-                      displayView(
+                      displayViewFromMenu(
                           className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
               viewMenu.addCaptionChangedListener(currentTab::setCaption);
               viewContainer.getChildren().forEach(e -> e.setVisible(false));
@@ -1077,31 +1099,31 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               Menu parentMenu = null;
 
               for (Menu menu : getMenuList()) {
-                if (menu.getId() == parentId) {
+                if (menu.getId() == menuParentId) {
                   parentMenu = menu;
                 }
               }
 
               if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
             } else {
-              if (view.getParents().containsKey(view.getClass())) {
-                View.ViewParent viewParent = view.getParents().get(view.getClass());
-                view.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
-                view.getBreadcrumb().pull();
-                view.getBreadcrumb().pull();
-                displayView(
+              if (currentTab.getParents().containsKey(view.getClass())) {
+                View.ViewParent viewParent = currentTab.getParents().get(view.getClass());
+                currentTab.getBreadcrumb().pull();
+                currentTab.getBreadcrumb().pull();
+                currentTab.getParents().remove(view.getClass());
+                displayViewFromParentView(
                     view,
                     newViewParams,
                     viewParent.getParentClass(),
                     viewParent.getParentParameters());
               } else {
                 // Seems to be never use...
-                displayView(view, newViewParams, parentView.getClass(), parentParams);
+                displayViewFromParentView(view, newViewParams, parentView.getClass(), parentParams);
               }
             }
           });
-      var parentMap = parentView.getParents();
-      if (!parentMap.containsKey(newView)) {
+      var parentMap = currentTab.getParents();
+      if (!parentMap.containsKey(newViewClass)) {
         View.ViewParent viewParent = new View.ViewParent();
         viewParent.setParentParameters(parentParams);
         viewParent.setParentClass(parentView.getClass());
@@ -1109,10 +1131,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
             loggerPrefix,
             "Set parent {0} for {1}",
             parentView.getClass().getSimpleName(),
-            newView.getSimpleName());
-        parentView.putParent(newView, viewParent);
+            newViewClass.getSimpleName());
+        currentTab.putParent(newViewClass, viewParent);
       }
-      view.setParents(parentView.getParents());
       if (parentView.getNavigationRootClass() != null)
         view.setNavigationRootClass(parentView.getNavigationRootClass());
       if (parentView.getMenuBackListener() != null)
@@ -1135,8 +1156,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         Dialogs.notifyWarning(error);
         // ErrorManager.showError(ex, error);
       } else {
-        error = "Failed to load module " + newView.getSimpleName() + ": \n" + ex;
-        error(loggerPrefix, ex, "Failed to load module {0}", newView.getSimpleName());
+        error = "Failed to load module " + newViewClass.getSimpleName() + ": \n" + ex;
+        error(loggerPrefix, ex, "Failed to load module {0}", newViewClass.getSimpleName());
         Dialogs.notifyError("MenuView", 0, error);
         // ErrorManager.showError(ex, error);
       }
@@ -1163,38 +1184,38 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     throw new NoSuchMethodException("No valid constructor found");
   }
 
-  public boolean displayView(
-      Class<? extends View> viewClass,
+  public boolean displayViewFromMenu(
+      Class<? extends View> newViewClass,
       String menuName,
       long menuParentId,
-      View currentMenu,
+      View parentView,
       ModuleTab currentTab) {
     String loggerPrefix = getLoggerPrefix("displayView");
     try {
-      if (viewClass == null) {
-        error(loggerPrefix, "Module is not set (viewClass)");
+      if (newViewClass == null) {
+        error(loggerPrefix, "Module is not set (newViewClass)");
         Dialogs.notifyError("Module not yet available.");
         return false;
       }
 
-      View view = newViewInstance(viewClass);
-      view.setNavigationRootClass(viewClass);
-      view.getBreadcrumb().setBreadcrumbs(currentMenu.getBreadcrumb().getBreadcrumbs());
-      view.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
+      View view = newViewInstance(newViewClass);
+      view.setParentTab(currentTab);
+      view.setNavigationRootClass(newViewClass);
+      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
-        if (routeData.getNavigationTarget().equals(viewClass)) route = routeData.getTemplate();
+        if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
       if (route != null) UI.getCurrent().getPage().getHistory().pushState(null, route);
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);
-            ViewMenu viewMenu = new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList());
-            viewMenu.getBreadcrumb().setBreadcrumbs(view.getBreadcrumb().getBreadcrumbs());
-            viewMenu.getBreadcrumb().pull();
+            ViewMenu viewMenu =
+                new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
+            currentTab.getBreadcrumb().pull();
             viewMenu.addModuleSelectedListener(
                 (className1, menuName1, menuParentId1, currentViewMenu1) ->
-                    displayView(
+                    displayViewFromMenu(
                         className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
             viewMenu.addCaptionChangedListener(currentTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
@@ -1212,9 +1233,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
             if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
           });
 
-      viewContainer.remove(currentMenu);
+      viewContainer.remove(parentView);
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-      views.set(views.indexOf(currentMenu), view);
+      views.set(views.indexOf(parentView), view);
       viewContainer.add(view);
       currentTab.setCaption(menuName);
 
@@ -1278,8 +1299,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     }
     appFooterInner.removeAll();
     appFooterInner.add(components);
-
-    (new FeederThread(getUI().get(), 3000, appFooterInner, components)).start();
   }
 
   protected void setAppFooterOuter(Component... components) {
@@ -1447,43 +1466,4 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
   public abstract void onLogout();
 
   public void beforeLogin() {}
-
-  private static class FeederThread extends Thread {
-
-    private final UI ui;
-    private final Div appFooterInner;
-    private final Component[] components;
-
-    private long delay = 0;
-
-    public FeederThread(UI ui, long delay, Div appFooterInner, Component[] components) {
-      this.ui = ui;
-      this.delay = delay;
-      this.appFooterInner = appFooterInner;
-      this.components = components;
-    }
-
-    @Override
-    public void run() {
-      try {
-        Thread.sleep(delay);
-
-        // Inform that we are done
-        ui.access(
-            () ->
-                appFooterInner
-                    .getChildren()
-                    .forEach(
-                        component -> {
-                          for (Component c : components) {
-                            if (c.equals(component)) {
-                              appFooterInner.remove(component);
-                            }
-                          }
-                        }));
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-  }
 }

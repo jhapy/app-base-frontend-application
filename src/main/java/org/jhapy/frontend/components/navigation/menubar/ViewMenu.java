@@ -17,6 +17,7 @@
 
 package org.jhapy.frontend.components.navigation.menubar;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -52,18 +53,23 @@ public class ViewMenu extends View {
     boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu);
   }
 
-  public ViewMenu(List<Menu> menuList, long parentId) {
+  public ViewMenu(List<Menu> menuList, long parentId, ModuleTab parentTab) {
+    setParentTab(parentTab);
     this.menuList = menuList;
     this.parentId = parentId;
-
-    initLayout();
   }
 
-  public ViewMenu(List<Menu> menuList, long parentId, List<TopMenuItem> topMenuList) {
+  public ViewMenu(
+      List<Menu> menuList, long parentId, List<TopMenuItem> topMenuList, ModuleTab parentTab) {
+    setParentTab(parentTab);
     this.menuList = menuList;
     this.parentId = parentId;
     this.topMenuList = topMenuList;
+  }
 
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    super.onAttach(attachEvent);
     initLayout();
   }
 
@@ -228,7 +234,7 @@ public class ViewMenu extends View {
       breadcrumbs.add(label);
     }
     Collections.reverse(breadcrumbs);
-    breadcrumb.setBreadcrumbs(breadcrumbs);
+    getParentTab().getBreadcrumb().setBreadcrumbs(breadcrumbs);
     /*breadcrumb.removeAll();
     Collections.reverse(breadcrumbs);
     for (var i = 0; i < breadcrumbs.size(); i++) {
@@ -241,7 +247,8 @@ public class ViewMenu extends View {
     }
      */
     if (parentId == 0 && JHapyMainView3.get() != null) {
-      content.add(JHapyMainView3.get().getHomePage2());
+      View homePage = JHapyMainView3.get().getHomePage2();
+      content.add(homePage);
     }
   }
 

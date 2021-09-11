@@ -43,9 +43,11 @@ public class Breadcrumb extends Div {
 
   public void push(Component breadcrumb) {
     breadcrumbs.add(breadcrumb);
+    UI.getCurrent().access(this::init);
   }
 
   public void pull() {
     breadcrumbs.remove(breadcrumbs.size() - 1);
+    UI.getCurrent().access(this::init);
   }
 }

@@ -49,6 +49,7 @@ public class ModuleToolbar extends FlexLayout {
   private final Div menuRefresh = new Div();
   private final Div menuAddRecord = new Div();
   private final Div menuFilter = new Div();
+  private final Div otherButtons = new Div();
 
   private final String moduleName;
   private final View parentLayout;
@@ -130,7 +131,7 @@ public class ModuleToolbar extends FlexLayout {
     menuAddRecord.add(newRecordButton);
     menuAddRecord.getStyle().set("align-items", "center");
     menuAddRecord.getStyle().set("margin-right", "5px");
-    menuAddRecord.addClickListener(
+    newRecordButton.addClickListener(
         listener -> {
           if (newRecordListeners != null) {
             for (NewRecordListener newRecordListener : newRecordListeners) {
@@ -139,15 +140,14 @@ public class ModuleToolbar extends FlexLayout {
           }
         });
 
-    Button refreshIcon =
+    Button refreshButton =
         UIUtils.createButton(
-            getTranslation("action.global.refresh"),
-            VaadinIcon.REFRESH,
-            ButtonVariant.LUMO_TERTIARY);
-    menuRefresh.add(refreshIcon);
+            /*getTranslation("action.global.refresh"),*/
+            VaadinIcon.REFRESH, ButtonVariant.LUMO_TERTIARY);
+    menuRefresh.add(refreshButton);
     menuRefresh.getStyle().set("align-items", "center");
     menuRefresh.getStyle().set("margin-right", "5px");
-    menuRefresh.addClickListener(
+    refreshButton.addClickListener(
         listener -> {
           if (refreshListeners != null) {
             for (RefreshListener refreshListener : refreshListeners) {
@@ -185,10 +185,13 @@ public class ModuleToolbar extends FlexLayout {
           }
         });
 
+    otherButtons.getStyle().set("align-items", "center");
+    otherButtons.getStyle().set("margin-right", "5px");
+
     refreshButtons();
   }
 
-  private void refreshButtons() {
+  public void refreshButtons() {
     removeAll();
     add(menuBack);
     if (searchTextFieldVisible) {
@@ -210,6 +213,12 @@ public class ModuleToolbar extends FlexLayout {
     }
     menuFilter.add(filterIcon);
     if (filterButtonVisible) add(menuFilter);
+    if (otherButtons.getChildren().count() > 0) add(otherButtons);
+  }
+
+  public void addOtherButton(Button otherButton) {
+    otherButtons.add(otherButton);
+    refreshButtons();
   }
 
   public String getYear() {

@@ -180,7 +180,7 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
 
   protected void showDetails(T entity) {
     JHapyMainView3.get()
-        .displayView(
+        .displayViewFromParentView(
             this,
             currentViewParams,
             entityViewClass,

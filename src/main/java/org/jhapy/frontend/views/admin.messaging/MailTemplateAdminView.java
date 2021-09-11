@@ -193,7 +193,8 @@ public class MailTemplateAdminView extends ViewFrame implements RouterLayout {
         mailTemplate = _mailTemplate.getData();
         if (isNew) {
           JHapyMainView3.get()
-              .displayView(this, getParameter(), MailTemplateAdminView.class, mailTemplate.getId());
+              .displayViewFromParentView(
+                  this, getParameter(), MailTemplateAdminView.class, mailTemplate.getId());
         } else {
           binder.readBean(mailTemplate);
         }

@@ -124,7 +124,7 @@ public class SmsTemplatesAdminView extends ViewFrame implements RouterLayout, Ha
 
   private void viewDetails(SmsTemplate smsTemplate) {
     JHapyMainView3.get()
-        .displayView(
+        .displayViewFromParentView(
             this,
             getParameter(),
             SmsTemplateAdminView.class,

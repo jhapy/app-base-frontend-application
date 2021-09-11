@@ -70,6 +70,20 @@ public class DateTimeFormatter {
     }
   }
 
+  public static Instant parse(String instant, Locale currentLocal) {
+    if (instant == null) {
+      return null;
+    } else {
+      return LocalDateTime.parse(
+              instant,
+              java.time.format.DateTimeFormatter.ofLocalizedDateTime(
+                      FormatStyle.SHORT, FormatStyle.MEDIUM)
+                  .withLocale(currentLocal))
+          .atZone(ZoneOffset.systemDefault())
+          .toInstant();
+    }
+  }
+
   public static String format(Date date, Locale currentLocal) {
     if (date == null) {
       return "";

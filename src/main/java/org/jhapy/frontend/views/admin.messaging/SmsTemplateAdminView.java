@@ -160,7 +160,8 @@ public class SmsTemplateAdminView extends ViewFrame implements RouterLayout, Has
         smsTemplate = _smsTemplate.getData();
         if (isNew) {
           JHapyMainView3.get()
-              .displayView(this, getParameter(), SmsTemplateAdminView.class, smsTemplate.getId());
+              .displayViewFromParentView(
+                  this, getParameter(), SmsTemplateAdminView.class, smsTemplate.getId());
         } else {
           binder.readBean(smsTemplate);
         }

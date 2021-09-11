@@ -19,6 +19,7 @@
 package org.jhapy.frontend.components.detailsdrawers;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
@@ -38,6 +39,10 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
   private Label title;
 
   public DetailsDrawerHeader(String title, boolean showClose, boolean showTitle) {
+    this(title, showClose, showTitle, null);
+  }
+
+  public DetailsDrawerHeader(String title, boolean showClose, boolean showTitle, Component extra) {
     addClassName(BoxShadowBorders.BOTTOM);
     setFlexDirection(FlexDirection.COLUMN);
     setWidthFull();
@@ -49,6 +54,7 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
 
     if (showTitle) {
       this.title = UIUtils.createH4Label(title);
+      this.title.setWidthFull();
     }
 
     FlexBoxLayout wrapper;
@@ -58,9 +64,12 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
       wrapper = new FlexBoxLayout(this.title);
     } else if (showClose) {
       wrapper = new FlexBoxLayout(this.close);
+    } else if (extra != null) {
+      wrapper = new FlexBoxLayout();
     } else {
       return;
     }
+    if (extra != null) wrapper.add(extra);
 
     wrapper.setAlignItems(FlexComponent.Alignment.CENTER);
     wrapper.setPadding(Horizontal.RESPONSIVE_L, Vertical.M);
@@ -74,6 +83,11 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
 
   public DetailsDrawerHeader(String title, Tabs tabs) {
     this(title, true, true);
+    add(tabs);
+  }
+
+  public DetailsDrawerHeader(String title, Tabs tabs, Component extra) {
+    this(title, true, true, extra);
     add(tabs);
   }
 

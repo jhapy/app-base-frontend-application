@@ -124,7 +124,7 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
 
   private void viewDetails(MailTemplate mailTemplate) {
     JHapyMainView3.get()
-        .displayView(
+        .displayViewFromParentView(
             this,
             getParameter(),
             MailTemplateAdminView.class,

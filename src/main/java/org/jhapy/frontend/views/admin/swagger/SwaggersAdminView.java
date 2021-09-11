@@ -73,7 +73,8 @@ public class SwaggersAdminView extends ViewFrame {
 
   protected void showDetails(EurekaApplication app) {
     JHapyMainView3.get()
-        .displayView(this, getParameter(), SwaggerAdminView.class, app.getName().toLowerCase());
+        .displayViewFromParentView(
+            this, getParameter(), SwaggerAdminView.class, app.getName().toLowerCase());
   }
 
   protected Grid createGrid() {

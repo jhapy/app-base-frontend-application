@@ -37,6 +37,10 @@ public class BaseServices {
     return getApplicationContext().getBean(ResourceService.class);
   }
 
+  public static EntityCommentService getEntityCommentService() {
+    return getApplicationContext().getBean(EntityCommentService.class);
+  }
+
   public static ApplicationContext getApplicationContext() {
     ServletContext servletContext = SpringServlet.getCurrent().getServletContext();
     return WebApplicationContextUtils.getWebApplicationContext(servletContext);

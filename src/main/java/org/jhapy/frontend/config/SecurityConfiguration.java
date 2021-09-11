@@ -27,6 +27,7 @@ import org.jhapy.frontend.client.security.SecurityRoleService;
 import org.jhapy.frontend.client.security.keycloak.KeycloakLogoutHandler;
 import org.jhapy.frontend.client.security.keycloak.KeycloakOauth2UserService;
 import org.jhapy.frontend.security.JHapyAccessDecisionVoter;
+import org.jhapy.frontend.security.SecurityUtils;
 import org.jhapy.frontend.security.VaadinOAuth2RequestCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,7 +113,7 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
             "/VAADIN/**",
             // the standard favicon URI
             "/favicon.ico",
-
+            "/vaadinServlet/**",
             // the robots exclusion standard
             "/robots.txt",
 
@@ -163,6 +164,8 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
         .requestCache(new VaadinOAuth2RequestCache())
         .and()
         .authorizeRequests()
+        .requestMatchers(SecurityUtils::isFrameworkInternalRequest)
+        .permitAll()
         .antMatchers("/")
         .permitAll()
         .antMatchers("/api/auth-info")

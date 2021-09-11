@@ -18,8 +18,10 @@
 
 package org.jhapy.frontend.security;
 
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 import de.codecamp.vaadin.security.spring.access.VaadinSecurity;
 import de.codecamp.vaadin.security.spring.access.rules.PermitAll;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
@@ -35,9 +37,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
+import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ATTRIBUTE;
 import static org.jhapy.frontend.utils.AppConst.SECURITY_USER_ID_ATTRIBUTE;
@@ -55,6 +59,19 @@ public final class SecurityUtils {
 
   private SecurityUtils() {
     // Util methods only
+  }
+  /**
+   * Tests if the request is an internal framework request. The test consists of checking if the
+   * request parameter is present and if its value is consistent with any of the request types know.
+   *
+   * @param request {@link HttpServletRequest}
+   * @return true if is an internal framework request. False otherwise.
+   */
+  public static boolean isFrameworkInternalRequest(HttpServletRequest request) {
+    final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+    return parameterValue != null
+        && Stream.of(HandlerHelper.RequestType.values())
+            .anyMatch(r -> r.getIdentifier().equals(parameterValue));
   }
 
   public static Optional<String> getCurrentUserLogin() {

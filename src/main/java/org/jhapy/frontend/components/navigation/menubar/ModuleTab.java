@@ -26,7 +26,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CssImport("./menubar/window-tab-styles.css")
 public class ModuleTab extends Tab {
@@ -40,6 +42,24 @@ public class ModuleTab extends Tab {
   private final List<CloseButtonClickListener> closeButtonClickListeners = new ArrayList<>();
   private VerticalLayout content;
   Label lblCaption = new Label("New Tab");
+  private Map<Class<? extends View>, View.ViewParent> parents = new HashMap<>();
+  protected Breadcrumb breadcrumb = new Breadcrumb();
+
+  public Breadcrumb getBreadcrumb() {
+    return breadcrumb;
+  }
+
+  public Map<Class<? extends View>, View.ViewParent> getParents() {
+    return parents;
+  }
+
+  public void putParent(Class<? extends View> key, View.ViewParent parent) {
+    parents.put(key, parent);
+  }
+
+  public void setParents(Map<Class<? extends View>, View.ViewParent> parents) {
+    this.parents = parents;
+  }
 
   public interface CloseButtonClickListener {
     void click();

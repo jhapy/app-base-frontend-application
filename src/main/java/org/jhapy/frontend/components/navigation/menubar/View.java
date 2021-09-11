@@ -27,9 +27,6 @@ import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.TitleFormatter;
 import org.rapidpm.frp.functions.CheckedFunction;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.rapidpm.frp.matcher.Case.match;
 import static org.rapidpm.frp.matcher.Case.matchCase;
 import static org.rapidpm.frp.model.Result.failure;
@@ -46,9 +43,8 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   private String title = "-- Unknown --";
   protected Object currentViewParams;
   private Class<? extends View> navigationRootClass;
-  private Map<Class<? extends View>, ViewParent> parents = new HashMap<>();
   private View parentView;
-  protected Breadcrumb breadcrumb = new Breadcrumb();
+  protected ModuleTab parentTab;
 
   @Data
   public static class ViewParent {
@@ -59,21 +55,19 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   public View() {
     addClassName("module-container");
     lookupTitle();
-    add(breadcrumb);
-  }
-
-  public Breadcrumb getBreadcrumb() {
-    return breadcrumb;
-  }
-
-  public void setBreadcrumb(Breadcrumb breadcrumb) {
-    this.breadcrumb = breadcrumb;
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
-    // breadcrumb.init();
+    if (parentTab != null) addComponentAsFirst(parentTab.getBreadcrumb());
+  }
+
+  public ModuleTab getParentTab() {
+    return parentTab;
+  }
+
+  public void setParentTab(ModuleTab parentTab) {
+    this.parentTab = parentTab;
   }
 
   public View getParentView() {
@@ -106,18 +100,6 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
 
   public void setNavigationRootClass(Class<? extends View> navigationRootClass) {
     this.navigationRootClass = navigationRootClass;
-  }
-
-  public Map<Class<? extends View>, ViewParent> getParents() {
-    return parents;
-  }
-
-  public void putParent(Class<? extends View> key, ViewParent parent) {
-    parents.put(key, parent);
-  }
-
-  public void setParents(Map<Class<? extends View>, ViewParent> parents) {
-    this.parents = parents;
   }
 
   public void hideContent() {}
