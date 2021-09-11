@@ -19,6 +19,7 @@ package org.jhapy.frontend.components.navigation.menubar;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.server.VaadinService;
 import lombok.Data;
 import org.jhapy.commons.utils.HasLogger;
@@ -41,7 +42,7 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   private ModuleToolbar.GoBackListener goBackListener;
   private ModuleToolbar.GoBackListener menuBackListener;
   private String title = "-- Unknown --";
-  protected Object currentViewParams;
+  protected String currentViewParams;
   private Class<? extends View> navigationRootClass;
   private View parentView;
   protected ModuleTab parentTab;
@@ -49,7 +50,7 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   @Data
   public static class ViewParent {
     private Class<? extends View> parentClass;
-    private Object parentParameters;
+    private String parentParameters;
   }
 
   public View() {
@@ -59,7 +60,10 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
-    if (parentTab != null) addComponentAsFirst(parentTab.getBreadcrumb());
+    if (parentTab != null) {
+      parentTab.setCaption( getTitle() );
+      addComponentAsFirst(parentTab.getBreadcrumb());
+    }
   }
 
   public ModuleTab getParentTab() {
@@ -110,11 +114,11 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
     return title;
   }
 
-  public void setParameter(Object parameter) {
+  public void setParameter(BeforeEvent event, String parameter) {
     currentViewParams = parameter;
   }
 
-  public Object getParameter() {
+  public String getParameter() {
     return currentViewParams;
   }
 

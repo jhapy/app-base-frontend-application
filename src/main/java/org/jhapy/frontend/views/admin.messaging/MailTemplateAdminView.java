@@ -29,6 +29,8 @@ import com.vaadin.flow.component.richtexteditor.RichTextEditor;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
@@ -60,7 +62,7 @@ import org.jhapy.frontend.views.JHapyMainView3;
 @Tag("mail-template-admin-view")
 @I18NPageTitle(messageKey = AppConst.TITLE_MAIL_TEMPLATE_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class MailTemplateAdminView extends ViewFrame implements RouterLayout {
+public class MailTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
 
   private final Binder<MailTemplate> binder = new Binder<>();
   private MailTemplate mailTemplate;
@@ -218,8 +220,8 @@ public class MailTemplateAdminView extends ViewFrame implements RouterLayout {
   }
 
   @Override
-  public void setParameter(Object viewParameters) {
-    super.setParameter(viewParameters);
+  public void setParameter(BeforeEvent event, String viewParameters) {
+    super.setParameter(event, viewParameters);
     if (StringUtils.isBlank((String) viewParameters) || "-1".equals(viewParameters)) {
       mailTemplate = new MailTemplate();
     } else {

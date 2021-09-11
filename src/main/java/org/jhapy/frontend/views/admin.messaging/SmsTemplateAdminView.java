@@ -28,6 +28,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
@@ -60,7 +62,7 @@ import org.jhapy.frontend.views.JHapyMainView3;
 @Tag("sms-template-admin-view")
 @I18NPageTitle(messageKey = AppConst.TITLE_SMS_TEMPLATE_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SmsTemplateAdminView extends ViewFrame implements RouterLayout, HasLogger {
+public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
 
   private final Binder<SmsTemplate> binder = new Binder<>();
   private SmsTemplate smsTemplate;
@@ -184,8 +186,8 @@ public class SmsTemplateAdminView extends ViewFrame implements RouterLayout, Has
   }
 
   @Override
-  public void setParameter(Object viewParameters) {
-    super.setParameter(viewParameters);
+  public void setParameter(BeforeEvent event, String viewParameters) {
+    super.setParameter(event, viewParameters);
     if (StringUtils.isBlank((String) viewParameters)) {
       smsTemplate = new SmsTemplate();
     } else {

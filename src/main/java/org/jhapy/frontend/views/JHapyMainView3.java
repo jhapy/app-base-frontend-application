@@ -210,6 +210,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     /*UI.getCurrent().addAfterNavigationListener(event -> {
       debug(loggerPrefix, "Navigator event {0}", event.getLocation() );
     });*/
+
+
+    /*
     History history = UI.getCurrent().getPage().getHistory();
     history.setHistoryStateChangeHandler(
         event -> {
@@ -231,6 +234,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
           debug(loggerPrefix, "Current Tab : " + tabs.getSelectedTab().getLabel());
         });
     getElement().appendChild(unloadObserver.getElement());
+
+     */
   }
 
   @Override
@@ -1036,9 +1041,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
   public boolean displayViewFromParentView(
       View parentView,
-      Object parentParams,
+      String parentParams,
       Class<? extends View> newViewClass,
-      Object newViewParams) {
+      String newViewParams) {
     String loggerPrefix = getLoggerPrefix("displayView");
 
     debug(
@@ -1057,18 +1062,23 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
       ModuleTab currentTab = parentView.getParentTab();
       View view = newViewInstance(newViewClass);
       view.setParentTab(parentView.getParentTab());
-      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
 
       if (newViewParams != null) {
         debug(loggerPrefix, "New View has parameter, set them");
-        view.setParameter(newViewParams);
+        view.setParameter(null, newViewParams);
       }
-
+      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
-      if (route != null) UI.getCurrent().getPage().getHistory().pushState(null, route);
+      if (route != null) {
+        if ( newViewParams == null )
+          route = route.replace(":___url_parameter", "" );
+          else
+          route = route.replace(":___url_parameter", newViewParams );
+        UI.getCurrent().getPage().getHistory().pushState(null, route);
+      }
 
       view.setGoBackListener(
           () -> {
@@ -1206,7 +1216,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
-      if (route != null) UI.getCurrent().getPage().getHistory().pushState(null, route);
+      if (route != null) {
+         route = route.replace(":___url_parameter", "" );
+        UI.getCurrent().getPage().getHistory().pushState(null, route);
+      }
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);

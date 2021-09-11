@@ -24,6 +24,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import org.jhapy.frontend.utils.TextColor;
 import org.jhapy.frontend.utils.UIUtils;
+import org.jhapy.frontend.views.BaseDashboardView;
 import org.jhapy.frontend.views.JHapyMainView3;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +44,7 @@ public class ViewMenu extends View {
   private final List<ModuleSelectedListener> moduleSelectedListeners = new ArrayList<>();
   private final List<Menu> menuList;
   private List<TopMenuItem> topMenuList;
-  private View menuDefaultContent;
+  private BaseDashboardView menuDefaultContent;
 
   public interface CaptionChangedListener {
     void captionChanged(String newCaption);
@@ -196,6 +197,7 @@ public class ViewMenu extends View {
       if (menu.getMenuView() != null) {
         try {
           menuDefaultContent = menu.getMenuView().getDeclaredConstructor().newInstance();
+          menuDefaultContent.setMenuParentId( menu.getParentId());
           menuDefaultContent.setParentView(this);
           content.add(menuDefaultContent);
           setFlexGrow(1, menuDefaultContent);
@@ -247,7 +249,9 @@ public class ViewMenu extends View {
     }
      */
     if (parentId == 0 && JHapyMainView3.get() != null) {
-      View homePage = JHapyMainView3.get().getHomePage2();
+      BaseDashboardView homePage = (BaseDashboardView) JHapyMainView3.get().getHomePage2();
+      homePage.setParentView(this);
+      //homePage.setParentTab(getParentTab());
       content.add(homePage);
     }
   }

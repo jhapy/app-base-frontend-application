@@ -4,6 +4,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.html.IFrame;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -26,7 +28,7 @@ import org.jhapy.frontend.utils.i18n.I18NPageTitle;
  */
 @I18NPageTitle(messageKey = AppConst.TITLE_SWAGGER_ADMIN)
 @RequiresRole(SecurityConst.ROLE_SWAGGER)
-public class SwaggerAdminView extends ViewFrame implements RouterLayout, HasLogger {
+public class SwaggerAdminView extends ViewFrame implements HasUrlParameter<String> {
 
   private IFrame swaggerView;
   private String appName;
@@ -62,8 +64,8 @@ public class SwaggerAdminView extends ViewFrame implements RouterLayout, HasLogg
   }
 
   @Override
-  public void setParameter(Object viewParameters) {
-    super.setParameter(viewParameters);
+  public void setParameter(BeforeEvent event, String viewParameters) {
+    super.setParameter(event, viewParameters);
     if (StringUtils.isNoneBlank((String) viewParameters)) {
       String url =
           ((VaadinServletRequest) VaadinService.getCurrentRequest()).getRequestURL().toString();

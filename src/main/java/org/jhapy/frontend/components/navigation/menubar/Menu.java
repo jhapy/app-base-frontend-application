@@ -19,6 +19,7 @@ package org.jhapy.frontend.components.navigation.menubar;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jhapy.frontend.views.BaseDashboardView;
 
 @Data
 @NoArgsConstructor
@@ -30,7 +31,7 @@ public class Menu {
   private String iconName;
   private Class browser;
   private String badge;
-  private Class<? extends View> menuView = null;
+  private Class<? extends BaseDashboardView> menuView = null;
 
   public Menu(
       long id, long parentId, String menuName, String iconName, Class browser, String badge) {
@@ -44,7 +45,7 @@ public class Menu {
       String iconName,
       Class browser,
       String badge,
-      Class<? extends View> menuView) {
+      Class<? extends BaseDashboardView> menuView) {
     this.id = id;
     this.parentId = parentId;
     this.menuName = menuName;

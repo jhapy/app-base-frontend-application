@@ -134,7 +134,10 @@
             <artifactId>jackson-module-jaxb-annotations</artifactId>
         </dependency>
         <!-- End Spring -->
-
+        <dependency>
+            <groupId>org.threeten</groupId>
+            <artifactId>threeten-extra</artifactId>
+        </dependency>
         <!-- Monitoring dependencies -->
         <dependency>
             <groupId>net.bull.javamelody</groupId>
