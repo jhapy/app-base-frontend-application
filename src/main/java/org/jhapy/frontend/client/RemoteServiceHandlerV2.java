@@ -2,6 +2,7 @@ package org.jhapy.frontend.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+import feign.RetryableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -95,41 +96,49 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
     objectMapper.registerModule(new ProblemModule());
     try {
       if (e instanceof FeignException) {
-        var responseBody =
-            new String(
-                ((FeignException) e)
-                    .responseBody()
-                    .orElseThrow(() -> new Exception("Cannot decode body"))
-                    .array());
-        JHapyProblem problem = objectMapper.readValue(responseBody, JHapyProblem.class);
+        if (e instanceof RetryableException) {
+          ServiceResult result = new ServiceResult();
+          result.setIsSuccess(false);
+          result.setMessage("Module not available");
+          result.setData(defaultResult);
+          return result;
+          } else {
+          var responseBody =
+              new String(
+                  ((FeignException) e)
+                      .responseBody()
+                      .orElseThrow(() -> new Exception("Cannot decode body"))
+                      .array());
+          JHapyProblem problem = objectMapper.readValue(responseBody, JHapyProblem.class);
 
-        ServiceResult result;
-        if (problem.getType().equals(ErrorConstants.SERVICE_EXCEPTION_TYPE)) {
-          var serviceName = problem.getServiceName();
-          var message = problem.getTitle();
-          if (problem.getErrors() != null) {
-            message += " : " + String.join(", ", Arrays.asList(problem.getErrors()));
+          ServiceResult result;
+          if (problem.getType().equals(ErrorConstants.SERVICE_EXCEPTION_TYPE)) {
+            var serviceName = problem.getServiceName();
+            var message = problem.getTitle();
+            if (problem.getErrors() != null) {
+              message += " : " + String.join(", ", Arrays.asList(problem.getErrors()));
+            }
+            result = new ServiceResult<>(false, message, defaultResult);
+            result.setMessageTitle(serviceName);
+          } else {
+            result =
+                new ServiceResult<>(
+                    false,
+                    StringUtils.isNotBlank(problem.getDetail())
+                        ? problem.getDetail()
+                        : problem.getMessage(),
+                    defaultResult);
+            result.setMessageTitle(
+                StringUtils.isNotBlank(problem.getTitle())
+                    ? problem.getTitle()
+                    : problem.getStatus().getReasonPhrase());
           }
-          result = new ServiceResult<>(false, message, defaultResult);
-          result.setMessageTitle(serviceName);
-        } else {
-          result =
-              new ServiceResult<>(
-                  false,
-                  StringUtils.isNotBlank(problem.getDetail())
-                      ? problem.getDetail()
-                      : problem.getMessage(),
-                  defaultResult);
-          result.setMessageTitle(
-              StringUtils.isNotBlank(problem.getTitle())
-                  ? problem.getTitle()
-                  : problem.getStatus().getReasonPhrase());
-        }
 
-        if (problem.getStacktrace() != null) {
-          result.setExceptionString(String.join("\n", Arrays.asList(problem.getStacktrace())));
+          if (problem.getStacktrace() != null) {
+            result.setExceptionString(String.join("\n", Arrays.asList(problem.getStacktrace())));
+          }
+          return result;
         }
-        return result;
       } else {
         return new ServiceResult<>(false, e.getLocalizedMessage(), defaultResult);
       }
