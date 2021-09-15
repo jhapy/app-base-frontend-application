@@ -39,7 +39,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -64,7 +63,6 @@ import org.jhapy.frontend.components.AppCookieConsent;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.navigation.menubar.*;
 import org.jhapy.frontend.components.search.overlay.SearchOverlayButton;
-import org.jhapy.frontend.components.unload.UnloadObserver;
 import org.jhapy.frontend.config.AppProperties;
 import org.jhapy.frontend.security.SecurityUtils;
 import org.jhapy.frontend.utils.*;
@@ -210,7 +208,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     /*UI.getCurrent().addAfterNavigationListener(event -> {
       debug(loggerPrefix, "Navigator event {0}", event.getLocation() );
     });*/
-
 
     /*
     History history = UI.getCurrent().getPage().getHistory();
@@ -804,10 +801,11 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
       mainMenu
           .getSubMenu()
           .addItem(
-              exitButton,
+              new Anchor("/logout", exitButton),
               event -> {
-                UI.getCurrent().getPushConfiguration().setPushMode(PushMode.DISABLED);
-                UI.getCurrent().navigate("logout");
+                UI.getCurrent()
+                    .access(
+                        () -> getUI().get().getPushConfiguration().setPushMode(PushMode.DISABLED));
               });
     } else {
       var loginButton =
@@ -1073,10 +1071,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
       if (route != null) {
-        if ( newViewParams == null )
-          route = route.replace(":___url_parameter", "" );
-          else
-          route = route.replace(":___url_parameter", newViewParams );
+        if (newViewParams == null) route = route.replace(":___url_parameter", "");
+        else route = route.replace(":___url_parameter", newViewParams);
         UI.getCurrent().getPage().getHistory().pushState(null, route);
       }
 
@@ -1217,7 +1213,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
       if (route != null) {
-         route = route.replace(":___url_parameter", "" );
+        route = route.replace(":___url_parameter", "");
         UI.getCurrent().getPage().getHistory().pushState(null, route);
       }
       view.setMenuBackListener(

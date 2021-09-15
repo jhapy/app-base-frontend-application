@@ -185,9 +185,7 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
         .anyRequest()
         .fullyAuthenticated()
         .and()
-        .logout()
-        .logoutSuccessHandler(oidcLogoutSuccessHandler())
-        .and()
+        .logout(logout -> logout.logoutSuccessHandler(oidcLogoutSuccessHandler()))
         .oauth2Login()
         .authorizationEndpoint()
         .authorizationRequestResolver(
