@@ -5,6 +5,8 @@ import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +15,7 @@ import org.jhapy.commons.exception.ErrorConstants;
 import org.jhapy.commons.exception.JHapyProblem;
 import org.jhapy.commons.security.SecurityUtils;
 import org.jhapy.dto.domain.BaseEntity;
+import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
@@ -31,6 +34,14 @@ import org.zalando.problem.ProblemModule;
  * @since 08/05/2021
  */
 public interface RemoteServiceHandlerV2<T extends BaseEntity> {
+
+  @PostMapping(value = "/getAll")
+  @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getAllFallback")
+  ServiceResult<List<T>> getAll(@RequestBody BaseRemoteQuery query);
+
+  default ServiceResult<List<T>> getAllFallback(BaseRemoteQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("getAllFallback"), e, Collections.emptyList());
+  }
 
   @PostMapping(value = "/findAnyMatching")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
