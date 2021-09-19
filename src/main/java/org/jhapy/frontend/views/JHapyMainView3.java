@@ -121,7 +121,7 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 @CssImport("./menubar/window-tab-styles.css")
 @CssImport("./menubar/menu-styles.css")
 public abstract class JHapyMainView3 extends FlexBoxLayout
-    implements PageConfigurator, HasLogger, RouterLayout {
+    implements HasLogger, RouterLayout {
 
   private static final String CLASS_NAME = "root";
   private final ConfirmDialog confirmDialog;
@@ -793,15 +793,19 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
                   getUI().ifPresent(ui -> ui.navigate(JHapyMainView3.get().getUserSettingsView()));
                 }
               });
-      var exitButton =
+      var logoutButton =
           UIUtils.createButton(
               getTranslation("action.global.logout"),
               VaadinIcon.EXIT,
               ButtonVariant.LUMO_TERTIARY_INLINE);
+      var anchor =new Anchor(
+              "/logout",
+              logoutButton);
+      anchor.setTarget(AnchorTarget.TOP);
       mainMenu
           .getSubMenu()
           .addItem(
-              new Anchor("/logout", exitButton),
+                  anchor,
               event -> {
                 UI.getCurrent()
                     .access(
@@ -813,15 +817,16 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               getTranslation("action.global.login"),
               VaadinIcon.USER,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      mainMenu
-          .getSubMenu()
-          .addItem(
-              new Anchor(
-                  appProperties.getAuthorization().getLoginRootUrl()
+      var anchor =new Anchor(
+              appProperties.getAuthorization().getLoginRootUrl()
                       + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
                       + "/"
                       + appProperties.getSecurity().getRealm(),
-                  loginButton));
+              loginButton);
+      anchor.setTarget(AnchorTarget.TOP);
+      mainMenu
+          .getSubMenu()
+          .addItem(anchor);
     }
 
     header.removeAll();
@@ -988,6 +993,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     try {
       ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
       currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, "xxx"));
+      UI.getCurrent().getPage().getHistory().pushState(null, "/");
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);
@@ -1001,7 +1007,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
             views.set(views.indexOf(view), viewMenu);
             viewContainer.add(viewMenu);
-
+            UI.getCurrent().getPage().getHistory().pushState(null, "/");
             Menu parentMenu = null;
 
             for (Menu menu : getMenuList()) {
@@ -1065,7 +1071,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         debug(loggerPrefix, "New View has parameter, set them");
         view.setParameter(null, newViewParams);
       }
-      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
+      if ( currentTab != null ) currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
@@ -1074,6 +1080,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         if (newViewParams == null) route = route.replace(":___url_parameter", "");
         else route = route.replace(":___url_parameter", newViewParams);
         UI.getCurrent().getPage().getHistory().pushState(null, route);
+      } else {
+        UI.getCurrent().getPage().getHistory().pushState(null, "/");
       }
 
       view.setGoBackListener(
@@ -1128,17 +1136,19 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               }
             }
           });
-      var parentMap = currentTab.getParents();
-      if (!parentMap.containsKey(newViewClass)) {
-        View.ViewParent viewParent = new View.ViewParent();
-        viewParent.setParentParameters(parentParams);
-        viewParent.setParentClass(parentView.getClass());
-        debug(
-            loggerPrefix,
-            "Set parent {0} for {1}",
-            parentView.getClass().getSimpleName(),
-            newViewClass.getSimpleName());
-        currentTab.putParent(newViewClass, viewParent);
+      if (currentTab != null) {
+        var parentMap = currentTab.getParents();
+        if (!parentMap.containsKey(newViewClass)) {
+          View.ViewParent viewParent = new View.ViewParent();
+          viewParent.setParentParameters(parentParams);
+          viewParent.setParentClass(parentView.getClass());
+          debug(
+              loggerPrefix,
+              "Set parent {0} for {1}",
+              parentView.getClass().getSimpleName(),
+              newViewClass.getSimpleName());
+          currentTab.putParent(newViewClass, viewParent);
+        }
       }
       if (parentView.getNavigationRootClass() != null)
         view.setNavigationRootClass(parentView.getNavigationRootClass());
@@ -1215,6 +1225,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
       if (route != null) {
         route = route.replace(":___url_parameter", "");
         UI.getCurrent().getPage().getHistory().pushState(null, route);
+      } else {
+        UI.getCurrent().getPage().getHistory().pushState(null, "/");
       }
       view.setMenuBackListener(
           () -> {
@@ -1230,12 +1242,13 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
             views.set(views.indexOf(view), viewMenu);
             viewContainer.add(viewMenu);
-
+            UI.getCurrent().getPage().getHistory().pushState(null, "/");
             Menu parentMenu = null;
 
             for (Menu menu : getMenuList()) {
               if (menu.getId() == menuParentId) {
                 parentMenu = menu;
+                break;
               }
             }
 
@@ -1320,7 +1333,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     appFooterOuter.add(components);
   }
 
-  @Override
+  //@Override
   public void configurePage(InitialPageSettings settings) {
     settings.addMetaTag("apple-mobile-web-app-capable", "yes");
     settings.addMetaTag("apple-mobile-web-app-status-bar-style", "black");

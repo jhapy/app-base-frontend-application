@@ -38,7 +38,6 @@ import java.util.List;
  */
 @AuthorizedFeignClient(
     name = "${jhapy.remote-services.i18n-server.name:null}",
-    url = "${jhapy.remote-services.i18n-server.url:}",
     path = "/api/i18NService")
 @Primary
 public interface I18NService extends RemoteServiceHandler {

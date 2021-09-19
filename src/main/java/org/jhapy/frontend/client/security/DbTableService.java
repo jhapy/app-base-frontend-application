@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Primary;
  */
 @FeignClient(
     name = "${jhapy.remote-services.mgt-server.name:null}",
-    url = "${jhapy.remote-services.mgt-server.url:}",
     path = "api/dbTableService")
 @Primary
 public interface DbTableService extends RemoteServiceHandlerV2<DbTableDTO> {}

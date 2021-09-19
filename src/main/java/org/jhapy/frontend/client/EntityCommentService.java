@@ -35,7 +35,6 @@ import java.util.List;
  */
 @FeignClient(
     name = "${jhapy.remote-services.mgt-server.name:null}",
-    url = "${jhapy.remote-services.mgt-server.url:}",
     path = "/api/entityCommentService")
 @Primary
 public interface EntityCommentService extends RemoteServiceHandlerV2<EntityCommentDTO> {

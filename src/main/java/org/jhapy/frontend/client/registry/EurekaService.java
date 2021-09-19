@@ -37,7 +37,6 @@ import java.util.Map;
  */
 @FeignClient(
     name = "${jhapy.remote-services.registry-server.name:null}",
-    url = "${jhapy.remote-services.registry-server.url:}",
     path = "/api/eureka",
     fallbackFactory = EurekaServiceFallback.class)
 @Primary

@@ -37,7 +37,6 @@ import java.util.List;
  */
 @FeignClient(
     name = "${jhapy.remote-services.authorization-server.name:null}",
-    url = "${jhapy.remote-services.authorization-server.url:}",
     path = "/uaa/securityRole",
     fallbackFactory = SecurityRoleServiceFallback.class)
 @Primary

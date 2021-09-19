@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
  */
 @FeignClient(
     name = "${jhapy.remote-services.resource-server.name:null}",
-    url = "${jhapy.remote-services.resource-server.url:}",
     path = "/api/resourceService")
 @Primary
 public interface ResourceService extends RemoteServiceHandler {

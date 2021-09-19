@@ -139,10 +139,10 @@
             <artifactId>threeten-extra</artifactId>
         </dependency>
         <!-- Monitoring dependencies -->
-        <dependency>
+        <!--dependency>
             <groupId>net.bull.javamelody</groupId>
             <artifactId>javamelody-spring-boot-starter</artifactId>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>biz.paluch.logging</groupId>
             <artifactId>logstash-gelf</artifactId>
@@ -154,10 +154,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
@@ -255,17 +251,6 @@
           </exclusions>
         </dependency-->
         <dependency>
-            <groupId>com.vaadin.componentfactory</groupId>
-            <artifactId>breadcrumb</artifactId>
-            <version>2.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>vaadin-core</artifactId>
-                    <groupId>com.vaadin</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.jhapy.frontend.component</groupId>
             <artifactId>cropper-js</artifactId>
         </dependency>
@@ -282,8 +267,8 @@
             <artifactId>spring-data-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.vaadin.gatanaso</groupId>
-            <artifactId>multiselect-combo-box-flow</artifactId>
+            <groupId>com.vaadin.componentfactory</groupId>
+            <artifactId>multiple-select</artifactId>
         </dependency>
         <dependency>
             <groupId>org.vaadin.olli</groupId>
@@ -304,10 +289,6 @@
         <dependency>
             <groupId>org.jhapy</groupId>
             <artifactId>tree-flow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin.componentfactory</groupId>
-            <artifactId>togglebutton</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.carnet.kasparscherrer</groupId>
@@ -337,10 +318,6 @@
             <groupId>org.claspina</groupId>
             <artifactId>confirm-dialog</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.vaadin.miki</groupId>
-            <artifactId>superfields</artifactId>
-        </dependency>
         <!-- OAuth2 Login -->
         <dependency>
             <groupId>com.github.scribejava</groupId>
@@ -360,7 +337,7 @@
         </dependency>
         <!-- End of Vaadin -->
 
-        <!-- Openfire Smack !-->
+        <!-- Openfire Smack
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-java8-full</artifactId>
@@ -385,9 +362,9 @@
             <groupId>org.igniterealtime.smack</groupId>
             <artifactId>smack-im</artifactId>
         </dependency>
-        <!-- End Of Openfire Smack -->
+        End Of Openfire Smack -->
 
-        <!-- Google -->
+        <!-- Google
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
@@ -396,7 +373,7 @@
             <groupId>com.google.maps</groupId>
             <artifactId>google-maps-services</artifactId>
         </dependency>
-        <!-- End of Google -->
+        End of Google -->
 
         <!-- Utils -->
         <dependency>

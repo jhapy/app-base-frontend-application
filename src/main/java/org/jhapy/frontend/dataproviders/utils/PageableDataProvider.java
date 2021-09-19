@@ -109,7 +109,7 @@ public abstract class PageableDataProvider<T extends Serializable, F>
 
   private <T, F> Collection<Order> createSpringSort(Query<T, F> q) {
     List<QuerySortOrder> sortOrders;
-    if (q.getSortOrders().isEmpty()) {
+    if (q.getSortOrders() == null || q.getSortOrders().isEmpty()) {
       sortOrders = getDefaultSortOrders();
     } else {
       sortOrders = q.getSortOrders();

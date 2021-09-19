@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
  */
 @FeignClient(
     name = "${jhapy.remote-services.authorization-server.name:null}",
-    url = "${jhapy.remote-services.authorization-server.url:}",
     path = "/uaa/securityUser",
     fallbackFactory = SecurityUserServiceFallback.class)
 @Primary

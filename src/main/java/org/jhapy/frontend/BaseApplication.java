@@ -18,10 +18,6 @@
 
 package org.jhapy.frontend;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.*;
-import com.vaadin.flow.spring.SpringServlet;
-import com.vaadin.flow.spring.SpringVaadinServletService;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.config.AppProperties;
 import org.jhapy.commons.utils.HasLogger;
@@ -29,7 +25,7 @@ import org.jhapy.commons.utils.SpringProfileConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
@@ -45,7 +41,7 @@ import java.util.Collection;
  * @version 1.0
  * @since 2019-03-26
  */
-public abstract class BaseApplication implements InitializingBean, HasLogger {
+public abstract class BaseApplication extends SpringBootServletInitializer implements InitializingBean, HasLogger {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseApplication.class);
 
@@ -113,48 +109,6 @@ public abstract class BaseApplication implements InitializingBean, HasLogger {
       logger.error("You have misconfigured your application! It should not run " +
           "with both the 'dev' and 'prod' profiles at the same time.");
     }
-  }
-
-  private SpringServlet buildSpringServlet(ApplicationContext applicationContext) {
-    return new SpringServlet(applicationContext, true) {
-      @Override
-      protected VaadinServletService createServletService(
-          DeploymentConfiguration deploymentConfiguration) throws
-          ServiceException {
-        SpringVaadinServletService service =
-            buildSpringVaadinServletService(this, deploymentConfiguration,
-                applicationContext);
-        service.init();
-        return service;
-      }
-    };
-  }
-
-  private SpringVaadinServletService buildSpringVaadinServletService(SpringServlet servlet,
-      DeploymentConfiguration deploymentConfiguration,
-      ApplicationContext applicationContext) {
-    return new SpringVaadinServletService(servlet, deploymentConfiguration,
-        applicationContext) {
-
-      @Override
-      public void requestStart(VaadinRequest request, VaadinResponse response) {
-        super.requestStart(request, response);
-      }
-
-      @Override
-      public void requestEnd(
-          VaadinRequest request, VaadinResponse response, VaadinSession session) {
-        if (session != null) {
-          try {
-            session.lock();
-            writeToHttpSession(request.getWrappedSession(), session);
-          } finally {
-            session.unlock();
-          }
-        }
-        super.requestEnd(request, response, session);
-      }
-    };
   }
 
   @PostConstruct

@@ -5,6 +5,7 @@ import com.github.appreciated.app.layout.component.appbar.IconButton;
 import com.github.appreciated.ironoverlay.HorizontalOrientation;
 import com.github.appreciated.ironoverlay.IronOverlay;
 import com.github.appreciated.ironoverlay.VerticalOrientation;
+import com.vaadin.componentfactory.MultipleSelect;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -36,7 +37,6 @@ import org.jhapy.frontend.utils.TextColor;
 import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BorderRadius;
 import org.jhapy.frontend.utils.css.Overflow;
-import org.vaadin.gatanaso.MultiselectComboBox;
 
 import java.io.Serial;
 import java.util.List;
@@ -57,7 +57,7 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
   private Function<T, ClickNotifier> dataViewProvider;
   private DefaultSearchDataProvider<T, F> dataProvider;
   private Function<SearchQuery, Query<T, F>> queryProvider;
-  private final MultiselectComboBox<SearchFilter> filter;
+  private final MultipleSelect<SearchFilter> filter;
   private Consumer<T> queryResultListener;
   private boolean closeOnQueryResult = true;
   private final FlexBoxLayout searchResult = new FlexBoxLayout();
@@ -74,8 +74,7 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
         new Button(UIUtils.createIcon(IconSize.M, TextColor.PRIMARY, VaadinIcon.SEARCH));
     searchIcon.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 
-    filter = new MultiselectComboBox<>();
-    filter.setClearButtonVisible(true);
+    filter = new MultipleSelect<>();
     filter.setPlaceholder(getTranslation("element.search.filterPlaceholder"));
     filter.setItemLabelGenerator(SearchFilter::getTitle);
     filter.addValueChangeListener(event -> doSearch(searchField.getValue(), event.getValue()));
@@ -212,7 +211,7 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
 
   public void setTargetComponent(Div content) {}
 
-  public MultiselectComboBox<SearchFilter> getFilter() {
+  public MultipleSelect<SearchFilter> getFilter() {
     return filter;
   }
 

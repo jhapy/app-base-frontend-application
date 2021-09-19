@@ -96,6 +96,9 @@ public class CacheConfiguration implements HasLogger {
       return hazelCastInstance;
     }
     Config config = new Config();
+    MetricsConfig metricsConfig = new MetricsConfig();
+    metricsConfig.setEnabled(false);
+    config.setMetricsConfig(metricsConfig);
     config.setInstanceName(env.getProperty("spring.application.name"));
     config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     if (this.registration == null) {

@@ -1,6 +1,7 @@
 package org.jhapy.frontend.components.search.overlay;
 
 import com.github.appreciated.app.layout.component.appbar.IconButton;
+import com.vaadin.componentfactory.MultipleSelect;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
@@ -11,7 +12,6 @@ import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.frontend.components.search.overlay.SearchOverlayView.SearchFilter;
 import org.jhapy.frontend.dataproviders.DefaultSearchDataProvider;
-import org.vaadin.gatanaso.MultiselectComboBox;
 
 import java.io.Serial;
 import java.util.function.Consumer;
@@ -74,7 +74,7 @@ public class SearchOverlayButton<T extends SearchQueryResult, F extends SearchQu
     this.searchView.setCloseOnQueryResult(closeOnQueryResult);
   }
 
-  public <T> MultiselectComboBox<SearchFilter> getSearchFilter() {
+  public <T> MultipleSelect<SearchFilter> getSearchFilter() {
     return this.searchView.getFilter();
   }
 }

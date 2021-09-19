@@ -37,7 +37,6 @@ import java.util.List;
  */
 @FeignClient(
     name = "${jhapy.remote-services.mgt-server.name:null}",
-    url = "${jhapy.remote-services.mgt-server.url:}",
     path = "/api/clientService")
 @Primary
 public interface ClientService extends RemoteServiceHandlerV2<ClientDTO> {

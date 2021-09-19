@@ -18,6 +18,7 @@
 
 package org.jhapy.frontend.views.admin.security;
 
+import com.vaadin.componentfactory.MultipleSelect;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -46,7 +47,6 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
-import org.vaadin.gatanaso.MultiselectComboBox;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -139,7 +139,7 @@ public class SecurityKeycloakGroupsView
     TextField description = new TextField();
     description.setWidth("100%");
 
-    MultiselectComboBox<SecurityKeycloakRole> rolesField = new MultiselectComboBox<>();
+    MultipleSelect<SecurityKeycloakRole> rolesField = new MultipleSelect<>();
     rolesField.setItemLabelGenerator(
         (ItemLabelGenerator<SecurityKeycloakRole>) SecurityKeycloakRole::getName);
     ServiceResult<List<SecurityKeycloakRole>> allRolesServiceResult =

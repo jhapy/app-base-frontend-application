@@ -37,7 +37,6 @@ import java.util.List;
  */
 @FeignClient(
     name = "${jhapy.remote-services.backend-server.name:null}",
-    url = "${jhapy.remote-services.backend-server.url:}",
     path = "/api/intermediateRegionService",
     fallback = IntermediateRegionServiceFallback.class)
 @Primary

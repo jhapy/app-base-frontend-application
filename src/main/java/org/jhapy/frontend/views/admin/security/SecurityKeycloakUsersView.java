@@ -18,6 +18,7 @@
 
 package org.jhapy.frontend.views.admin.security;
 
+import com.vaadin.componentfactory.MultipleSelect;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.button.Button;
@@ -51,7 +52,6 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
-import org.vaadin.gatanaso.MultiselectComboBox;
 
 import java.util.*;
 
@@ -178,7 +178,7 @@ public class SecurityKeycloakUsersView
     defaultLocaleField.setItemLabelGenerator((ItemLabelGenerator<Locale>) Locale::getDisplayName);
     defaultLocaleField.setWidthFull();
 
-    MultiselectComboBox<SecurityKeycloakRole> rolesField = new MultiselectComboBox<>();
+    MultipleSelect<SecurityKeycloakRole> rolesField = new MultipleSelect<>();
     rolesField.setItemLabelGenerator(
         (ItemLabelGenerator<SecurityKeycloakRole>) SecurityKeycloakRole::getName);
     ServiceResult<List<SecurityKeycloakRole>> allRolesServiceResult =
@@ -188,7 +188,7 @@ public class SecurityKeycloakUsersView
     }
     rolesField.setWidthFull();
 
-    MultiselectComboBox<SecurityKeycloakGroup> groupsField = new MultiselectComboBox<>();
+    MultipleSelect<SecurityKeycloakGroup> groupsField = new MultipleSelect<>();
     groupsField.setItemLabelGenerator(
         (ItemLabelGenerator<SecurityKeycloakGroup>) SecurityKeycloakGroup::getName);
     ServiceResult<List<SecurityKeycloakGroup>> allGroupsServiceResult =
