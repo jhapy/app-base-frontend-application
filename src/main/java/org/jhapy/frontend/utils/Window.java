@@ -29,9 +29,6 @@ import java.util.Optional;
 @CssImport("./menubar/window-styles.css")
 public class Window extends Div {
 
-  private String moduleName = "";
-  private long id = 0;
-
   private final Div windowBox = new Div();
   private final Div windowTitleContainer = new Div();
   private final Span windowTitle = new Span();
@@ -40,9 +37,9 @@ public class Window extends Div {
   private final IonIcon closeButtonIcon = new IonIcon("ion-close-round");
   private final Div contentContainer = new Div();
   private final Div windowFooter = new Div();
-
   private final List<Component> components = new ArrayList<>();
-
+  private String moduleName = "";
+  private long id = 0;
   private String title;
 
   public Window() {
@@ -110,25 +107,25 @@ public class Window extends Div {
   }
 
   @Override
+  public String getWidth() {
+    return windowBox.getWidth();
+  }
+
+  @Override
   public void setWidth(String width) {
 
     windowBox.setWidth(width);
   }
 
   @Override
-  public String getWidth() {
-    return windowBox.getWidth();
+  public String getHeight() {
+    return windowBox.getHeight();
   }
 
   @Override
   public void setHeight(String height) {
 
     windowBox.setHeight(height);
-  }
-
-  @Override
-  public String getHeight() {
-    return windowBox.getHeight();
   }
 
   @Override

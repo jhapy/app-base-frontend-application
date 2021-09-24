@@ -27,7 +27,7 @@ import org.jhapy.frontend.layout.ViewFrame;
  */
 @CssImport("./styles/dashboard.css")
 public abstract class BaseDashboardView extends ViewFrame {
-protected Long menuParentId;
+  protected Long menuParentId;
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {

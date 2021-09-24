@@ -46,12 +46,12 @@ public abstract class DefaultCustomListFieldStrId<C extends BaseEntityStrId> ext
     implements HasValue<CustomListFieldStrIdValueChangeEvent<C>, List<C>>, HasLogger, Serializable {
 
   protected final String i18nPrefix;
+  private final List<ValueChangeListener<? super CustomListFieldStrIdValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
   protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackendStrId<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldStrIdValueChangeEvent<C>>>
-      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldStrId(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;

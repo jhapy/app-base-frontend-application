@@ -45,6 +45,8 @@ public interface Notification extends Comparable<Notification> {
 
   boolean isSticky();
 
+  void setSticky(boolean sticky);
+
   boolean isRead();
 
   void setRead(boolean isRead);
@@ -52,6 +54,4 @@ public interface Notification extends Comparable<Notification> {
   LocalDateTime getCreationTime();
 
   void setCreationTime(LocalDateTime creationTime);
-
-  void setSticky(boolean sticky);
 }

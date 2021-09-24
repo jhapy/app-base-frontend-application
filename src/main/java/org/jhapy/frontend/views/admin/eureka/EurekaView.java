@@ -44,9 +44,10 @@ import org.springframework.core.env.Environment;
 public class EurekaView extends ViewFrame implements HasLogger {
 
   private static final String I18N_PREFIX = "eureka.";
-  private EurekaInfo eurekaInfo;
   private final Environment env;
-
+  private final AuthorizationHeaderUtil authorizationHeaderUtil;
+  protected UI ui;
+  private EurekaInfo eurekaInfo;
   private ActuatorBaseView homeTabContent;
   private ActuatorBaseView eurekaInstancesTabContent;
   private ActuatorBaseView eurekaHistoryTabContent;
@@ -56,7 +57,6 @@ public class EurekaView extends ViewFrame implements HasLogger {
   private ActuatorBaseView meticsTabContent;
   private ActuatorBaseView healthTabContent;
   private ActuatorBaseView apisTabContent;
-
   private Tab home;
   private Tab eurekaHistory;
   private Tab instances;
@@ -66,10 +66,6 @@ public class EurekaView extends ViewFrame implements HasLogger {
   private Tab loggers;
   private Tab logs;
   private Tab apis;
-
-  protected UI ui;
-
-  private final AuthorizationHeaderUtil authorizationHeaderUtil;
 
   public EurekaView(Environment env, AuthorizationHeaderUtil authorizationHeaderUtil) {
     this.env = env;

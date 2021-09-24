@@ -46,10 +46,8 @@ public class EntityPresenter<T extends BaseEntity, V extends EntityView<T>> impl
   private final CrudService<T> crudService;
 
   private final CurrentUser currentUser;
-
-  private V view;
-
   private final EntityPresenterState<T> state = new EntityPresenterState<>();
+  private V view;
 
   public EntityPresenter(CrudService<T> crudService, CurrentUser currentUser) {
     this.crudService = crudService;

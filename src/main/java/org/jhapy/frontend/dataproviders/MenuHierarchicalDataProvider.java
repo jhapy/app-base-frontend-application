@@ -22,16 +22,16 @@ public abstract class MenuHierarchicalDataProvider
 
   public MenuHierarchicalDataProvider() {}
 
+  public MenuHierarchicalDataProvider(MenuData rootMenu) {
+    this.rootMenu = rootMenu;
+  }
+
   public JHapyMainView3 getMainView() {
     return mainView;
   }
 
   public void setMainView(JHapyMainView3 mainView) {
     this.mainView = mainView;
-  }
-
-  public MenuHierarchicalDataProvider(MenuData rootMenu) {
-    this.rootMenu = rootMenu;
   }
 
   public MenuData getRootMenu() {

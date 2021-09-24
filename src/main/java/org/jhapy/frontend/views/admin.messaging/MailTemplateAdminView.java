@@ -31,7 +31,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
@@ -65,9 +64,9 @@ import org.jhapy.frontend.views.JHapyMainView3;
 public class MailTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
 
   private final Binder<MailTemplate> binder = new Binder<>();
+  private final Registration contextIconRegistration = null;
   private MailTemplate mailTemplate;
   private DefaultDataProvider<MailTemplate, DefaultFilter> securityUserDataProvider;
-  private final Registration contextIconRegistration = null;
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
@@ -222,12 +221,12 @@ public class MailTemplateAdminView extends ViewFrame implements HasUrlParameter<
   @Override
   public void setParameter(BeforeEvent event, String viewParameters) {
     super.setParameter(event, viewParameters);
-    if (StringUtils.isBlank((String) viewParameters) || "-1".equals(viewParameters)) {
+    if (StringUtils.isBlank(viewParameters) || "-1".equals(viewParameters)) {
       mailTemplate = new MailTemplate();
     } else {
       mailTemplate =
           NotificationServices.getMailTemplateService()
-              .getById(new GetByStrIdQuery((String) viewParameters))
+              .getById(new GetByStrIdQuery(viewParameters))
               .getData();
       if (mailTemplate == null) {
         mailTemplate = new MailTemplate();

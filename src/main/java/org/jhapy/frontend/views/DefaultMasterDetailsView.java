@@ -88,21 +88,21 @@ public abstract class DefaultMasterDetailsView<
     extends SplitViewFrame implements BeforeLeaveObserver {
 
   protected final String I18N_PREFIX;
-  protected Grid<T> grid;
   protected final DefaultDataProvider<T, F> dataProvider;
+  protected final MyI18NProvider myI18NProvider;
+  private final Class<T> entityType;
+  private final Function<T, ServiceResult<T>> saveHandler;
+  private final Function<T, ServiceResult<Void>> deleteHandler;
+  protected Grid<T> grid;
   protected DetailsDrawer detailsDrawer;
   protected DetailsDrawerHeader detailsDrawerHeader;
   protected DetailsDrawerFooter detailsDrawerFooter;
   protected Binder<T> binder;
   protected T currentEditing;
-  private final Class<T> entityType;
-  private final Function<T, ServiceResult<T>> saveHandler;
-  private final Function<T, ServiceResult<Void>> deleteHandler;
+  protected ModuleToolbar moduleToolbar;
   private Tabs tabs;
   private Boolean initialFetch = Boolean.TRUE;
   private FlexBoxLayout content;
-  protected final MyI18NProvider myI18NProvider;
-  protected ModuleToolbar moduleToolbar;
 
   public DefaultMasterDetailsView(
       String I18N_PREFIX,
@@ -208,8 +208,8 @@ public abstract class DefaultMasterDetailsView<
       moduleToolbar.setAddButtonVisible(true);
       moduleToolbar.addNewRecordListener(this::showDetails);
     }
-
-    moduleToolbar.addRefreshListener(dataProvider::refreshAll);
+    if (dataProvider == null) moduleToolbar.addRefreshListener(grid.getLazyDataView()::refreshAll);
+    else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     setViewHeader(moduleToolbar);
   }
@@ -283,10 +283,15 @@ public abstract class DefaultMasterDetailsView<
     content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
     Label nbRows = UIUtils.createH4Label(getTranslation("element.global.nbRows", 0));
-    dataProvider.setPageObserver(
-        executionPage ->
-            nbRows.setText(
-                getTranslation("element.global.nbRows", executionPage.getTotalElements())));
+    if (dataProvider == null)
+      grid.getLazyDataView()
+          .addItemCountChangeListener(
+              event ->
+                  nbRows.setText(getTranslation("element.global.nbRows", event.getItemCount())));
+    else
+      dataProvider.setPageObserver(
+          tPage ->
+              nbRows.setText(getTranslation("element.global.nbRows", tPage.getTotalElements())));
 
     FooterRow footerRow = grid.appendFooterRow();
     footerRow.getCell(grid.getColumns().get(0)).setComponent(nbRows);

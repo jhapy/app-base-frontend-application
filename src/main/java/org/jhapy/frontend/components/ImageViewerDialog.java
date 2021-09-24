@@ -32,9 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ImageViewerDialog extends AbstractDialog implements HasLogger {
 
-  private FlexBoxLayout contentLayout;
   private final StoredFile storedFile;
   private final Boolean isReadOnly;
+  private FlexBoxLayout contentLayout;
   private CropperJs cropperJs;
 
   public ImageViewerDialog(StoredFile storedFile, boolean isReadOnly) {

@@ -36,59 +36,29 @@ import java.util.List;
 @CssImport("./menubar/module-toolbar.css")
 public class ModuleToolbar extends FlexLayout {
   private static final String CLASS_NAME = "module-toolbar";
-
-  private String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
-  private boolean filterButtonVisible = true;
-  private boolean searchTextFieldVisible = true;
-  private boolean refreshButtonVisible = true;
-  private boolean showInactiveButtonVisible = true;
-  private boolean addButtonVisible = true;
-
   private final Div menuBack = new Div();
   private final ModuleSearchTextField searchTextField = new ModuleSearchTextField();
   private final Div menuRefresh = new Div();
   private final Div menuAddRecord = new Div();
   private final Div menuFilter = new Div();
   private final Div otherButtons = new Div();
-
   private final String moduleName;
   private final View parentLayout;
-
   private final List<GoBackListener> goBackListeners = new ArrayList<>();
   private final List<FilterClickListener> filterClickListeners = new ArrayList<>();
   private final List<SearchTextChangedListener> searchTextChangedListeners = new ArrayList<>();
   private final List<RefreshListener> refreshListeners = new ArrayList<>();
   private final List<ShowInactiveChangedListener> showInactiveListeners = new ArrayList<>();
   private final List<NewRecordListener> newRecordListeners = new ArrayList<>();
-
   private final Label lblYear;
   private final Icon filterIcon;
-
   private final Checkbox activeFilter;
-
-  public interface GoBackListener {
-    void goBack();
-  }
-
-  public interface SearchTextChangedListener {
-    void searchTextChanged(String searchText);
-  }
-
-  public interface ShowInactiveChangedListener {
-    void showInactiveChanged(Boolean showInactive);
-  }
-
-  public interface FilterClickListener {
-    void filterButtonClicked();
-  }
-
-  public interface RefreshListener {
-    void refresh();
-  }
-
-  public interface NewRecordListener {
-    void newRecord();
-  }
+  private String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+  private boolean filterButtonVisible = true;
+  private boolean searchTextFieldVisible = true;
+  private boolean refreshButtonVisible = true;
+  private boolean showInactiveButtonVisible = true;
+  private boolean addButtonVisible = true;
 
   public ModuleToolbar(String moduleName, View parentLayout) {
     this.moduleName = moduleName;
@@ -307,5 +277,29 @@ public class ModuleToolbar extends FlexLayout {
 
   public Boolean getActiveFilterValue() {
     return activeFilter.getValue();
+  }
+
+  public interface GoBackListener {
+    void goBack();
+  }
+
+  public interface SearchTextChangedListener {
+    void searchTextChanged(String searchText);
+  }
+
+  public interface ShowInactiveChangedListener {
+    void showInactiveChanged(Boolean showInactive);
+  }
+
+  public interface FilterClickListener {
+    void filterButtonClicked();
+  }
+
+  public interface RefreshListener {
+    void refresh();
+  }
+
+  public interface NewRecordListener {
+    void newRecord();
   }
 }

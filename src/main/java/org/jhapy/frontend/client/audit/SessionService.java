@@ -36,9 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * @version 1.0
  * @since 2019-04-16
  */
-@FeignClient(
-    name = "${jhapy.remote-services.audit-server.name:null}",
-    path = "/api/sessionService")
+@FeignClient(name = "${jhapy.remote-services.audit-server.name:null}", path = "/api/sessionService")
 @Primary
 public interface SessionService extends RemoteServiceHandler {
 

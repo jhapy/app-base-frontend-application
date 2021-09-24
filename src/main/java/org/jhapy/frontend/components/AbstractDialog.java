@@ -25,18 +25,14 @@ public abstract class AbstractDialog extends Dialog {
 
   public final String DOCK = "dock";
   public final String FULLSCREEN = "fullscreen";
-
+  protected Button saveButton = null;
   private boolean isDocked = false;
   private boolean isFullScreen = false;
-
   private Header header;
   private Button max;
-
   private VerticalLayout content;
   private Footer footer;
   private H2 titleField;
-
-  protected Button saveButton = null;
 
   public AbstractDialog() {}
 

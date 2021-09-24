@@ -38,20 +38,13 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   public static final String ERROR_MSG_NO_LOCALE =
       "no locale provided and i18nProvider #getProvidedLocales()# list is empty !! ";
   public static final String ERROR_MSG_NO_ANNOTATION = "no annotation found at class ";
-
+  protected String currentViewParams;
+  protected ModuleTab parentTab;
   private ModuleToolbar.GoBackListener goBackListener;
   private ModuleToolbar.GoBackListener menuBackListener;
   private String title = "-- Unknown --";
-  protected String currentViewParams;
   private Class<? extends View> navigationRootClass;
   private View parentView;
-  protected ModuleTab parentTab;
-
-  @Data
-  public static class ViewParent {
-    private Class<? extends View> parentClass;
-    private String parentParameters;
-  }
 
   public View() {
     addClassName("module-container");
@@ -61,7 +54,7 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     if (parentTab != null) {
-      parentTab.setCaption( getTitle() );
+      parentTab.setCaption(getTitle());
       addComponentAsFirst(parentTab.getBreadcrumb());
     }
   }
@@ -82,20 +75,20 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
     this.parentView = parentView;
   }
 
-  public void setGoBackListener(ModuleToolbar.GoBackListener listener) {
-    goBackListener = listener;
-  }
-
   public ModuleToolbar.GoBackListener getGoBackListener() {
     return goBackListener;
   }
 
-  public void setMenuBackListener(ModuleToolbar.GoBackListener listener) {
-    menuBackListener = listener;
+  public void setGoBackListener(ModuleToolbar.GoBackListener listener) {
+    goBackListener = listener;
   }
 
   public ModuleToolbar.GoBackListener getMenuBackListener() {
     return menuBackListener;
+  }
+
+  public void setMenuBackListener(ModuleToolbar.GoBackListener listener) {
+    menuBackListener = listener;
   }
 
   public Class<? extends View> getNavigationRootClass() {
@@ -161,5 +154,11 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
                       failed -> info(loggerPrefix, failed));
             },
             failed -> info(loggerPrefix, failed));
+  }
+
+  @Data
+  public static class ViewParent {
+    private Class<? extends View> parentClass;
+    private String parentParameters;
   }
 }

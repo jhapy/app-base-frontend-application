@@ -6,13 +6,11 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.layout.ViewFrame;
@@ -30,10 +28,10 @@ import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 @RequiresRole(SecurityConst.ROLE_SWAGGER)
 public class SwaggerAdminView extends ViewFrame implements HasUrlParameter<String> {
 
+  private final Registration contextIconRegistration = null;
   private IFrame swaggerView;
   private String appName;
   private String swaggerUrl;
-  private final Registration contextIconRegistration = null;
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
@@ -66,12 +64,12 @@ public class SwaggerAdminView extends ViewFrame implements HasUrlParameter<Strin
   @Override
   public void setParameter(BeforeEvent event, String viewParameters) {
     super.setParameter(event, viewParameters);
-    if (StringUtils.isNoneBlank((String) viewParameters)) {
+    if (StringUtils.isNoneBlank(viewParameters)) {
       String url =
           ((VaadinServletRequest) VaadinService.getCurrentRequest()).getRequestURL().toString();
 
       swaggerUrl = url + "swagger/" + viewParameters + "/swagger-ui.html";
-      this.appName = (String) viewParameters;
+      this.appName = viewParameters;
     }
   }
 }

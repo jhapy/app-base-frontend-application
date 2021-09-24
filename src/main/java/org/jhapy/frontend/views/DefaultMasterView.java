@@ -51,13 +51,22 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
     extends ViewFrame {
 
   protected final String I18N_PREFIX;
+  protected final Class entityViewClass;
+  protected final MyI18NProvider myI18NProvider;
+  private final Class<T> entityType;
   protected Grid<T> grid;
   protected DefaultDataProvider<T, F> dataProvider;
   protected DefaultSliceDataProvider<T, F> sliceProvider;
-  private final Class<T> entityType;
-  protected final Class entityViewClass;
-  protected final MyI18NProvider myI18NProvider;
   protected ModuleToolbar moduleToolbar;
+
+  public DefaultMasterView(
+      String I18N_PREFIX,
+      Class<T> entityType,
+      Class entityViewClass,
+      MyI18NProvider myI18NProvider) {
+    this(
+        I18N_PREFIX, entityType, (DefaultDataProvider<T, F>) null, entityViewClass, myI18NProvider);
+  }
 
   public DefaultMasterView(
       String I18N_PREFIX,
@@ -141,8 +150,8 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
             }
           });
     }
-
-    moduleToolbar.addRefreshListener(dataProvider::refreshAll);
+    if (dataProvider == null) moduleToolbar.addRefreshListener(grid.getLazyDataView()::refreshAll);
+    else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     setViewHeader(moduleToolbar);
   }
@@ -166,10 +175,15 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
     content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
     Label nbRows = UIUtils.createH4Label(getTranslation("element.global.nbRows", 0));
-    dataProvider.setPageObserver(
-        executionPage ->
-            nbRows.setText(
-                getTranslation("element.global.nbRows", executionPage.getTotalElements())));
+    if (dataProvider == null)
+      grid.getLazyDataView()
+          .addItemCountChangeListener(
+              event ->
+                  nbRows.setText(getTranslation("element.global.nbRows", event.getItemCount())));
+    else
+      dataProvider.setPageObserver(
+          tPage ->
+              nbRows.setText(getTranslation("element.global.nbRows", tPage.getTotalElements())));
 
     FooterRow footerRow = grid.appendFooterRow();
     footerRow.getCell(grid.getColumns().get(0)).setComponent(nbRows);
@@ -188,7 +202,8 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
   }
 
   protected void filter(String filter, Boolean showInactive) {
-    dataProvider.setFilter(
-        (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
+    if (dataProvider != null)
+      dataProvider.setFilter(
+          (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
   }
 }

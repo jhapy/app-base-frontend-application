@@ -34,14 +34,11 @@ import org.jhapy.frontend.utils.css.WhiteSpace;
 public class ListItem extends FlexBoxLayout {
 
   private final String CLASS_NAME = "list-item";
-
-  private Div prefix;
-  private Div suffix;
-
   private final FlexBoxLayout content;
-
   private final Label primary;
   private final Label secondary;
+  private Div prefix;
+  private Div suffix;
 
   public ListItem(String primary, String secondary) {
     addClassName(CLASS_NAME);

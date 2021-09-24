@@ -98,8 +98,10 @@ public abstract class PageableDataProvider<T extends Serializable, F>
   protected abstract Page<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable);
 
   private Pageable getPageable(Query<T, F> q) {
+
     Pair<Integer, Integer> pageSizeAndNumber =
         limitAndOffsetToPageSizeAndNumber(q.getOffset(), q.getLimit());
+
     return new Pageable(
         pageSizeAndNumber.getSecond(),
         pageSizeAndNumber.getFirst(),

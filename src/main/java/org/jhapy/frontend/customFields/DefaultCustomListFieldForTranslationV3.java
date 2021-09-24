@@ -46,13 +46,13 @@ public abstract class DefaultCustomListFieldForTranslationV3<C extends EntityTra
         Serializable {
 
   protected final String i18nPrefix;
+  private final List<
+          ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV3<C>>>
+      changeListeners = new ArrayList<>();
   // protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackendForTranslationV2<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<
-          ValueChangeListener<? super CustomListFieldValueChangeEventForTranslationV3<C>>>
-      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldForTranslationV3(
       Class<C> beanType, CrudEditor<C> editor, String i18nPrefix) {

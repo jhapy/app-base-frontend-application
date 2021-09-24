@@ -50,12 +50,10 @@ import java.util.stream.Stream;
 public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implements HasLogger {
 
   private static final String TMP_FILE_NAME = "tmp";
-
-  private File file;
   private final DefaultDataProvider<T, F> dataProvider;
   private final Grid<T> grid;
   private final Class<T> entityType;
-
+  private File file;
   private PropertySet<T> propertySet;
 
   public ExcelExporter(Grid<T> grid, DefaultDataProvider<T, F> dataProvider, Class<T> entityType) {

@@ -46,13 +46,13 @@ public abstract class DefaultCustomListFieldForEmbeddedEntity<C extends BaseEmbe
         Serializable {
 
   protected final String i18nPrefix;
+  private final List<
+          ValueChangeListener<? super CustomListFieldForEmbeddedEntityValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
   protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackendForEmbeddedEntity<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<
-          ValueChangeListener<? super CustomListFieldForEmbeddedEntityValueChangeEvent<C>>>
-      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldForEmbeddedEntity(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;

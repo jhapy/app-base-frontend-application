@@ -35,12 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @WebEndpoint(id = "jhametrics")
 public class JHapyMetricsEndpoint {
 
-  private final MeterRegistry meterRegistry;
-
-  private final Logger logger = LoggerFactory.getLogger(JHapyMetricsEndpoint.class);
-
   /** Constant <code>MISSING_NAME_TAG_MESSAGE="Missing name tag for metric {}"</code> */
   public static final String MISSING_NAME_TAG_MESSAGE = "Missing name tag for metric {}";
+  private final MeterRegistry meterRegistry;
+  private final Logger logger = LoggerFactory.getLogger(JHapyMetricsEndpoint.class);
 
   /**
    * Constructor for JHapyMetricsEndpoint.

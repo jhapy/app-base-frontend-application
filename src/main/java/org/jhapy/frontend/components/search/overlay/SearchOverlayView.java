@@ -53,14 +53,13 @@ public class SearchOverlayView<T extends SearchQueryResult, F extends SearchQuer
   private final TextField searchField = new TextField();
   private final IconButton closeButton = new IconButton(VaadinIcon.ARROW_LEFT.create());
   private final VerticalLayout results = new VerticalLayout();
-
+  private final MultipleSelect<SearchFilter> filter;
+  private final FlexBoxLayout searchResult = new FlexBoxLayout();
   private Function<T, ClickNotifier> dataViewProvider;
   private DefaultSearchDataProvider<T, F> dataProvider;
   private Function<SearchQuery, Query<T, F>> queryProvider;
-  private final MultipleSelect<SearchFilter> filter;
   private Consumer<T> queryResultListener;
   private boolean closeOnQueryResult = true;
-  private final FlexBoxLayout searchResult = new FlexBoxLayout();
 
   public SearchOverlayView() {
     getElement().getStyle().set("width", "100%");

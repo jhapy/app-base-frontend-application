@@ -120,28 +120,26 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 @CssImport("./menubar/main-ui-styles.css")
 @CssImport("./menubar/window-tab-styles.css")
 @CssImport("./menubar/menu-styles.css")
-public abstract class JHapyMainView3 extends FlexBoxLayout
-    implements HasLogger, RouterLayout {
+public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger, RouterLayout {
 
   private static final String CLASS_NAME = "root";
   private final ConfirmDialog confirmDialog;
+  private final HazelcastInstance hazelcastInstance;
+  private final List<AttributeContextListener> contextListeners = new ArrayList<>();
+  private final MyI18NProvider myI18NProvider;
+  private final Div header = new Div();
+  private final Tabs tabs = new Tabs();
+  private final ModuleTabAdd newTabButton = new ModuleTabAdd();
+  private final List<ModuleTab> tabList = new ArrayList<>();
+  private final List<View> views = new ArrayList<>();
   protected FlexBoxLayout viewContainer;
+  protected AppProperties appProperties;
   private Div appHeaderOuter;
   private FlexBoxLayout content;
   private Div appHeaderInner;
   private Div appFooterInner;
   private Environment environment;
   private Div appFooterOuter;
-  protected AppProperties appProperties;
-  private final HazelcastInstance hazelcastInstance;
-  private final List<AttributeContextListener> contextListeners = new ArrayList<>();
-  private final MyI18NProvider myI18NProvider;
-  private final Div header = new Div();
-
-  private final Tabs tabs = new Tabs();
-  private final ModuleTabAdd newTabButton = new ModuleTabAdd();
-  private final List<ModuleTab> tabList = new ArrayList<>();
-  private final List<View> views = new ArrayList<>();
   private List<Menu> menuList;
   private List<TopMenuItem> topMenuItemList;
 
@@ -235,6 +233,28 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
      */
   }
 
+  public static JHapyMainView3 get() {
+    return (JHapyMainView3)
+        UI.getCurrent()
+            .getChildren()
+            .filter(component -> JHapyMainView3.class.isAssignableFrom(component.getClass()))
+            .findFirst()
+            .orElse(null);
+  }
+
+  public static void displayErrorMessageStatic(ServiceResult errorResult) {
+    var loggerPrefix = HasLoggerStatic.getLoggerPrefix("displayErrorMessageStatic");
+    JHapyMainView3 current = get();
+    if (current != null) {
+      current.displayErrorMessage(errorResult);
+    } else {
+      HasLoggerStatic.error(
+          JHapyMainView3.class,
+          loggerPrefix,
+          "MainView is null, cannot display message : " + errorResult.getMessage());
+    }
+  }
+
   @Override
   public void showRouterLayoutContent(HasElement content) {
     String loggerPrefix = getLoggerPrefix("showRouterLayoutContent");
@@ -263,15 +283,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
   protected ConcurrentMap<String, SessionInfo> retrieveMap() {
     return hazelcastInstance.getMap("userSessions");
-  }
-
-  public static JHapyMainView3 get() {
-    return (JHapyMainView3)
-        UI.getCurrent()
-            .getChildren()
-            .filter(component -> JHapyMainView3.class.isAssignableFrom(component.getClass()))
-            .findFirst()
-            .orElse(null);
   }
 
   public SearchOverlayButton<? extends SearchQueryResult, ? extends SearchQuery> getSearchButton() {
@@ -798,14 +809,12 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               getTranslation("action.global.logout"),
               VaadinIcon.EXIT,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      var anchor =new Anchor(
-              "/logout",
-              logoutButton);
+      var anchor = new Anchor("/logout", logoutButton);
       anchor.setTarget(AnchorTarget.TOP);
       mainMenu
           .getSubMenu()
           .addItem(
-                  anchor,
+              anchor,
               event -> {
                 UI.getCurrent()
                     .access(
@@ -817,16 +826,15 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
               getTranslation("action.global.login"),
               VaadinIcon.USER,
               ButtonVariant.LUMO_TERTIARY_INLINE);
-      var anchor =new Anchor(
+      var anchor =
+          new Anchor(
               appProperties.getAuthorization().getLoginRootUrl()
-                      + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
-                      + "/"
-                      + appProperties.getSecurity().getRealm(),
+                  + DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+                  + "/"
+                  + appProperties.getSecurity().getRealm(),
               loginButton);
       anchor.setTarget(AnchorTarget.TOP);
-      mainMenu
-          .getSubMenu()
-          .addItem(anchor);
+      mainMenu.getSubMenu().addItem(anchor);
     }
 
     header.removeAll();
@@ -1071,7 +1079,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
         debug(loggerPrefix, "New View has parameter, set them");
         view.setParameter(null, newViewParams);
       }
-      if ( currentTab != null ) currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
+      if (currentTab != null)
+        currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
@@ -1333,7 +1342,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
     appFooterOuter.add(components);
   }
 
-  //@Override
+  // @Override
   public void configurePage(InitialPageSettings settings) {
     settings.addMetaTag("apple-mobile-web-app-capable", "yes");
     settings.addMetaTag("apple-mobile-web-app-status-bar-style", "black");
@@ -1397,19 +1406,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout
 
   protected boolean isProductionMode() {
     return "true".equals(System.getProperty("productionMode"));
-  }
-
-  public static void displayErrorMessageStatic(ServiceResult errorResult) {
-    var loggerPrefix = HasLoggerStatic.getLoggerPrefix("displayErrorMessageStatic");
-    JHapyMainView3 current = get();
-    if (current != null) {
-      current.displayErrorMessage(errorResult);
-    } else {
-      HasLoggerStatic.error(
-          JHapyMainView3.class,
-          loggerPrefix,
-          "MainView is null, cannot display message : " + errorResult.getMessage());
-    }
   }
 
   public void displayErrorMessage(ServiceResult errorResult) {

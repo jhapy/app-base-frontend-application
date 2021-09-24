@@ -46,14 +46,11 @@ import javax.annotation.PreDestroy;
 @EnableCaching
 public class CacheConfiguration implements HasLogger {
 
+  private final Environment env;
+  private final ServerProperties serverProperties;
+  private final DiscoveryClient discoveryClient;
   private GitProperties gitProperties;
   private BuildProperties buildProperties;
-  private final Environment env;
-
-  private final ServerProperties serverProperties;
-
-  private final DiscoveryClient discoveryClient;
-
   private Registration registration;
 
   public CacheConfiguration(

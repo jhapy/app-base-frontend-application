@@ -102,7 +102,7 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
           result.setMessage("Module not available");
           result.setData(defaultResult);
           return result;
-          } else {
+        } else {
           var responseBody =
               new String(
                   ((FeignException) e)

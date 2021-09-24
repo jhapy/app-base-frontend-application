@@ -6,24 +6,26 @@ import com.vaadin.flow.component.html.Div;
 import org.jhapy.frontend.components.navigation.menubar.View;
 
 public abstract class Dashlet extends Div {
-    public Dashlet(View parentView) {
-        this.parentView = parentView;
-    }
+  protected View parentView;
 
-    protected View parentView;
-    protected abstract Component[] getComponents();
+  public Dashlet(View parentView) {
+    this.parentView = parentView;
+  }
 
-    protected abstract String getDashletClassName();
+  protected abstract Component[] getComponents();
 
-    protected abstract String[] getClasses();
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        addClassName(getDashletClassName());
+  protected abstract String getDashletClassName();
 
-        Div card = new Div();
-        card.addClassNames(getClasses());
-        card.add(getComponents());
+  protected abstract String[] getClasses();
 
-        add(card);
-    }
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    addClassName(getDashletClassName());
+
+    Div card = new Div();
+    card.addClassNames(getClasses());
+    card.add(getComponents());
+
+    add(card);
+  }
 }

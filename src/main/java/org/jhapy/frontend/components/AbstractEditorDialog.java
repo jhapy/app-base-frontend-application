@@ -61,10 +61,10 @@ public abstract class AbstractEditorDialog<T extends Serializable> extends Dialo
   private final String itemType;
   private final BiConsumer<T, Operation> itemSaver;
   private final Consumer<T> itemDeleter;
+  private final Binder<T> binder = new Binder<>();
   private Registration registrationForSave;
   private Registration saveShortcutRegistration;
   private Registration deleteShortcutRegistration;
-  private final Binder<T> binder = new Binder<>();
   private T currentItem;
   private boolean enableShortCuts = true;
 

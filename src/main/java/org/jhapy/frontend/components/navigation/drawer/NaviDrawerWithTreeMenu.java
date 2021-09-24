@@ -53,19 +53,17 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
   private static final String CLASS_NAME = "navi-drawer";
   private static final String RAIL = "rail";
   private static final String OPEN = "open";
-
+  private final MenuHierarchicalDataProvider dataProvider;
+  private final Div main = new Div();
   private Div scrim;
-
   private Div mainContent;
   private TextField search;
   private Div scrollableArea;
-
   private Button railButton;
   private Tree<MenuEntry> menu;
   private MenuData menuData;
-  private final MenuHierarchicalDataProvider dataProvider;
   private Dragger dragger;
-  private final Div main = new Div();
+  private MenuEntry lastMenuEntry = null;
 
   public NaviDrawerWithTreeMenu(
       MenuHierarchicalDataProvider menuDataProvider,
@@ -180,8 +178,6 @@ public class NaviDrawerWithTreeMenu extends HorizontalLayout
   public void addMenuEntry(MenuEntry menuEntry) {
     menuData.addMenuEntry(menuEntry);
   }
-
-  private MenuEntry lastMenuEntry = null;
 
   public MenuEntry getLastMenuEntry() {
     return lastMenuEntry;

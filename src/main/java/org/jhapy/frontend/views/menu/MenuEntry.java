@@ -16,10 +16,6 @@ import java.util.List;
 @Data
 public class MenuEntry implements Serializable, HasLogger {
 
-  public MenuEntry(String id) {
-    this.id = id;
-  }
-
   private String id;
   private VaadinIcon vaadinIcon;
   private String title;
@@ -31,6 +27,9 @@ public class MenuEntry implements Serializable, HasLogger {
   private Boolean canCreateSubEntries = Boolean.FALSE;
   private List<MenuAction> contextMenu;
   private Boolean hasChildNodes = Boolean.TRUE;
+  public MenuEntry(String id) {
+    this.id = id;
+  }
 
   public void setTargetClass(Class targetClass, Class routerLayout) {
     var loggerPrefix = getLoggerPrefix("setTargetClass");

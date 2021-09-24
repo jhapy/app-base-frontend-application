@@ -91,8 +91,16 @@ public class DefaultNotification implements Notification {
     return isSticky;
   }
 
+  public void setSticky(boolean isSticky) {
+    this.isSticky = isSticky;
+  }
+
   public boolean isRead() {
     return isRead;
+  }
+
+  public void setRead(boolean isRead) {
+    this.isRead = isRead;
   }
 
   public LocalDateTime getCreationTime() {
@@ -103,13 +111,5 @@ public class DefaultNotification implements Notification {
   public void setCreationTime(LocalDateTime creationTime) {
     Objects.requireNonNull(creationTime, "The creationTime must not be null.");
     this.creationTime = creationTime;
-  }
-
-  public void setRead(boolean isRead) {
-    this.isRead = isRead;
-  }
-
-  public void setSticky(boolean isSticky) {
-    this.isSticky = isSticky;
   }
 }

@@ -43,13 +43,13 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class BaseMasterDetailsView<T, F extends DefaultFilter> extends SplitViewFrame {
 
   protected final String I18N_PREFIX;
+  private final Class<T> entityType;
   protected Grid<T> grid;
   protected DetailsDrawer detailsDrawer;
   protected DetailsDrawerHeader detailsDrawerHeader;
   protected DetailsDrawerFooter detailsDrawerFooter;
   protected Binder<T> binder;
   private T currentEditing;
-  private final Class<T> entityType;
 
   public BaseMasterDetailsView(String I18N_PREFIX, Class<T> entityType) {
     this.I18N_PREFIX = I18N_PREFIX;

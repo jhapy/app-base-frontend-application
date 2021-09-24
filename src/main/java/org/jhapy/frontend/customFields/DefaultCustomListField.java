@@ -43,12 +43,12 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
     implements HasValue<CustomListFieldValueChangeEvent<C>, List<C>>, HasLogger, Serializable {
 
   protected final String i18nPrefix;
+  private final List<ValueChangeListener<? super CustomListFieldValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
   protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackend<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldValueChangeEvent<C>>>
-      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListField(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;

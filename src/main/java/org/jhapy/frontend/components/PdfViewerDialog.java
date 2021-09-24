@@ -25,8 +25,8 @@ import java.io.ByteArrayInputStream;
  */
 public class PdfViewerDialog extends AbstractDialog implements HasLogger {
 
-  private FlexBoxLayout contentLayout;
   private final StoredFile storedFile;
+  private FlexBoxLayout contentLayout;
   private PdfViewer pdfViewer;
 
   public PdfViewerDialog(StoredFile storedFile) {

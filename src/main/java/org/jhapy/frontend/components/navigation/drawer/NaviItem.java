@@ -39,13 +39,13 @@ import java.util.List;
 @CssImport("./styles/components/navi-item.css")
 public class NaviItem extends Div {
 
-  protected Button expandCollapse;
   private final String CLASS_NAME = "navi-item";
-  private int level = 0;
   private final Component link;
   private final Class<? extends Component> navigationTarget;
   private final String text;
   private final List<NaviItem> subItems;
+  protected Button expandCollapse;
+  private int level = 0;
   private boolean subItemsVisible;
 
   private Object relatedObject;

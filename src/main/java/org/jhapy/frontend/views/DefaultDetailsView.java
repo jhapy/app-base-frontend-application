@@ -91,20 +91,19 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
   }
 
   protected final String I18N_PREFIX;
-
+  protected final MyI18NProvider myI18NProvider;
+  private final Class<T> entityType;
+  private final Consumer<T> deleteHandler;
   protected Binder<T> binder;
   protected T currentEditing;
-  private final Class<T> entityType;
-  private Function<T, ServiceResult<T>> saveHandler;
-  private final Consumer<T> deleteHandler;
-  private Class parentViewClassname;
-  private Tabs tabs;
-  protected final MyI18NProvider myI18NProvider;
   protected Registration contextIconRegistration = null;
   protected DefaultDetailsContent detailsDrawer;
   protected DetailsDrawerHeader detailsDrawerHeader;
   protected DetailsDrawerFooter detailsDrawerFooter;
   protected ModuleToolbar moduleToolbar;
+  private Function<T, ServiceResult<T>> saveHandler;
+  private Class parentViewClassname;
+  private Tabs tabs;
 
   public DefaultDetailsView(
       String I18N_PREFIX,

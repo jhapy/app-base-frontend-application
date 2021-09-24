@@ -75,20 +75,16 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
       OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/oidc";
 
   public static final String LOGOUT_URL = "/logout";
-
-  @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
-  private String issuerUri;
-
   private final AppProperties appProperties;
   private final SecurityProblemSupport problemSupport;
   private final SecurityRoleService securityRoleService;
   private final String realm;
   private final boolean forceHttpsForRealm;
   private final ClientRegistrationRepository clientRegistrationRepository;
-
-  @Autowired private KeycloakOauth2UserService keycloakOidcUserService;
-
   private final RestTemplate restTemplate = new RestTemplate();
+  @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+  private String issuerUri;
+  @Autowired private KeycloakOauth2UserService keycloakOidcUserService;
 
   public SecurityConfiguration(
       VaadinSecurityProperties properties,

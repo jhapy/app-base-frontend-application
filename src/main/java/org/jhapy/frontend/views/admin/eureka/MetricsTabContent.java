@@ -87,6 +87,40 @@ public class MetricsTabContent extends ActuatorBaseView {
     super(ui, I18N_PREFIX + "metrics.", authorizationHeaderUtil);
   }
 
+  public static int getDigitGroup(double value) {
+    if (value <= 0) {
+      return -1;
+    }
+    return (int) (Math.log10(value) / Math.log10(1024));
+  }
+
+  public static String getUnit(double value) {
+    if (value <= 0) {
+      return "N/A";
+    }
+    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+    int digitGroups = getDigitGroup(value);
+    return units[digitGroups];
+  }
+
+  public static double getValue(double value, int digitGroups) {
+    if (value <= 0) {
+      return 0d;
+    }
+    return Double
+        .parseDouble(new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)));
+  }
+
+  public static String getValue(double value) {
+    if (value <= 0) {
+      return "0";
+    }
+    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+    int digitGroups = getDigitGroup(value);
+    return new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)) + " "
+        + units[digitGroups];
+  }
+
   public Component getContent(EurekaInfo eurekaInfo) {
     this.eurekaInfo = eurekaInfo;
     content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
@@ -737,40 +771,6 @@ public class MetricsTabContent extends ActuatorBaseView {
 
     content.add(items);
     return content;
-  }
-
-  public static int getDigitGroup(double value) {
-    if (value <= 0) {
-      return -1;
-    }
-    return (int) (Math.log10(value) / Math.log10(1024));
-  }
-
-  public static String getUnit(double value) {
-    if (value <= 0) {
-      return "N/A";
-    }
-    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
-    int digitGroups = getDigitGroup(value);
-    return units[digitGroups];
-  }
-
-  public static double getValue(double value, int digitGroups) {
-    if (value <= 0) {
-      return 0d;
-    }
-    return Double
-        .parseDouble(new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)));
-  }
-
-  public static String getValue(double value) {
-    if (value <= 0) {
-      return "0";
-    }
-    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
-    int digitGroups = getDigitGroup(value);
-    return new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)) + " "
-        + units[digitGroups];
   }
 
   protected void getDetails(EurekaApplication eurekaApplication,

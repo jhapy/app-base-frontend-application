@@ -69,6 +69,16 @@ public class HealthTabContent extends ActuatorBaseView {
     super(ui, I18N_PREFIX + "health.", authorizationHeaderUtil);
   }
 
+  public static String getValue(double value) {
+    if (value <= 0) {
+      return "0";
+    }
+    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+    int digitGroups = (int) (Math.log10(value) / Math.log10(1024));
+    return new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)) + " "
+        + units[digitGroups];
+  }
+
   public Component getContent(EurekaInfo eurekaInfo) {
     content = new FlexBoxLayout(createHeader(VaadinIcon.SEARCH,
         getTranslation("element." + I18N_PREFIX + "title"),
@@ -131,7 +141,6 @@ public class HealthTabContent extends ActuatorBaseView {
     content.add(getServiceList());
     return content;
   }
-
 
   protected Component getServiceList() {
     grid = new Grid<>();
@@ -336,16 +345,6 @@ public class HealthTabContent extends ActuatorBaseView {
     });
 
     return grid;
-  }
-
-  public static String getValue(double value) {
-    if (value <= 0) {
-      return "0";
-    }
-    final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
-    int digitGroups = (int) (Math.log10(value) / Math.log10(1024));
-    return new DecimalFormat("#,##0.##").format(value / Math.pow(1024, digitGroups)) + " "
-        + units[digitGroups];
   }
 
   protected void getDetails(EurekaApplication eurekaApplication,

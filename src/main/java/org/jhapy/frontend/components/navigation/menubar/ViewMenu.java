@@ -39,20 +39,12 @@ public class ViewMenu extends View {
   // private final Div breadcrumb = new Div();
   private final Div menuItemContainer = new Div();
   private final Div content = new Div();
-  private long parentId = 0;
   private final List<CaptionChangedListener> captionChangedListeners = new ArrayList<>();
   private final List<ModuleSelectedListener> moduleSelectedListeners = new ArrayList<>();
   private final List<Menu> menuList;
+  private long parentId = 0;
   private List<TopMenuItem> topMenuList;
   private BaseDashboardView menuDefaultContent;
-
-  public interface CaptionChangedListener {
-    void captionChanged(String newCaption);
-  }
-
-  public interface ModuleSelectedListener {
-    boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu);
-  }
 
   public ViewMenu(List<Menu> menuList, long parentId, ModuleTab parentTab) {
     setParentTab(parentTab);
@@ -197,7 +189,7 @@ public class ViewMenu extends View {
       if (menu.getMenuView() != null) {
         try {
           menuDefaultContent = menu.getMenuView().getDeclaredConstructor().newInstance();
-          menuDefaultContent.setMenuParentId( menu.getParentId());
+          menuDefaultContent.setMenuParentId(menu.getParentId());
           menuDefaultContent.setParentView(this);
           content.add(menuDefaultContent);
           setFlexGrow(1, menuDefaultContent);
@@ -251,7 +243,7 @@ public class ViewMenu extends View {
     if (parentId == 0 && JHapyMainView3.get() != null) {
       BaseDashboardView homePage = (BaseDashboardView) JHapyMainView3.get().getHomePage2();
       homePage.setParentView(this);
-      //homePage.setParentTab(getParentTab());
+      // homePage.setParentTab(getParentTab());
       content.add(homePage);
     }
   }
@@ -268,5 +260,13 @@ public class ViewMenu extends View {
 
   public void addModuleSelectedListener(ModuleSelectedListener listener) {
     moduleSelectedListeners.add(listener);
+  }
+
+  public interface CaptionChangedListener {
+    void captionChanged(String newCaption);
+  }
+
+  public interface ModuleSelectedListener {
+    boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu);
   }
 }

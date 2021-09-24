@@ -35,9 +35,7 @@ import java.util.List;
  * @version 1.0
  * @since 2019-03-07
  */
-@FeignClient(
-    name = "${jhapy.remote-services.mgt-server.name:null}",
-    path = "/api/clientService")
+@FeignClient(name = "${jhapy.remote-services.mgt-server.name:null}", path = "/api/clientService")
 @Primary
 public interface ClientService extends RemoteServiceHandlerV2<ClientDTO> {
   @PostMapping(value = "/getByExternalId")

@@ -65,11 +65,11 @@ public class AttachmentField extends FlexBoxLayout
         HasValue<AttachmentsFieldValueChangeEvent, StoredFile[]>,
         HasLogger {
 
-  private List<StoredFile> storedFiles = new ArrayList<>();
   private final Upload upload;
   private final Div documentList;
   private final List<ValueChangeListener<? super AttachmentsFieldValueChangeEvent>>
       changeListeners = new ArrayList<>();
+  private List<StoredFile> storedFiles = new ArrayList<>();
 
   public AttachmentField() {
     this(

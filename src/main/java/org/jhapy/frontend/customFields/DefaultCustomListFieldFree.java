@@ -46,12 +46,12 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
     implements HasValue<CustomListFieldFreeValueChangeEvent<C>, List<C>>, HasLogger, Serializable {
 
   protected final String i18nPrefix;
+  private final List<ValueChangeListener<? super CustomListFieldFreeValueChangeEvent<C>>>
+      changeListeners = new ArrayList<>();
   protected Crud<C> gridCrud;
   protected Button newButton;
   protected DefaultBackendFree<C> dataProvider;
   protected Grid.Column editColumn;
-  private final List<ValueChangeListener<? super CustomListFieldFreeValueChangeEvent<C>>>
-      changeListeners = new ArrayList<>();
 
   protected DefaultCustomListFieldFree(String i18nPrefix) {
     this.i18nPrefix = i18nPrefix;

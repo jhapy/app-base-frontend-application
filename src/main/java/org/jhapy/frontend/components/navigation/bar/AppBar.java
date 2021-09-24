@@ -78,6 +78,7 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLogger {
 
   private static final Set<String> rtlSet;
+  private static final String CLASS_NAME = "app-bar";
 
   static {
 
@@ -98,37 +99,28 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
             "yi");
   }
 
-  private static final String CLASS_NAME = "app-bar";
-
+  private final AppProperties appProperties;
   private FlexBoxLayout container;
-
   private Button menuIcon;
   private Button contextIcon;
-
   private H4 title;
   private FlexBoxLayout actionItems;
   private Image avatar;
-
   private FlexBoxLayout tabContainer;
   private NaviTabs tabs;
   private ArrayList<Registration> tabSelectionListeners;
   private Button addTab;
-
   private FlexBoxLayout searchArea;
   private FlexBoxLayout header;
   private TextField search;
   private Checkbox activeFilter;
   private ArrayList<Registration> searchValueChangedListeners;
-
   private NotificationButton notificationButton;
   private SearchOverlayButton<? extends SearchQueryResult, ? extends SearchQuery> searchButton;
-
   private DefaultNotificationHolder notifications;
   private Registration searchRegistration;
   private Registration searchEscRegistration;
-
   private MenuItem languageMenu;
-  private final AppProperties appProperties;
 
   public AppBar(AppProperties appProperties) {
     this(appProperties, false, false);

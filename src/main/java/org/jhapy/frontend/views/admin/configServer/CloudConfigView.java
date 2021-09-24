@@ -42,16 +42,12 @@ public class CloudConfigView extends ViewFrame implements HasLogger {
   private static final String I18N_PREFIX = "cloudConfig.";
 
   private final Environment env;
-
+  private final AuthorizationHeaderUtil authorizationHeaderUtil;
+  protected UI ui;
   private CloudConfigBaseView configurationTabContent;
   private CloudConfigBaseView encryptionTabContent;
-
   private Tab configurationTab;
   private Tab encryptionTab;
-
-  protected UI ui;
-
-  private final AuthorizationHeaderUtil authorizationHeaderUtil;
 
   public CloudConfigView(Environment env, AuthorizationHeaderUtil authorizationHeaderUtil) {
     this.env = env;

@@ -57,11 +57,10 @@ public abstract class CloudConfigBaseView extends Component implements HasLogger
   protected final RestTemplate restTemplate = new RestTemplate();
 
   protected final Authentication authentication;
-
-  protected Label titleLabel;
-  protected ScheduledExecutorService timer;
   protected final UI ui;
   protected final Environment env;
+  protected Label titleLabel;
+  protected ScheduledExecutorService timer;
 
   public CloudConfigBaseView(
       Environment env, UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {

@@ -22,20 +22,8 @@ import com.vaadin.flow.component.UI;
 
 public class Session {
 
-  public static void setLoggedIn(boolean loggedIn) {
-    UI.getCurrent().getSession().setAttribute("loggedIn", loggedIn);
-  }
-
-  public static void setCurrentUser(ConnectedUser currentUser) {
-    UI.getCurrent().getSession().setAttribute("currentUser", currentUser);
-  }
-
   public static void setCurrentYear(int currentYear) {
     UI.getCurrent().getSession().setAttribute("currentYear", currentYear);
-  }
-
-  public static void setAppMenu(AppMenu appMenu) {
-    UI.getCurrent().getSession().setAttribute("appMenu", appMenu);
   }
 
   public static void login(ConnectedUser currentUser) {
@@ -59,6 +47,10 @@ public class Session {
     return Boolean.valueOf(UI.getCurrent().getSession().getAttribute("loggedIn").toString());
   }
 
+  public static void setLoggedIn(boolean loggedIn) {
+    UI.getCurrent().getSession().setAttribute("loggedIn", loggedIn);
+  }
+
   public static ConnectedUser getCurrentUser() {
 
     ConnectedUser currentUser =
@@ -67,10 +59,18 @@ public class Session {
     return currentUser;
   }
 
+  public static void setCurrentUser(ConnectedUser currentUser) {
+    UI.getCurrent().getSession().setAttribute("currentUser", currentUser);
+  }
+
   public static AppMenu getAppMenu() {
     AppMenu appMenu = (AppMenu) UI.getCurrent().getSession().getAttribute("appMenu");
 
     return appMenu;
+  }
+
+  public static void setAppMenu(AppMenu appMenu) {
+    UI.getCurrent().getSession().setAttribute("appMenu", appMenu);
   }
 
   public static String getComputerName() {

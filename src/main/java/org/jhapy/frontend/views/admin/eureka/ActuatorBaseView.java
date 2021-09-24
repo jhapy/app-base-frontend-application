@@ -59,16 +59,13 @@ public abstract class ActuatorBaseView extends Component implements HasLogger {
   protected final String I18N_PREFIX;
   protected final AuthorizationHeaderUtil authorizationHeaderUtil;
   protected final RestTemplate restTemplate = new RestTemplate();
-
+  protected final Authentication authentication;
+  protected final UI ui;
   protected EurekaInfo eurekaInfo;
   protected EurekaApplication currentEurekaApplication;
   protected EurekaApplicationInstance currentEurekaApplicationInstance;
-
-  protected final Authentication authentication;
-
   protected Label titleLabel;
   protected ScheduledExecutorService timer;
-  protected final UI ui;
 
   public ActuatorBaseView(
       UI ui, String I18N_PREFIX, AuthorizationHeaderUtil authorizationHeaderUtil) {

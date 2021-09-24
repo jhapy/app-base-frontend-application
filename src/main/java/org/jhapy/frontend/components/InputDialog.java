@@ -115,14 +115,6 @@ public class InputDialog extends Dialog {
     return this;
   }
 
-  public InputDialog setContent(Component... content) {
-    getContent().removeAll();
-
-    getContent().add(content);
-
-    return this;
-  }
-
   /**
    * Adds the header area and returns it.
    *
@@ -140,6 +132,14 @@ public class InputDialog extends Dialog {
    */
   public FlexBoxLayout getContent() {
     return content;
+  }
+
+  public InputDialog setContent(Component... content) {
+    getContent().removeAll();
+
+    getContent().add(content);
+
+    return this;
   }
 
   /**

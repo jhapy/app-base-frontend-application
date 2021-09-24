@@ -32,13 +32,13 @@ public class Breadcrumb extends Div {
     setVisible(!breadcrumbs.isEmpty());
   }
 
+  public List<Component> getBreadcrumbs() {
+    return breadcrumbs;
+  }
+
   public void setBreadcrumbs(List<Component> breadcrumbs) {
     this.breadcrumbs = breadcrumbs;
     UI.getCurrent().access(this::init);
-  }
-
-  public List<Component> getBreadcrumbs() {
-    return breadcrumbs;
   }
 
   public void push(Component breadcrumb) {

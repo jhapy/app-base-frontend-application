@@ -21,13 +21,13 @@ public class NotificationsOverlayView<T extends Notification> extends IronOverla
   // private final IconButton clearButton = new IconButton(VaadinIcon.CHECK.create());
   // private Component overlayTitle = new Label("Notifications");
   private final VerticalLayout results = new VerticalLayout();
+  private final ArrayList<Component> views = new ArrayList<>();
   // private HorizontalLayout appBarWrapper = new HorizontalLayout(backButton, overlayTitle,
   // clearButton);
   // private VerticalLayout wrapper = new VerticalLayout(results);
   private NotificationHolder holder;
   private String noNotificationText = "No Notifications";
   private Label noNotificationsLabel;
-  private final ArrayList<Component> views = new ArrayList<>();
 
   public NotificationsOverlayView() {
     getElement().getStyle().set("width", "100%");

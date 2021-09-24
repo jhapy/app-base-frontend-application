@@ -33,41 +33,15 @@ import java.util.Map;
 @CssImport("./menubar/window-tab-styles.css")
 public class ModuleTab extends Tab {
 
-  private boolean lastTab = false;
-  private String caption;
-
   private final Icon closeIcon = VaadinIcon.CLOSE_CIRCLE.create();
   private final Div closeButton = new Div(closeIcon);
-
   private final List<CloseButtonClickListener> closeButtonClickListeners = new ArrayList<>();
-  private VerticalLayout content;
-  Label lblCaption = new Label("New Tab");
-  private Map<Class<? extends View>, View.ViewParent> parents = new HashMap<>();
   protected Breadcrumb breadcrumb = new Breadcrumb();
-
-  public Breadcrumb getBreadcrumb() {
-    return breadcrumb;
-  }
-
-  public Map<Class<? extends View>, View.ViewParent> getParents() {
-    return parents;
-  }
-
-  public void putParent(Class<? extends View> key, View.ViewParent parent) {
-    parents.put(key, parent);
-  }
-
-  public void setParents(Map<Class<? extends View>, View.ViewParent> parents) {
-    this.parents = parents;
-  }
-
-  public interface CloseButtonClickListener {
-    void click();
-  }
-
-  public interface NewModuleRequiredListener {
-    void newModuleRequired();
-  }
+  Label lblCaption = new Label("New Tab");
+  private boolean lastTab = false;
+  private String caption;
+  private VerticalLayout content;
+  private Map<Class<? extends View>, View.ViewParent> parents = new HashMap<>();
 
   public ModuleTab(String caption, boolean lastTab) {
 
@@ -83,6 +57,22 @@ public class ModuleTab extends Tab {
             listener1.click();
           }
         });
+  }
+
+  public Breadcrumb getBreadcrumb() {
+    return breadcrumb;
+  }
+
+  public Map<Class<? extends View>, View.ViewParent> getParents() {
+    return parents;
+  }
+
+  public void setParents(Map<Class<? extends View>, View.ViewParent> parents) {
+    this.parents = parents;
+  }
+
+  public void putParent(Class<? extends View> key, View.ViewParent parent) {
+    parents.put(key, parent);
   }
 
   private void initLayout() {
@@ -139,5 +129,13 @@ public class ModuleTab extends Tab {
 
   public void setContent(VerticalLayout content) {
     this.content = content;
+  }
+
+  public interface CloseButtonClickListener {
+    void click();
+  }
+
+  public interface NewModuleRequiredListener {
+    void newModuleRequired();
   }
 }

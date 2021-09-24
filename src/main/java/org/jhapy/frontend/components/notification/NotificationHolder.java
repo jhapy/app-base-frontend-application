@@ -17,18 +17,16 @@ import java.util.stream.Collectors;
 public abstract class NotificationHolder<T extends Notification> implements Serializable {
 
   @Serial private static final long serialVersionUID = 1L;
-
-  private PairComponentFactory<NotificationHolder<T>, T> componentProvider;
-  private PairComponentFactory<NotificationHolder<T>, T> cardComponentProvider;
-
   private final List<T> notifications = new ArrayList<>();
   private final List<NotificationsChangeListener<T>> notificationsChangeListeners =
       new ArrayList<>();
   private final List<NotificationClickListener<T>> clickListeners = new ArrayList<>();
-  private Notification recentNotification;
   private final List<HasText> badgeHolderComponents = new ArrayList<>();
-  private Comparator<T> comparator = Comparator.reverseOrder();
   private final ArrayList<NotificationComponent> notificationComponents = new ArrayList<>();
+  private PairComponentFactory<NotificationHolder<T>, T> componentProvider;
+  private PairComponentFactory<NotificationHolder<T>, T> cardComponentProvider;
+  private Notification recentNotification;
+  private Comparator<T> comparator = Comparator.reverseOrder();
 
   public NotificationHolder(NotificationClickListener<T> listener, T... notifications) {
     this(listener);
@@ -43,27 +41,37 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
     setCardComponentProvider(getCardComponentProvider());
   }
 
+  public NotificationHolder(T... notifications) {
+    this((NotificationClickListener<T>) null);
+    this.add(notifications);
+  }
+
+  public NotificationHolder(Collection<T> notifications) {
+    this((NotificationClickListener<T>) null);
+    this.notifications.addAll(notifications);
+  }
+
+  public NotificationHolder(NotificationClickListener<T> listener, Collection<T> notifications) {
+    this(listener);
+    this.notifications.addAll(notifications);
+  }
+
   public void addClickListener(NotificationClickListener<T> listener) {
     this.clickListeners.add(listener);
   }
 
   abstract PairComponentFactory<NotificationHolder<T>, T> getComponentProvider();
 
-  abstract PairComponentFactory<NotificationHolder<T>, T> getCardComponentProvider();
-
-  public void setCardComponentProvider(
-      PairComponentFactory<NotificationHolder<T>, T> componentProvider) {
-    this.cardComponentProvider = componentProvider;
-  }
-
   public void setComponentProvider(
       PairComponentFactory<NotificationHolder<T>, T> componentProvider) {
     this.componentProvider = componentProvider;
   }
 
-  public NotificationHolder(T... notifications) {
-    this((NotificationClickListener<T>) null);
-    this.add(notifications);
+  abstract PairComponentFactory<NotificationHolder<T>, T> getCardComponentProvider();
+
+  public void setCardComponentProvider(
+      PairComponentFactory<NotificationHolder<T>, T> componentProvider) {
+    this.cardComponentProvider = componentProvider;
   }
 
   /** Needs to be called from UI Thread otherwise there will be issues. */
@@ -133,16 +141,6 @@ public abstract class NotificationHolder<T extends Notification> implements Seri
 
   public int getUnreadNotifications() {
     return (int) notifications.stream().filter(notification -> !notification.isRead()).count();
-  }
-
-  public NotificationHolder(Collection<T> notifications) {
-    this((NotificationClickListener<T>) null);
-    this.notifications.addAll(notifications);
-  }
-
-  public NotificationHolder(NotificationClickListener<T> listener, Collection<T> notifications) {
-    this(listener);
-    this.notifications.addAll(notifications);
   }
 
   public int getNotificationSize() {

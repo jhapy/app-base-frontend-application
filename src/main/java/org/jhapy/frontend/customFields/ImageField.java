@@ -66,12 +66,11 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
   private AbstractDialog uploadDialog;
   private CropperJs cropperJs;
   private int nbAddedFile = 0;
+  private FlexBoxLayout contentLayout;
 
   public ImageField() {
     this(null);
   }
-
-  private FlexBoxLayout contentLayout;
 
   public ImageField(String label) {
     if (label != null) {

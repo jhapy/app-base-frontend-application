@@ -113,8 +113,12 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
     implements RouterLayout, PageConfigurator, AfterNavigationObserver, HasLogger {
 
   private static final String CLASS_NAME = "root";
+  protected final MenuHierarchicalDataProvider menuProvider;
   private final ConfirmDialog confirmDialog;
+  private final HazelcastInstance hazelcastInstance;
+  private final List<AttributeContextListener> contextListeners = new ArrayList<>();
   protected FlexBoxLayout viewContainer;
+  protected AppProperties appProperties;
   private Div appHeaderOuter;
   private FlexBoxLayout row;
   private NaviDrawerWithTreeMenu naviDrawer;
@@ -124,10 +128,6 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
   private Environment environment;
   private Div appFooterOuter;
   private AppBar appBar;
-  protected AppProperties appProperties;
-  protected final MenuHierarchicalDataProvider menuProvider;
-  private final HazelcastInstance hazelcastInstance;
-  private final List<AttributeContextListener> contextListeners = new ArrayList<>();
 
   protected JHapyMainView4(
       MenuHierarchicalDataProvider menuProvider,
@@ -187,6 +187,28 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
     getElement().appendChild(new AppCookieConsent().getElement());
   }
 
+  public static JHapyMainView4 get() {
+    return (JHapyMainView4)
+        UI.getCurrent()
+            .getChildren()
+            .filter(component -> RouterLayout.class.isAssignableFrom(component.getClass()))
+            .findFirst()
+            .orElse(null);
+  }
+
+  public static void displayErrorMessageStatic(ServiceResult errorResult) {
+    var loggerPrefix = HasLoggerStatic.getLoggerPrefix("displayErrorMessageStatic");
+    JHapyMainView4 current = get();
+    if (current != null) {
+      current.displayErrorMessage(errorResult);
+    } else {
+      HasLoggerStatic.error(
+          JHapyMainView4.class,
+          loggerPrefix,
+          "MainView is null, cannot display message : " + errorResult.getMessage());
+    }
+  }
+
   public void addAttributeContextListener(AttributeContextListener contextListener) {
     contextListeners.add(contextListener);
   }
@@ -208,15 +230,6 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
 
   protected ConcurrentMap<String, SessionInfo> retrieveMap() {
     return hazelcastInstance.getMap("userSessions");
-  }
-
-  public static JHapyMainView4 get() {
-    return (JHapyMainView4)
-        UI.getCurrent()
-            .getChildren()
-            .filter(component -> RouterLayout.class.isAssignableFrom(component.getClass()))
-            .findFirst()
-            .orElse(null);
   }
 
   public SearchOverlayButton<? extends SearchQueryResult, ? extends SearchQuery> getSearchButton() {
@@ -808,19 +821,6 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
 
   protected boolean isProductionMode() {
     return "true".equals(System.getProperty("productionMode"));
-  }
-
-  public static void displayErrorMessageStatic(ServiceResult errorResult) {
-    var loggerPrefix = HasLoggerStatic.getLoggerPrefix("displayErrorMessageStatic");
-    JHapyMainView4 current = get();
-    if (current != null) {
-      current.displayErrorMessage(errorResult);
-    } else {
-      HasLoggerStatic.error(
-          JHapyMainView4.class,
-          loggerPrefix,
-          "MainView is null, cannot display message : " + errorResult.getMessage());
-    }
   }
 
   public void displayErrorMessage(ServiceResult errorResult) {

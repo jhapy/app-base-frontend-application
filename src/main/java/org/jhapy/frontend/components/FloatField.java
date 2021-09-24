@@ -49,20 +49,24 @@ public class FloatField extends AbstractNumberField<FloatField, Float> {
     super(formatter::parse, formatter, -1.0F / 0.0, 1.0F / 0.0);
   }
 
+  public double getMin() {
+    return this.getMinDouble();
+  }
+
   public void setMin(double min) {
     super.setMin(min);
   }
 
-  public double getMin() {
-    return this.getMinDouble();
+  public double getMax() {
+    return this.getMaxDouble();
   }
 
   public void setMax(double max) {
     super.setMax(max);
   }
 
-  public double getMax() {
-    return this.getMaxDouble();
+  public double getStep() {
+    return this.getStepDouble();
   }
 
   public void setStep(double step) {
@@ -71,10 +75,6 @@ public class FloatField extends AbstractNumberField<FloatField, Float> {
     } else {
       super.setStep(step);
     }
-  }
-
-  public double getStep() {
-    return this.getStepDouble();
   }
 
   private static class Formatter implements SerializableFunction<Float, String> {

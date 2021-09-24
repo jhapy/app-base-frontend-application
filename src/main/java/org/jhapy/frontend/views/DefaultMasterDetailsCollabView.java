@@ -103,28 +103,26 @@ public abstract class DefaultMasterDetailsCollabView<
     extends SplitViewFrame implements BeforeLeaveObserver {
 
   protected final String I18N_PREFIX;
-  protected Grid<T> grid;
   protected final DefaultDataProvider<T, F> dataProvider;
+  protected final MyI18NProvider myI18NProvider;
+  private final Class<T> entityType;
+  private final Function<T, ServiceResult<T>> saveHandler;
+  private final Function<T, ServiceResult<Void>> deleteHandler;
+  protected Grid<T> grid;
   protected DetailsDrawer detailsDrawer;
   protected DetailsDrawerHeader detailsDrawerHeader;
   protected DetailsDrawerFooter detailsDrawerFooter;
   protected Binder<T> binder;
   protected T currentEditing;
-
-  private final Class<T> entityType;
-  private final Function<T, ServiceResult<T>> saveHandler;
-  private final Function<T, ServiceResult<Void>> deleteHandler;
-  private Tabs tabs;
-  private Boolean initialFetch = Boolean.TRUE;
-  private FlexBoxLayout content;
-  protected final MyI18NProvider myI18NProvider;
   protected ModuleToolbar moduleToolbar;
   protected CollaborationAvatarGroup avatarGroup;
   protected UserInfo userInfo;
   protected Component detailContent;
   protected Component discussionContent;
   protected Component auditContent;
-
+  private Tabs tabs;
+  private Boolean initialFetch = Boolean.TRUE;
+  private FlexBoxLayout content;
   private CollaborationMessageList collaborationMessageList;
 
   public DefaultMasterDetailsCollabView(
@@ -133,6 +131,15 @@ public abstract class DefaultMasterDetailsCollabView<
       DefaultDataProvider<T, F> dataProvider,
       MyI18NProvider myI18NProvider) {
     this(I18N_PREFIX, entityType, dataProvider, null, null, myI18NProvider);
+  }
+
+  public DefaultMasterDetailsCollabView(
+      String I18N_PREFIX,
+      Class<T> entityType,
+      Function<T, ServiceResult<T>> saveHandler,
+      Function<T, ServiceResult<Void>> deleteHandler,
+      MyI18NProvider myI18NProvider) {
+    this(I18N_PREFIX, entityType, null, true, saveHandler, deleteHandler, myI18NProvider);
   }
 
   public DefaultMasterDetailsCollabView(
@@ -246,7 +253,8 @@ public abstract class DefaultMasterDetailsCollabView<
       moduleToolbar.addNewRecordListener(this::showDetails);
     }
 
-    moduleToolbar.addRefreshListener(dataProvider::refreshAll);
+    if (dataProvider == null) moduleToolbar.addRefreshListener(grid.getLazyDataView()::refreshAll);
+    else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     setViewHeader(moduleToolbar);
   }
@@ -320,10 +328,15 @@ public abstract class DefaultMasterDetailsCollabView<
     content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
     Label nbRows = UIUtils.createH4Label(getTranslation("element.global.nbRows", 0));
-    dataProvider.setPageObserver(
-        executionPage ->
-            nbRows.setText(
-                getTranslation("element.global.nbRows", executionPage.getTotalElements())));
+    if (dataProvider == null)
+      grid.getLazyDataView()
+          .addItemCountChangeListener(
+              event ->
+                  nbRows.setText(getTranslation("element.global.nbRows", event.getItemCount())));
+    else
+      dataProvider.setPageObserver(
+          tPage ->
+              nbRows.setText(getTranslation("element.global.nbRows", tPage.getTotalElements())));
 
     FooterRow footerRow = grid.appendFooterRow();
     footerRow.getCell(grid.getColumns().get(0)).setComponent(nbRows);
@@ -671,9 +684,11 @@ public abstract class DefaultMasterDetailsCollabView<
       JHapyMainView3.get().displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
 
       if (!isNew) {
-        dataProvider.refreshItem(currentEditing);
+        if (dataProvider == null) grid.getLazyDataView().refreshItem(currentEditing);
+        else dataProvider.refreshItem(currentEditing);
       } else {
-        dataProvider.refreshAll();
+        if (dataProvider == null) grid.getLazyDataView().refreshAll();
+        else dataProvider.refreshAll();
       }
 
       if (saveAndNew) {
@@ -720,14 +735,16 @@ public abstract class DefaultMasterDetailsCollabView<
 
     detailsDrawer.hide();
 
-    dataProvider.refreshAll();
+    if (dataProvider == null) grid.getLazyDataView().refreshAll();
+    else dataProvider.refreshAll();
 
     currentEditing = null;
   }
 
   protected void filter(String filter, Boolean showInactive) {
-    dataProvider.setFilter(
-        (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
+    if (dataProvider != null)
+      dataProvider.setFilter(
+          (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
   }
 
   protected Label getLabel(String element) {

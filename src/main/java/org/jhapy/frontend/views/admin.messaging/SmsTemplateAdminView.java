@@ -30,11 +30,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.notification.SmsTemplate;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
@@ -65,9 +63,9 @@ import org.jhapy.frontend.views.JHapyMainView3;
 public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
 
   private final Binder<SmsTemplate> binder = new Binder<>();
+  private final Registration contextIconRegistration = null;
   private SmsTemplate smsTemplate;
   private DefaultDataProvider<SmsTemplate, DefaultFilter> securityUserDataProvider;
-  private final Registration contextIconRegistration = null;
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
@@ -188,12 +186,12 @@ public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<S
   @Override
   public void setParameter(BeforeEvent event, String viewParameters) {
     super.setParameter(event, viewParameters);
-    if (StringUtils.isBlank((String) viewParameters)) {
+    if (StringUtils.isBlank(viewParameters)) {
       smsTemplate = new SmsTemplate();
     } else {
       smsTemplate =
           NotificationServices.getSmsTemplateService()
-              .getById(new GetByStrIdQuery((String) viewParameters))
+              .getById(new GetByStrIdQuery(viewParameters))
               .getData();
       if (smsTemplate == null) {
         smsTemplate = new SmsTemplate();

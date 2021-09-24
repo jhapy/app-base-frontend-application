@@ -29,9 +29,9 @@ import java.util.function.Consumer;
 
 public class StatefulCardGroup<T extends StatefulCard> extends Composite<VerticalLayout> {
 
+  private final List<T> cards = new ArrayList<>();
   private StatefulCard currentFocus;
   private Consumer<T> listener;
-  private final List<T> cards = new ArrayList<>();
 
   @SafeVarargs
   public StatefulCardGroup(T... cards) {
