@@ -222,7 +222,11 @@ public abstract class DefaultMasterDetailsView<
       moduleToolbar.setAddButtonVisible(true);
       moduleToolbar.addNewRecordListener(this::showDetails);
     }
-    if (dataProvider == null) moduleToolbar.addRefreshListener(grid.getLazyDataView()::refreshAll);
+    if (dataProvider == null)
+      moduleToolbar.addRefreshListener(
+          () -> {
+            grid.getLazyDataView().refreshAll();
+          });
     else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     setViewHeader(moduleToolbar);
