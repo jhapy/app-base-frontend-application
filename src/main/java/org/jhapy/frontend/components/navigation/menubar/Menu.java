@@ -32,10 +32,16 @@ public class Menu {
   private Class browser;
   private String badge;
   private Class<? extends BaseDashboardView> menuView = null;
+  private String newViewParams;
 
   public Menu(
       long id, long parentId, String menuName, String iconName, Class browser, String badge) {
-    this(id, parentId, menuName, iconName, browser, badge, null);
+    this(id, parentId, menuName, iconName, browser, badge, null, null);
+  }
+
+  public Menu(
+          long id, long parentId, String menuName, String iconName, Class browser, String badge, String newViewParams) {
+    this(id, parentId, menuName, iconName, browser, badge, null, newViewParams);
   }
 
   public Menu(
@@ -45,7 +51,8 @@ public class Menu {
       String iconName,
       Class browser,
       String badge,
-      Class<? extends BaseDashboardView> menuView) {
+      Class<? extends BaseDashboardView> menuView,
+      String newViewParams) {
     this.id = id;
     this.parentId = parentId;
     this.menuName = menuName;
@@ -53,5 +60,6 @@ public class Menu {
     this.browser = browser;
     this.badge = badge;
     this.menuView = menuView;
+    this.newViewParams = newViewParams;
   }
 }

@@ -888,7 +888,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
                           menu.getMenuName(),
                           menu.getParentId(),
                           viewMenu,
-                          lastTab);
+                          lastTab,
+                              menu.getNewViewParams());
                     });
               buildMenu(menu.getId(), menuItem);
             });
@@ -905,8 +906,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), newTab);
     viewMenu.setSizeFull();
     viewMenu.addModuleSelectedListener(
-        (className, menuName, menuParentId, currentViewMenu) ->
-            displayViewFromMenu(className, menuName, menuParentId, viewMenu, newTab));
+        (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
+            displayViewFromMenu(className, menuName, menuParentId, viewMenu, newTab, newViewParams));
     viewMenu.addCaptionChangedListener(newTab::setCaption);
     views.add(viewMenu);
 
@@ -987,8 +988,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
     viewMenu.setSizeFull();
     viewMenu.addModuleSelectedListener(
-        (className, menuName, menuParentId, currentViewMenu) ->
-            displayViewFromMenu(className, menuName, menuParentId, viewMenu, lastTab));
+        (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
+            displayViewFromMenu(className, menuName, menuParentId, viewMenu, lastTab, newViewParams));
     viewMenu.addCaptionChangedListener(lastTab::setCaption);
     views.add(viewMenu);
 
@@ -1008,9 +1009,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
             ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), currentTab);
             currentTab.getBreadcrumb().pull();
             viewMenu.addModuleSelectedListener(
-                (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
                     displayViewFromMenu(
-                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
             viewMenu.addCaptionChangedListener(currentTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
             views.set(views.indexOf(view), viewMenu);
@@ -1111,9 +1112,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
                   new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
               currentTab.getBreadcrumb().pull();
               viewMenu.addModuleSelectedListener(
-                  (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                  (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
                       displayViewFromMenu(
-                          className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+                          className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
               viewMenu.addCaptionChangedListener(currentTab::setCaption);
               viewContainer.getChildren().forEach(e -> e.setVisible(false));
               views.set(views.indexOf(view), viewMenu);
@@ -1210,11 +1211,21 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
   }
 
   public boolean displayViewFromMenu(
+          Class<? extends View> newViewClass,
+          String menuName,
+          long menuParentId,
+          View parentView,
+          ModuleTab currentTab) {
+    return displayViewFromMenu( newViewClass, menuName, menuParentId, parentView, currentTab, null);
+  }
+
+  public boolean displayViewFromMenu(
       Class<? extends View> newViewClass,
       String menuName,
       long menuParentId,
       View parentView,
-      ModuleTab currentTab) {
+      ModuleTab currentTab,
+      String newViewParams) {
     String loggerPrefix = getLoggerPrefix("displayView");
     try {
       if (newViewClass == null) {
@@ -1226,6 +1237,11 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
       View view = newViewInstance(newViewClass);
       view.setParentTab(currentTab);
       view.setNavigationRootClass(newViewClass);
+      if (newViewParams != null) {
+        debug(loggerPrefix, "New View has parameter, set them");
+        view.setParameter(null, newViewParams);
+      }
+
       currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
@@ -1244,9 +1260,9 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
                 new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
             currentTab.getBreadcrumb().pull();
             viewMenu.addModuleSelectedListener(
-                (className1, menuName1, menuParentId1, currentViewMenu1) ->
+                (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
                     displayViewFromMenu(
-                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab));
+                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
             viewMenu.addCaptionChangedListener(currentTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
             views.set(views.indexOf(view), viewMenu);

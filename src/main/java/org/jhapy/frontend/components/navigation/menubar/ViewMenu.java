@@ -135,7 +135,7 @@ public class ViewMenu extends View {
       if (menu == null) return;
 
       for (ModuleSelectedListener listener : moduleSelectedListeners) {
-        listener.moduleSelected(menu.getBrowser(), menu.getMenuName(), menu.getParentId(), this);
+        listener.moduleSelected(menu.getBrowser(), menu.getMenuName(), menu.getParentId(), this, menu.getNewViewParams());
       }
 
       return;
@@ -267,6 +267,6 @@ public class ViewMenu extends View {
   }
 
   public interface ModuleSelectedListener {
-    boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu);
+    boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu, String newViewParams);
   }
 }

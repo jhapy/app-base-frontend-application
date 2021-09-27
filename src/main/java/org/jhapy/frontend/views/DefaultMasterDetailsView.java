@@ -232,6 +232,14 @@ public abstract class DefaultMasterDetailsView<
     setViewHeader(moduleToolbar);
   }
 
+  protected void disableCreateRecord() {
+    moduleToolbar.setAddButtonVisible( false );
+  }
+
+  protected void enableCreateRecord() {
+    moduleToolbar.setAddButtonVisible( true );
+  }
+
   protected void showDetails() {
     try {
       showDetails(entityType.getDeclaredConstructor().newInstance());

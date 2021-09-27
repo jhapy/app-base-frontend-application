@@ -85,6 +85,20 @@ public class KeycloakClient implements HasLogger {
       allEntries = true)
   public void cleanUserCache() {}
 
+  @Cacheable("allUsers")
+  public ServiceResult<List<SecurityKeycloakUser>> getAllUsers() {
+    return new ServiceResult(
+            securityConverter.convertToDtoSecurityKeycloakUsers(
+                    getKeycloakRealmInstance().users().list().stream()
+                            .sorted((o1, o2) -> {
+                              if ( StringUtils.isNotBlank(o1.getLastName() ) && StringUtils.isNotBlank(o2.getLastName() ))
+                                return o1.getLastName().compareTo(o2.getLastName());
+                              else
+                                return o1.getUsername().compareTo(o2.getUsername());
+                            })
+                            .collect(Collectors.toList())));
+  }
+
   @Cacheable("userByName")
   public ServiceResult<SecurityKeycloakUser> getUserByUsername(
       GetSecurityUserByUsernameQuery query) {
@@ -403,7 +417,12 @@ public class KeycloakClient implements HasLogger {
         securityConverter.convertToDtoSecurityKeycloakRoles(
             getKeycloakRealmInstance().roles().list().stream()
                 .filter(roleRepresentation -> roleRepresentation.getName().startsWith("ROLE"))
-                .sorted(Comparator.comparing(RoleRepresentation::getDescription))
+                .sorted((o1, o2) -> {
+                  if ( StringUtils.isNotBlank(o1.getDescription() ) && StringUtils.isNotBlank(o2.getDescription() ))
+                    return o1.getDescription().compareTo(o2.getDescription());
+                  else
+                    return o1.getName().compareTo(o2.getName());
+                })
                 .collect(Collectors.toList())));
   }
 
