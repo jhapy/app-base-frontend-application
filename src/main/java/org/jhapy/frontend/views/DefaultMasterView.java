@@ -150,7 +150,11 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
             }
           });
     }
-    if (dataProvider == null) moduleToolbar.addRefreshListener(grid.getLazyDataView()::refreshAll);
+    if (dataProvider == null)
+      moduleToolbar.addRefreshListener(
+          () -> {
+            grid.getLazyDataView().refreshAll();
+          });
     else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     setViewHeader(moduleToolbar);
@@ -205,5 +209,8 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
     if (dataProvider != null)
       dataProvider.setFilter(
           (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
+    else
+      throw new RuntimeException(
+          "A dataprovider is need or you need to provide custom filter query method");
   }
 }

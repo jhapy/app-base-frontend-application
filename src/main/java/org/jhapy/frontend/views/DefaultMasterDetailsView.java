@@ -105,11 +105,25 @@ public abstract class DefaultMasterDetailsView<
   private FlexBoxLayout content;
 
   public DefaultMasterDetailsView(
+      String I18N_PREFIX, Class<T> entityType, MyI18NProvider myI18NProvider) {
+    this(I18N_PREFIX, entityType, null, null, null, myI18NProvider);
+  }
+
+  public DefaultMasterDetailsView(
       String I18N_PREFIX,
       Class<T> entityType,
       DefaultDataProvider<T, F> dataProvider,
       MyI18NProvider myI18NProvider) {
     this(I18N_PREFIX, entityType, dataProvider, null, null, myI18NProvider);
+  }
+
+  public DefaultMasterDetailsView(
+      String I18N_PREFIX,
+      Class<T> entityType,
+      Function<T, ServiceResult<T>> saveHandler,
+      Function<T, ServiceResult<Void>> deleteHandler,
+      MyI18NProvider myI18NProvider) {
+    this(I18N_PREFIX, entityType, null, true, saveHandler, deleteHandler, myI18NProvider);
   }
 
   public DefaultMasterDetailsView(
@@ -543,14 +557,24 @@ public abstract class DefaultMasterDetailsView<
 
     detailsDrawer.hide();
 
-    dataProvider.refreshAll();
+    if (dataProvider == null)
+      moduleToolbar.addRefreshListener(
+          () -> {
+            grid.getLazyDataView().refreshAll();
+          });
+    else moduleToolbar.addRefreshListener(dataProvider::refreshAll);
 
     currentEditing = null;
   }
 
   protected void filter(String filter, Boolean showInactive) {
-    dataProvider.setFilter(
-        (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
+    if (dataProvider != null)
+      dataProvider.setFilter(
+          (F) new DefaultFilter(StringUtils.isBlank(filter) ? null : filter, showInactive));
+    else {
+      throw new RuntimeException(
+          "A dataprovider is need or you need to provide custom filter query method");
+    }
   }
 
   protected Label getLabel(String element) {

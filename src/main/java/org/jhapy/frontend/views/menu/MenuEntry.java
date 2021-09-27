@@ -27,6 +27,7 @@ public class MenuEntry implements Serializable, HasLogger {
   private Boolean canCreateSubEntries = Boolean.FALSE;
   private List<MenuAction> contextMenu;
   private Boolean hasChildNodes = Boolean.TRUE;
+
   public MenuEntry(String id) {
     this.id = id;
   }
