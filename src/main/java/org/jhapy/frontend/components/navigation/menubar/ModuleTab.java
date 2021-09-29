@@ -53,10 +53,15 @@ public class ModuleTab extends Tab {
     closeButton.addClickListener(
         listener -> {
           for (CloseButtonClickListener listener1 : closeButtonClickListeners) {
-
             listener1.click();
           }
         });
+  }
+
+  public void closeTab() {
+    for (CloseButtonClickListener listener1 : closeButtonClickListeners) {
+      listener1.click();
+    }
   }
 
   public Breadcrumb getBreadcrumb() {

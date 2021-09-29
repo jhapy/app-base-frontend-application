@@ -202,7 +202,7 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
             this,
             currentViewParams,
             entityViewClass,
-            entity.getId() == null ? "-1" : entity.getId().toString());
+            entity.getId() == null ? "-1" : entity.getId().toString(), true);
   }
 
   protected void filter(String filter, Boolean showInactive) {

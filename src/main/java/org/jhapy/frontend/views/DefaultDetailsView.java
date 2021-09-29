@@ -103,7 +103,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
   protected ModuleToolbar moduleToolbar;
   private Function<T, ServiceResult<T>> saveHandler;
   private Class parentViewClassname;
-  private Tabs tabs;
+  protected Tabs tabs;
 
   public DefaultDetailsView(
       String I18N_PREFIX,
@@ -171,8 +171,13 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
 
   protected void initHeader() {
     moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
+
     moduleToolbar.addGoBackListener(
         () -> {
+          if ( parentViewClassname == null ) {
+            getParentTab().closeTab();
+            return;
+          }
           if (super.getGoBackListener() != null) super.getGoBackListener().goBack();
           else super.getMenuBackListener().goBack();
         });

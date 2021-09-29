@@ -970,7 +970,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     tabs.add(newTabButton);
   }
 
-  private void addNewTab() {
+  private ModuleTab addNewTab() {
+    return addNewTab(true);
+  }
+  private ModuleTab addNewTab(boolean isDisplayMenu ) {
 
     tabs.remove(newTabButton);
 
@@ -985,16 +988,22 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     tabs.add(newTabButton);
     tabs.setSelectedTab(lastTab);
 
-    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
-    viewMenu.setSizeFull();
-    viewMenu.addModuleSelectedListener(
-        (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
-            displayViewFromMenu(className, menuName, menuParentId, viewMenu, lastTab, newViewParams));
-    viewMenu.addCaptionChangedListener(lastTab::setCaption);
-    views.add(viewMenu);
+    if (isDisplayMenu) {
+      ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
+      viewMenu.setSizeFull();
+      viewMenu.addModuleSelectedListener(
+          (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
+              displayViewFromMenu(
+                  className, menuName, menuParentId, viewMenu, lastTab, newViewParams));
+      viewMenu.addCaptionChangedListener(lastTab::setCaption);
+      views.add(viewMenu);
 
-    viewContainer.getChildren().forEach(e -> e.setVisible(false));
-    viewContainer.add(viewMenu);
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+        viewContainer.add(viewMenu);
+    } else {
+      viewContainer.getChildren().forEach(e -> e.setVisible(false));
+    }
+    return lastTab;
   }
 
   public boolean displayViewFromNavigation(View view) {
@@ -1053,10 +1062,19 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
   }
 
   public boolean displayViewFromParentView(
-      View parentView,
-      String parentParams,
+          View parentView,
+          String parentParams,
+          Class<? extends View> newViewClass,
+          String newViewParams) {
+    return displayViewFromParentView(parentView, parentParams, newViewClass, newViewParams, false );
+  }
+
+  public boolean displayViewFromParentView(
+      View defaultParentView,
+      String defaultParentParams,
       Class<? extends View> newViewClass,
-      String newViewParams) {
+      String newViewParams,
+      Boolean newTab) {
     String loggerPrefix = getLoggerPrefix("displayView");
 
     debug(
@@ -1064,17 +1082,43 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
         "New View : {0} with parameter(s) {1}, Parent View : {2} with parameter(s) : {3}",
         newViewClass.getSimpleName(),
         newViewParams == null ? "None" : newViewParams,
-        parentView.getClass().getSimpleName(),
-        parentParams == null ? "None" : parentParams);
+            defaultParentView == null ? "None" : defaultParentView.getClass().getSimpleName(),
+            defaultParentParams == null ? "None" : defaultParentParams);
     try {
       if (newViewClass == null) {
         Dialogs.notifyError("Module not yet available.");
         return false;
       }
+      ModuleTab currentTab;
 
-      ModuleTab currentTab = parentView.getParentTab();
+      View parentView = null;
+      String parentParams;
+      if ( newTab ) {
+        tabs.remove(newTabButton);
+
+        for (ModuleTab tab : tabList) {
+          tab.setLastTab(false);
+        }
+
+        currentTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
+        currentTab.addCloseButtonClickListener(() -> closeTab(currentTab));
+        tabList.add(currentTab);
+        tabs.add(currentTab);
+        tabs.add(newTabButton);
+        tabs.setSelectedTab(currentTab);
+
+        parentParams = null;
+      } else {
+        parentView = defaultParentView;
+        parentParams = defaultParentParams;
+        currentTab = parentView.getParentTab();
+      }
+
       View view = newViewInstance(newViewClass);
-      view.setParentTab(parentView.getParentTab());
+      if ( parentView != null )
+        view.setParentTab(parentView.getParentTab());
+      else
+        view.setParentTab(currentTab);
 
       if (newViewParams != null) {
         debug(loggerPrefix, "New View has parameter, set them");
@@ -1093,60 +1137,62 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
       } else {
         UI.getCurrent().getPage().getHistory().pushState(null, "/");
       }
+if ( parentView != null ) {
+  View finalParentView = parentView;
+  view.setGoBackListener(
+      () -> {
+        if (finalParentView.getNavigationRootClass() != null
+            && finalParentView.getNavigationRootClass().equals(newViewClass)) {
 
-      view.setGoBackListener(
-          () -> {
-            if (parentView.getNavigationRootClass() != null
-                && parentView.getNavigationRootClass().equals(newViewClass)) {
-
-              long menuParentId = -1;
-              for (Menu menu1 : getMenuList()) {
-                if (menu1.getBrowser() != null
-                    && menu1.getBrowser().equals(parentView.getNavigationRootClass())) {
-                  menuParentId = menu1.getParentId();
-                  break;
-                }
-              }
-              viewContainer.remove(view);
-              ViewMenu viewMenu =
-                  new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
-              currentTab.getBreadcrumb().pull();
-              viewMenu.addModuleSelectedListener(
-                  (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
-                      displayViewFromMenu(
-                          className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
-              viewMenu.addCaptionChangedListener(currentTab::setCaption);
-              viewContainer.getChildren().forEach(e -> e.setVisible(false));
-              views.set(views.indexOf(view), viewMenu);
-              viewContainer.add(viewMenu);
-
-              Menu parentMenu = null;
-
-              for (Menu menu : getMenuList()) {
-                if (menu.getId() == menuParentId) {
-                  parentMenu = menu;
-                }
-              }
-
-              if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
-            } else {
-              if (currentTab.getParents().containsKey(view.getClass())) {
-                View.ViewParent viewParent = currentTab.getParents().get(view.getClass());
-                currentTab.getBreadcrumb().pull();
-                currentTab.getBreadcrumb().pull();
-                currentTab.getParents().remove(view.getClass());
-                displayViewFromParentView(
-                    view,
-                    newViewParams,
-                    viewParent.getParentClass(),
-                    viewParent.getParentParameters());
-              } else {
-                // Seems to be never use...
-                displayViewFromParentView(view, newViewParams, parentView.getClass(), parentParams);
-              }
+          long menuParentId = -1;
+          for (Menu menu1 : getMenuList()) {
+            if (menu1.getBrowser() != null
+                && menu1.getBrowser().equals(finalParentView.getNavigationRootClass())) {
+              menuParentId = menu1.getParentId();
+              break;
             }
-          });
-      if (currentTab != null) {
+          }
+          viewContainer.remove(view);
+          ViewMenu viewMenu =
+              new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
+          currentTab.getBreadcrumb().pull();
+          viewMenu.addModuleSelectedListener(
+              (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
+                  displayViewFromMenu(
+                      className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
+          viewMenu.addCaptionChangedListener(currentTab::setCaption);
+          viewContainer.getChildren().forEach(e -> e.setVisible(false));
+          views.set(views.indexOf(view), viewMenu);
+          viewContainer.add(viewMenu);
+
+          Menu parentMenu = null;
+
+          for (Menu menu : getMenuList()) {
+            if (menu.getId() == menuParentId) {
+              parentMenu = menu;
+            }
+          }
+
+          if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+        } else {
+          if (currentTab.getParents().containsKey(view.getClass())) {
+            View.ViewParent viewParent = currentTab.getParents().get(view.getClass());
+            currentTab.getBreadcrumb().pull();
+            currentTab.getBreadcrumb().pull();
+            currentTab.getParents().remove(view.getClass());
+            displayViewFromParentView(
+                view,
+                newViewParams,
+                viewParent.getParentClass(),
+                viewParent.getParentParameters());
+          } else {
+            // Seems to be never use...
+            displayViewFromParentView(view, newViewParams, finalParentView.getClass(), parentParams);
+          }
+        }
+      });
+}
+      if (parentView != null && currentTab != null) {
         var parentMap = currentTab.getParents();
         if (!parentMap.containsKey(newViewClass)) {
           View.ViewParent viewParent = new View.ViewParent();
@@ -1160,18 +1206,21 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
           currentTab.putParent(newViewClass, viewParent);
         }
       }
-      if (parentView.getNavigationRootClass() != null)
+      if (parentView != null && parentView.getNavigationRootClass() != null)
         view.setNavigationRootClass(parentView.getNavigationRootClass());
-      if (parentView.getMenuBackListener() != null)
+      if (parentView != null && parentView.getMenuBackListener() != null)
         view.setMenuBackListener(parentView.getMenuBackListener());
 
+      if ( parentView != null )
       viewContainer.remove(parentView);
 
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-      if (views.contains(parentView)) views.set(views.indexOf(parentView), view);
+      if (parentView != null && views.contains(parentView)) views.set(views.indexOf(parentView), view);
+      else
+        views.add( view );
       viewContainer.add(view);
-
-      currentTab.setCaption(view.getTitle());
+      if (currentTab != null )
+        currentTab.setCaption(view.getTitle());
       return true;
     } catch (Exception ex) {
       String error = ex.toString();
