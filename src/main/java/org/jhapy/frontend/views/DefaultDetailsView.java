@@ -174,7 +174,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
 
     moduleToolbar.addGoBackListener(
         () -> {
-          if ( parentViewClassname == null ) {
+          if ( displayInANewTab() ) {
             getParentTab().closeTab();
             return;
           }

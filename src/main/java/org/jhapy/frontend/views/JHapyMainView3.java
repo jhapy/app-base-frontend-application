@@ -94,6 +94,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.jhapy.frontend.utils.AppConst.*;
@@ -123,15 +124,16 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger, RouterLayout {
 
   private static final String CLASS_NAME = "root";
+
+  private final List<View> allViews = new ArrayList<>();
+  private final Tabs appTabs = new Tabs();
+  private final List<ModuleTab> allTabs = new ArrayList<>();
   private final ConfirmDialog confirmDialog;
   private final HazelcastInstance hazelcastInstance;
   private final List<AttributeContextListener> contextListeners = new ArrayList<>();
   private final MyI18NProvider myI18NProvider;
   private final Div header = new Div();
-  private final Tabs tabs = new Tabs();
   private final ModuleTabAdd newTabButton = new ModuleTabAdd();
-  private final List<ModuleTab> tabList = new ArrayList<>();
-  private final List<View> views = new ArrayList<>();
   protected FlexBoxLayout viewContainer;
   protected AppProperties appProperties;
   private Div appHeaderOuter;
@@ -259,7 +261,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
   public void showRouterLayoutContent(HasElement content) {
     String loggerPrefix = getLoggerPrefix("showRouterLayoutContent");
     debug(loggerPrefix, "Show content ...");
-    displayViewFromNavigation((View) content);
+    displayViewFromRouterLayoutNavigation((View) content);
   }
 
   public void addAttributeContextListener(AttributeContextListener contextListener) {
@@ -873,62 +875,69 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
                 menuItem.addClickListener(
                     event -> {
                       ModuleTab lastTab = null;
-                      for (ModuleTab moduleTab : tabList) {
+                      for (ModuleTab moduleTab : allTabs) {
                         if (moduleTab.isLastTab()) {
                           lastTab = moduleTab;
                           break;
                         }
                       }
-                      ViewMenu viewMenu =
-                          new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
-                      views.add(viewMenu);
+                      MenuContainerView menuContainerView =
+                          new MenuContainerView(getMenuList(), 0, getTopMenuItemList(), lastTab);
+                      allViews.add(menuContainerView);
 
                       displayViewFromMenu(
                           menu.getBrowser(),
-                          menu.getMenuName(),
+                              menu.getNewViewParams(), menu.getMenuName(),
                           menu.getParentId(),
-                          viewMenu,
-                          lastTab,
-                              menu.getNewViewParams());
+                          menuContainerView,
+                          lastTab
+                      );
                     });
               buildMenu(menu.getId(), menuItem);
             });
   }
 
+  /*
+   * Tab Management Area
+   */
+
+  /** Initialize Tabs */
   private void initTabs() {
     ModuleTab newTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
     newTab.addCloseButtonClickListener(() -> closeTab(newTab));
-    tabList.add(newTab);
-    tabs.setHeightFull();
-    tabs.add(newTab);
-    tabs.add(newTabButton);
+    allTabs.add(newTab);
+    appTabs.setHeightFull();
+    appTabs.add(newTab);
+    appTabs.add(newTabButton);
 
-    ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), newTab);
-    viewMenu.setSizeFull();
-    viewMenu.addModuleSelectedListener(
-        (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
-            displayViewFromMenu(className, menuName, menuParentId, viewMenu, newTab, newViewParams));
-    viewMenu.addCaptionChangedListener(newTab::setCaption);
-    views.add(viewMenu);
+    // Initial Tab display Root Menu
+    MenuContainerView menuContainerView =
+        new MenuContainerView(getMenuList(), 0, getTopMenuItemList(), newTab);
+    menuContainerView.setSizeFull();
+    menuContainerView.addModuleSelectedListener(
+        (className, menuName, menuParentId, currentMenuContainerView, newViewParams) ->
+            displayViewFromMenu(
+                className, newViewParams, menuName, menuParentId, menuContainerView, newTab));
+    menuContainerView.addCaptionChangedListener(newTab::setCaption);
+    allViews.add(menuContainerView);
 
     viewContainer.getChildren().forEach(e -> e.setVisible(false));
-    viewContainer.add(viewMenu);
+    viewContainer.add(menuContainerView);
 
-    tabs.addClassName("tab-container");
+    appTabs.addClassName("tab-container");
 
-    tabs.addSelectedChangeListener(
+    appTabs.addSelectedChangeListener(
         listener -> {
-          if (views.size() < 1) return;
+          if (allViews.size() < 1) return;
           if (listener.getSource().getSelectedIndex() < 0) return;
-          if (listener.getSource().getSelectedIndex() >= views.size()) return;
+          if (listener.getSource().getSelectedIndex() >= allViews.size()) return;
 
-          View view = views.get(listener.getSource().getSelectedIndex());
+          View view = allViews.get(listener.getSource().getSelectedIndex());
 
           viewContainer.getChildren().forEach(e -> e.setVisible(false));
 
-          if (views.contains(view)) {
+          if (allViews.contains(view)) {
             view.setVisible(true);
-
           } else {
             view.add(view);
             viewContainer.add(view);
@@ -936,95 +945,123 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
         });
 
     newTabButton.addClickListener(listener -> addNewTab());
-    header.add(tabs);
+    header.add(appTabs);
   }
 
+  /**
+   * Close the selected tab.
+   *
+   * @param tab Tab to be closed
+   */
   private void closeTab(ModuleTab tab) {
+    View relatedView = allViews.get(appTabs.indexOf(tab));
+    viewContainer.remove(relatedView);
+    allViews.remove(relatedView);
 
-    View browser = views.get(tabs.indexOf(tab));
-    viewContainer.remove(browser);
-    views.remove(browser);
+    appTabs.remove(newTabButton);
+    appTabs.remove(tab);
+    allTabs.remove(tab);
 
-    tabs.remove(newTabButton);
-    tabs.remove(tab);
-    tabList.remove(tab);
-
-    if (tabList.size() < 1) {
+    if (allTabs.size() < 1) {
       addNewTab();
     } else {
-      tabs.setSelectedTab(tabList.get(tabList.size() - 1));
+      var lastTabIndex = allTabs.size() - 1;
+      appTabs.setSelectedTab(allTabs.get(lastTabIndex));
 
-      View view = views.get(tabList.size() - 1);
+      View lastTabView = allViews.get(lastTabIndex);
 
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
 
-      if (views.contains(view)) {
-        view.setVisible(true);
-
+      if (allViews.contains(lastTabView)) {
+        lastTabView.setVisible(true);
       } else {
-        view.add(view);
-        viewContainer.add(view);
+        lastTabView.add(lastTabView);
+        viewContainer.add(lastTabView);
       }
     }
 
-    tabs.add(newTabButton);
+    appTabs.add(newTabButton);
   }
 
+  /**
+   * Add a new Tab with the root menu inside (viewContainer is not populated)
+   *
+   * @return The new created tab
+   */
   private ModuleTab addNewTab() {
     return addNewTab(true);
   }
-  private ModuleTab addNewTab(boolean isDisplayMenu ) {
 
-    tabs.remove(newTabButton);
+  /**
+   * Add a new tab
+   *
+   * @param isDisplayMenu Decide to display the root menu inside or not
+   * @return The new cretaed tab
+   */
+  private ModuleTab addNewTab(boolean isDisplayMenu) {
+    appTabs.remove(newTabButton);
 
-    for (ModuleTab tab : tabList) {
+    for (ModuleTab tab : allTabs) {
       tab.setLastTab(false);
     }
 
-    ModuleTab lastTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
-    lastTab.addCloseButtonClickListener(() -> closeTab(lastTab));
-    tabList.add(lastTab);
-    tabs.add(lastTab);
-    tabs.add(newTabButton);
-    tabs.setSelectedTab(lastTab);
+    ModuleTab newTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
+    newTab.addCloseButtonClickListener(() -> closeTab(newTab));
+    allTabs.add(newTab);
+    appTabs.add(newTab);
+    appTabs.add(newTabButton);
+    appTabs.setSelectedTab(newTab);
 
     if (isDisplayMenu) {
-      ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), lastTab);
-      viewMenu.setSizeFull();
-      viewMenu.addModuleSelectedListener(
-          (className, menuName, menuParentId, currentViewMenu, newViewParams) ->
+      MenuContainerView menuContainerView =
+          new MenuContainerView(getMenuList(), 0, getTopMenuItemList(), newTab);
+      menuContainerView.setSizeFull();
+      menuContainerView.addModuleSelectedListener(
+          (className, menuName, menuParentId, currentMenuContainerView, newViewParams) ->
               displayViewFromMenu(
-                  className, menuName, menuParentId, viewMenu, lastTab, newViewParams));
-      viewMenu.addCaptionChangedListener(lastTab::setCaption);
-      views.add(viewMenu);
+                  className, newViewParams, menuName, menuParentId, menuContainerView, newTab));
+      menuContainerView.addCaptionChangedListener(newTab::setCaption);
+      allViews.add(menuContainerView);
 
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-        viewContainer.add(viewMenu);
+      viewContainer.add(menuContainerView);
     } else {
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
     }
-    return lastTab;
+    return newTab;
   }
 
-  public boolean displayViewFromNavigation(View view) {
+  /**
+   * Called when navigating using the router layout (showRouterLayoutContent)
+   *
+   * @param view The view to be displayed
+   * @return true is all goes well, false if any problem occurs (Exception)
+   */
+  public boolean displayViewFromRouterLayoutNavigation(View view) {
     String loggerPrefix = getLoggerPrefix("displayView");
     try {
-      ModuleTab currentTab = (ModuleTab) tabs.getSelectedTab();
+      ModuleTab currentTab = (ModuleTab) appTabs.getSelectedTab();
       currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, "xxx"));
       UI.getCurrent().getPage().getHistory().pushState(null, "/");
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);
-            ViewMenu viewMenu = new ViewMenu(getMenuList(), 0, getTopMenuItemList(), currentTab);
+            MenuContainerView menuContainerView =
+                new MenuContainerView(getMenuList(), 0, getTopMenuItemList(), currentTab);
             currentTab.getBreadcrumb().pull();
-            viewMenu.addModuleSelectedListener(
-                (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
+            menuContainerView.addModuleSelectedListener(
+                (className1, menuName1, menuParentId1, currentMenuContainerView1, newViewParams1) ->
                     displayViewFromMenu(
-                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
-            viewMenu.addCaptionChangedListener(currentTab::setCaption);
+                        className1,
+                            newViewParams1, menuName1,
+                        menuParentId1,
+                        currentMenuContainerView1,
+                        currentTab
+                    ));
+            menuContainerView.addCaptionChangedListener(currentTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
-            views.set(views.indexOf(view), viewMenu);
-            viewContainer.add(viewMenu);
+            allViews.set(allViews.indexOf(view), menuContainerView);
+            viewContainer.add(menuContainerView);
             UI.getCurrent().getPage().getHistory().pushState(null, "/");
             Menu parentMenu = null;
 
@@ -1037,10 +1074,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
             if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
           });
 
-      var currentMenu = views.get(0);
+      var currentMenu = allViews.get(0);
       viewContainer.remove(currentMenu);
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-      views.set(views.indexOf(currentMenu), view);
+      allViews.set(allViews.indexOf(currentMenu), view);
       viewContainer.add(view);
       // currentTab.setCaption(menuName);
       return true;
@@ -1061,20 +1098,20 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     }
   }
 
+  /**
+   * Called when navigating using master / detail navigation
+   *
+   * @param parentView The parent view
+   * @param parentParams The parent view parameter
+   * @param newViewClass The new View Class
+   * @param newViewParams The new View Parameters
+   * @return true is all goes well, false if any problem occurs (Exception)
+   */
   public boolean displayViewFromParentView(
-          View parentView,
-          String parentParams,
-          Class<? extends View> newViewClass,
-          String newViewParams) {
-    return displayViewFromParentView(parentView, parentParams, newViewClass, newViewParams, false );
-  }
-
-  public boolean displayViewFromParentView(
-      View defaultParentView,
-      String defaultParentParams,
+      View parentView,
+      String parentParams,
       Class<? extends View> newViewClass,
-      String newViewParams,
-      Boolean newTab) {
+      String newViewParams) {
     String loggerPrefix = getLoggerPrefix("displayView");
 
     debug(
@@ -1082,8 +1119,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
         "New View : {0} with parameter(s) {1}, Parent View : {2} with parameter(s) : {3}",
         newViewClass.getSimpleName(),
         newViewParams == null ? "None" : newViewParams,
-            defaultParentView == null ? "None" : defaultParentView.getClass().getSimpleName(),
-            defaultParentParams == null ? "None" : defaultParentParams);
+            parentView == null ? "None" : parentView.getClass().getSimpleName(),
+            parentParams == null ? "None" : parentParams);
     try {
       if (newViewClass == null) {
         Dialogs.notifyError("Module not yet available.");
@@ -1091,107 +1128,104 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
       }
       ModuleTab currentTab;
 
-      View parentView = null;
-      String parentParams;
-      if ( newTab ) {
-        tabs.remove(newTabButton);
+      View view = newViewInstance(newViewClass);
 
-        for (ModuleTab tab : tabList) {
-          tab.setLastTab(false);
-        }
-
-        currentTab = new ModuleTab(getTranslation("element.dashboard.home"), true);
-        currentTab.addCloseButtonClickListener(() -> closeTab(currentTab));
-        tabList.add(currentTab);
-        tabs.add(currentTab);
-        tabs.add(newTabButton);
-        tabs.setSelectedTab(currentTab);
-
-        parentParams = null;
+      if (parentView == null || view.displayInANewTab()) {
+        currentTab = addNewTab(false);
       } else {
-        parentView = defaultParentView;
-        parentParams = defaultParentParams;
         currentTab = parentView.getParentTab();
       }
 
-      View view = newViewInstance(newViewClass);
-      if ( parentView != null )
+      if (parentView != null && ! view.displayInANewTab()) {
+        // Keep the same tab from the parent
         view.setParentTab(parentView.getParentTab());
-      else
+      }
+      else {
+        // The new created tab is set
         view.setParentTab(currentTab);
+      }
 
       if (newViewParams != null) {
-        debug(loggerPrefix, "New View has parameter, set them");
         view.setParameter(null, newViewParams);
       }
       if (currentTab != null)
         currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, view.getTitle()));
+
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
       }
       if (route != null) {
-        if (newViewParams == null) route = route.replace(":___url_parameter", "");
-        else route = route.replace(":___url_parameter", newViewParams);
+        route = route.replace(":___url_parameter", Objects.requireNonNullElse(newViewParams, ""));
         UI.getCurrent().getPage().getHistory().pushState(null, route);
       } else {
         UI.getCurrent().getPage().getHistory().pushState(null, "/");
       }
-if ( parentView != null ) {
-  View finalParentView = parentView;
-  view.setGoBackListener(
-      () -> {
-        if (finalParentView.getNavigationRootClass() != null
-            && finalParentView.getNavigationRootClass().equals(newViewClass)) {
+      if (parentView != null && ! view.displayInANewTab() ) {
+        view.setGoBackListener(
+            () -> {
+              if (parentView.getNavigationRootClass() != null
+                  && parentView.getNavigationRootClass().equals(newViewClass)) {
 
-          long menuParentId = -1;
-          for (Menu menu1 : getMenuList()) {
-            if (menu1.getBrowser() != null
-                && menu1.getBrowser().equals(finalParentView.getNavigationRootClass())) {
-              menuParentId = menu1.getParentId();
-              break;
-            }
-          }
-          viewContainer.remove(view);
-          ViewMenu viewMenu =
-              new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
-          currentTab.getBreadcrumb().pull();
-          viewMenu.addModuleSelectedListener(
-              (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
-                  displayViewFromMenu(
-                      className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
-          viewMenu.addCaptionChangedListener(currentTab::setCaption);
-          viewContainer.getChildren().forEach(e -> e.setVisible(false));
-          views.set(views.indexOf(view), viewMenu);
-          viewContainer.add(viewMenu);
+                long menuParentId = -1;
+                for (Menu menu1 : getMenuList()) {
+                  if (menu1.getBrowser() != null
+                      && menu1.getBrowser().equals(parentView.getNavigationRootClass())) {
+                    menuParentId = menu1.getParentId();
+                    break;
+                  }
+                }
+                viewContainer.remove(view);
+                MenuContainerView menuContainerView =
+                    new MenuContainerView(
+                        getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
+                currentTab.getBreadcrumb().pull();
+                menuContainerView.addModuleSelectedListener(
+                    (className1,
+                        menuName1,
+                        menuParentId1,
+                        currentMenuContainerView1,
+                        newViewParams1) ->
+                        displayViewFromMenu(
+                            className1,
+                                newViewParams1, menuName1,
+                            menuParentId1,
+                            currentMenuContainerView1,
+                            currentTab
+                        ));
+                menuContainerView.addCaptionChangedListener(currentTab::setCaption);
+                viewContainer.getChildren().forEach(e -> e.setVisible(false));
+                allViews.set(allViews.indexOf(view), menuContainerView);
+                viewContainer.add(menuContainerView);
 
-          Menu parentMenu = null;
+                Menu parentMenu = null;
 
-          for (Menu menu : getMenuList()) {
-            if (menu.getId() == menuParentId) {
-              parentMenu = menu;
-            }
-          }
+                for (Menu menu : getMenuList()) {
+                  if (menu.getId() == menuParentId) {
+                    parentMenu = menu;
+                  }
+                }
 
-          if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
-        } else {
-          if (currentTab.getParents().containsKey(view.getClass())) {
-            View.ViewParent viewParent = currentTab.getParents().get(view.getClass());
-            currentTab.getBreadcrumb().pull();
-            currentTab.getBreadcrumb().pull();
-            currentTab.getParents().remove(view.getClass());
-            displayViewFromParentView(
-                view,
-                newViewParams,
-                viewParent.getParentClass(),
-                viewParent.getParentParameters());
-          } else {
-            // Seems to be never use...
-            displayViewFromParentView(view, newViewParams, finalParentView.getClass(), parentParams);
-          }
-        }
-      });
-}
+                if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+              } else {
+                if (currentTab.getParents().containsKey(view.getClass())) {
+                  View.ViewParent viewParent = currentTab.getParents().get(view.getClass());
+                  currentTab.getBreadcrumb().pull();
+                  currentTab.getBreadcrumb().pull();
+                  currentTab.getParents().remove(view.getClass());
+                  displayViewFromParentView(
+                      view,
+                      newViewParams,
+                      viewParent.getParentClass(),
+                      viewParent.getParentParameters());
+                } else {
+                  // Seems to be never use...
+                  displayViewFromParentView(
+                      view, newViewParams, parentView.getClass(), parentParams);
+                }
+              }
+            });
+      }
       if (parentView != null && currentTab != null) {
         var parentMap = currentTab.getParents();
         if (!parentMap.containsKey(newViewClass)) {
@@ -1211,16 +1245,14 @@ if ( parentView != null ) {
       if (parentView != null && parentView.getMenuBackListener() != null)
         view.setMenuBackListener(parentView.getMenuBackListener());
 
-      if ( parentView != null )
-      viewContainer.remove(parentView);
+      if (parentView != null && ! view.displayInANewTab()) viewContainer.remove(parentView);
 
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-      if (parentView != null && views.contains(parentView)) views.set(views.indexOf(parentView), view);
-      else
-        views.add( view );
+      if (parentView != null && ! view.displayInANewTab() && allViews.contains(parentView))
+        allViews.set(allViews.indexOf(parentView), view);
+      else allViews.add(view);
       viewContainer.add(view);
-      if (currentTab != null )
-        currentTab.setCaption(view.getTitle());
+      if (currentTab != null) currentTab.setCaption(view.getTitle());
       return true;
     } catch (Exception ex) {
       String error = ex.toString();
@@ -1241,41 +1273,34 @@ if ( parentView != null ) {
     }
   }
 
-  private View newViewInstance(Class<? extends View> newView)
-      throws NoSuchMethodException, InvocationTargetException, InstantiationException,
-          IllegalAccessException {
-    var constructors = newView.getDeclaredConstructors();
-    for (Constructor<?> constructor : constructors) {
-      if (constructor.getParameterCount() == 1
-          && constructor.getParameterTypes()[0].equals(MyI18NProvider.class)) {
-        return newView.getDeclaredConstructor(MyI18NProvider.class).newInstance(myI18NProvider);
-      }
-    }
-    for (Constructor<?> constructor : constructors) {
-      if (constructor.getParameterCount() == 0) {
-        return newView.getDeclaredConstructor().newInstance();
-      }
-    }
-    throw new NoSuchMethodException("No valid constructor found");
-  }
-
-  public boolean displayViewFromMenu(
-          Class<? extends View> newViewClass,
-          String menuName,
-          long menuParentId,
-          View parentView,
-          ModuleTab currentTab) {
-    return displayViewFromMenu( newViewClass, menuName, menuParentId, parentView, currentTab, null);
-  }
-
   public boolean displayViewFromMenu(
       Class<? extends View> newViewClass,
       String menuName,
       long menuParentId,
       View parentView,
-      ModuleTab currentTab,
-      String newViewParams) {
-    String loggerPrefix = getLoggerPrefix("displayView");
+      ModuleTab targetTab) {
+    return displayViewFromMenu(newViewClass, null, menuName, menuParentId, parentView, targetTab);
+  }
+
+  /**
+   * Called when navigating using Menu Container or regular Menu
+   *
+   * @param newViewClass The new View Class
+   * @param newViewParams The new View Parameters
+   * @param menuName The name of the menu
+   * @param menuParentId The parent menu Id
+   * @param parentView The parent View
+   * @param targetTab The Tab where the view will be display
+   * @return true is all goes well, false if any problem occurs (Exception)
+   */
+  public boolean displayViewFromMenu(
+          Class<? extends View> newViewClass,
+          String newViewParams,
+          String menuName,
+          long menuParentId,
+          View parentView,
+          ModuleTab targetTab) {
+    String loggerPrefix = getLoggerPrefix("displayViewFromMenu");
     try {
       if (newViewClass == null) {
         error(loggerPrefix, "Module is not set (newViewClass)");
@@ -1284,14 +1309,15 @@ if ( parentView != null ) {
       }
 
       View view = newViewInstance(newViewClass);
-      view.setParentTab(currentTab);
+      view.setParentTab(targetTab);
       view.setNavigationRootClass(newViewClass);
       if (newViewParams != null) {
         debug(loggerPrefix, "New View has parameter, set them");
         view.setParameter(null, newViewParams);
       }
 
-      currentTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
+      targetTab.getBreadcrumb().push(UIUtils.createLabel(TextColor.PRIMARY, menuName));
+
       String route = null;
       for (RouteData routeData : RouteConfiguration.forApplicationScope().getAvailableRoutes()) {
         if (routeData.getNavigationTarget().equals(newViewClass)) route = routeData.getTemplate();
@@ -1302,20 +1328,26 @@ if ( parentView != null ) {
       } else {
         UI.getCurrent().getPage().getHistory().pushState(null, "/");
       }
+      // Menu Back will display the menu container
       view.setMenuBackListener(
           () -> {
             viewContainer.remove(view);
-            ViewMenu viewMenu =
-                new ViewMenu(getMenuList(), menuParentId, getTopMenuItemList(), currentTab);
-            currentTab.getBreadcrumb().pull();
-            viewMenu.addModuleSelectedListener(
-                (className1, menuName1, menuParentId1, currentViewMenu1, newViewParams1) ->
+
+            MenuContainerView menuContainerView = new MenuContainerView(getMenuList(), menuParentId, getTopMenuItemList(), targetTab);
+            targetTab.getBreadcrumb().pull();
+            menuContainerView.addModuleSelectedListener(
+                (className1, menuName1, menuParentId1, currentMenuContainerView1, newViewParams1) ->
                     displayViewFromMenu(
-                        className1, menuName1, menuParentId1, currentViewMenu1, currentTab, newViewParams1));
-            viewMenu.addCaptionChangedListener(currentTab::setCaption);
+                        className1,
+                            newViewParams1, menuName1,
+                        menuParentId1,
+                        currentMenuContainerView1,
+                            targetTab
+                    ));
+            menuContainerView.addCaptionChangedListener(targetTab::setCaption);
             viewContainer.getChildren().forEach(e -> e.setVisible(false));
-            views.set(views.indexOf(view), viewMenu);
-            viewContainer.add(viewMenu);
+            allViews.set(allViews.indexOf(view), menuContainerView);
+            viewContainer.add(menuContainerView);
             UI.getCurrent().getPage().getHistory().pushState(null, "/");
             Menu parentMenu = null;
 
@@ -1326,14 +1358,14 @@ if ( parentView != null ) {
               }
             }
 
-            if (parentMenu != null) currentTab.setCaption(parentMenu.getMenuName());
+            if (parentMenu != null) targetTab.setCaption(parentMenu.getMenuName());
           });
 
       viewContainer.remove(parentView);
       viewContainer.getChildren().forEach(e -> e.setVisible(false));
-      views.set(views.indexOf(parentView), view);
+      allViews.set(allViews.indexOf(parentView), view);
       viewContainer.add(view);
-      currentTab.setCaption(menuName);
+      targetTab.setCaption(menuName);
 
       return true;
     } catch (Exception ex) {
@@ -1351,6 +1383,34 @@ if ( parentView != null ) {
 
       return false;
     }
+  }
+
+  /**
+   * Instantiate a View based on the Class
+   *
+   * @param newView The Class of the new View
+   * @return The instantiated new View
+   * @throws NoSuchMethodException
+   * @throws InvocationTargetException
+   * @throws InstantiationException
+   * @throws IllegalAccessException
+   */
+  private View newViewInstance(Class<? extends View> newView)
+          throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+          IllegalAccessException {
+    var constructors = newView.getDeclaredConstructors();
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.getParameterCount() == 1
+              && constructor.getParameterTypes()[0].equals(MyI18NProvider.class)) {
+        return newView.getDeclaredConstructor(MyI18NProvider.class).newInstance(myI18NProvider);
+      }
+    }
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.getParameterCount() == 0) {
+        return newView.getDeclaredConstructor().newInstance();
+      }
+    }
+    throw new NoSuchMethodException("No valid constructor found");
   }
 
   public List<Menu> getMenuList() {

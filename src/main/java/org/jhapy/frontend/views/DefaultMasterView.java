@@ -119,10 +119,19 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
     filter(null, false);
   }
 
+  @Override
+  public boolean displayInANewTab() {
+    return false;
+  }
+
   protected void initHeader() {
     moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
     moduleToolbar.addGoBackListener(
         () -> {
+          if ( displayInANewTab() ) {
+            getParentTab().closeTab();
+            return;
+          }
           if (super.getGoBackListener() != null) super.getGoBackListener().goBack();
           else super.getMenuBackListener().goBack();
         });
@@ -202,7 +211,7 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
             this,
             currentViewParams,
             entityViewClass,
-            entity.getId() == null ? "-1" : entity.getId().toString(), true);
+            entity.getId() == null ? "-1" : entity.getId().toString());
   }
 
   protected void filter(String filter, Boolean showInactive) {

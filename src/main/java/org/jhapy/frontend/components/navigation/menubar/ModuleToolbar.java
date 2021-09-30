@@ -74,11 +74,19 @@ public class ModuleToolbar extends FlexLayout {
     // getStyle().set("margin-left", "5px");
     // getStyle().set("margin-right", "5px");
 
-    Button lblBack =
-        UIUtils.createButton("Back", VaadinIcon.ARROW_LEFT, ButtonVariant.LUMO_TERTIARY);
-    lblBack.getStyle().set("margin-left", "10px");
+    if ( parentLayout.displayInANewTab() ) {
+      Button closeButton =
+              UIUtils.createButton(getTranslation("action.global.close"), VaadinIcon.CLOSE, ButtonVariant.LUMO_TERTIARY);
+      closeButton.getStyle().set("margin-left", "10px");
 
-    menuBack.add(lblBack);
+      menuBack.add(closeButton);
+    } else {
+      Button backButton =
+          UIUtils.createButton(getTranslation("action.global.back"), VaadinIcon.ARROW_LEFT, ButtonVariant.LUMO_TERTIARY);
+      backButton.getStyle().set("margin-left", "10px");
+
+      menuBack.add(backButton);
+    }
     menuBack.getStyle().set("align-items", "center");
     menuBack.addClickListener(
         listener -> {

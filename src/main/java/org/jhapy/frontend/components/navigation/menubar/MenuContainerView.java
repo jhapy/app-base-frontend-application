@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ViewMenu extends View {
+public class MenuContainerView extends View {
 
   private final Div mainMenu = new Div();
   private final Div topMenu = new Div();
@@ -42,21 +42,21 @@ public class ViewMenu extends View {
   private final List<CaptionChangedListener> captionChangedListeners = new ArrayList<>();
   private final List<ModuleSelectedListener> moduleSelectedListeners = new ArrayList<>();
   private final List<Menu> menuList;
-  private long parentId = 0;
+  private long parentMenuId;
   private List<TopMenuItem> topMenuList;
   private BaseDashboardView menuDefaultContent;
 
-  public ViewMenu(List<Menu> menuList, long parentId, ModuleTab parentTab) {
+  public MenuContainerView(List<Menu> menuList, long parentMenuId, ModuleTab parentTab) {
     setParentTab(parentTab);
     this.menuList = menuList;
-    this.parentId = parentId;
+    this.parentMenuId = parentMenuId;
   }
 
-  public ViewMenu(
-      List<Menu> menuList, long parentId, List<TopMenuItem> topMenuList, ModuleTab parentTab) {
+  public MenuContainerView(
+          List<Menu> menuList, long parentMenuId, List<TopMenuItem> topMenuList, ModuleTab parentTab) {
     setParentTab(parentTab);
     this.menuList = menuList;
-    this.parentId = parentId;
+    this.parentMenuId = parentMenuId;
     this.topMenuList = topMenuList;
   }
 
@@ -83,7 +83,7 @@ public class ViewMenu extends View {
 
     if (topMenuList != null && !topMenuList.isEmpty()) initTopMenu();
 
-    loadMenu(this.parentId);
+    loadMenu(this.parentMenuId);
 
     mainMenu.add(menuItemContainer);
     setSizeFull();
@@ -121,7 +121,7 @@ public class ViewMenu extends View {
       }
     }
 
-    if ((menus == null) || (menus.size() < 1)) {
+    if (menus.size() < 1) {
 
       Menu menu = null;
 
@@ -160,7 +160,6 @@ public class ViewMenu extends View {
       var p = menu;
       var label = UIUtils.createLabel(TextColor.PRIMARY, p.getMenuName());
       // label.setEnabled(false);
-      Menu finalP = p;
       breadcrumbs.add(label);
       while (p.getParentId() != 0) {
         for (Menu m : menuList) {
@@ -267,6 +266,6 @@ public class ViewMenu extends View {
   }
 
   public interface ModuleSelectedListener {
-    boolean moduleSelected(Class browser, String menuName, long menuParentId, ViewMenu currentMenu, String newViewParams);
+    boolean moduleSelected(Class<? extends View> browser, String menuName, long menuParentId, MenuContainerView currentMenu, String newViewParams);
   }
 }

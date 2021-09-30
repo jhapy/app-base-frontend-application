@@ -172,6 +172,11 @@ public abstract class DefaultMasterDetailsView<
   }
 
   @Override
+  public boolean displayInANewTab() {
+    return false;
+  }
+
+  @Override
   public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
     ContinueNavigationAction action = beforeLeaveEvent.postpone();
     checkForDetailsChanges(action::proceed);
@@ -205,6 +210,10 @@ public abstract class DefaultMasterDetailsView<
     moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
     moduleToolbar.addGoBackListener(
         () -> {
+          if ( displayInANewTab() ) {
+            getParentTab().closeTab();
+            return;
+          }
           if (super.getGoBackListener() != null) super.getGoBackListener().goBack();
           else super.getMenuBackListener().goBack();
         });
