@@ -19,7 +19,7 @@ import org.jhapy.dto.utils.AppContextThread;
 import org.jhapy.dto.utils.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.zalando.problem.ProblemModule;
+import org.zalando.problem.jackson.ProblemModule;
 
 import java.text.MessageFormat;
 import java.util.Arrays;

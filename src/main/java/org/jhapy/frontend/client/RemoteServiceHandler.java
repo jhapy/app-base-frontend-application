@@ -11,7 +11,7 @@ import org.jhapy.commons.exception.JHapyProblem;
 import org.jhapy.commons.security.SecurityUtils;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.AppContextThread;
-import org.zalando.problem.ProblemModule;
+import org.zalando.problem.jackson.ProblemModule;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
