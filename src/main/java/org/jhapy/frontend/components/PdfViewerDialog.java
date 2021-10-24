@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.server.StreamResource;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.dto.utils.PdfConvert;
 import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.client.BaseServices;
@@ -33,7 +33,7 @@ public class PdfViewerDialog extends AbstractDialog implements HasLogger {
     this.storedFile = storedFile;
     if (storedFile != null && storedFile.getId() != null) {
       ServiceResult<StoredFile> _storedFile =
-          BaseServices.getResourceService().getById(new GetByStrIdQuery(storedFile.getId()));
+          BaseServices.getResourceService().getById(new GetByIdQuery(storedFile.getId()));
       if (_storedFile.getIsSuccess() && _storedFile.getData() != null) {
         storedFile.setContent(_storedFile.getData().getContent());
         storedFile.setPdfContent(_storedFile.getData().getPdfContent());

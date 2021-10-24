@@ -165,7 +165,8 @@ public class ActionsView
                 importFileDialog.close();
                 ServiceResult<Void> result =
                     I18NServices.getI18NService()
-                        .importI18NFile(new ImportI18NFileQuery(ArrayUtils.toObject(bytes)));
+                        .importI18NFile(
+                            new ImportI18NFileQuery("i18n.xlsx", ArrayUtils.toObject(bytes)));
                 if (result.getIsSuccess()) {
                   JHapyMainView3.get()
                       .displayInfoMessage(getTranslation("message.fileImport.success"));

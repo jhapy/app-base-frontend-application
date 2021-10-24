@@ -30,7 +30,7 @@ import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.security.securityRole.GetSecurityRoleByNameQuery;
 import org.jhapy.dto.serviceQuery.security.securityUser.GetSecurityUserByUsernameQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.frontend.converter.SecurityConverter;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.GroupResource;
@@ -88,15 +88,16 @@ public class KeycloakClient implements HasLogger {
   @Cacheable("allUsers")
   public ServiceResult<List<SecurityKeycloakUser>> getAllUsers() {
     return new ServiceResult(
-            securityConverter.convertToDtoSecurityKeycloakUsers(
-                    getKeycloakRealmInstance().users().list().stream()
-                            .sorted((o1, o2) -> {
-                              if ( StringUtils.isNotBlank(o1.getLastName() ) && StringUtils.isNotBlank(o2.getLastName() ))
-                                return o1.getLastName().compareTo(o2.getLastName());
-                              else
-                                return o1.getUsername().compareTo(o2.getUsername());
-                            })
-                            .collect(Collectors.toList())));
+        securityConverter.convertToDtoSecurityKeycloakUsers(
+            getKeycloakRealmInstance().users().list().stream()
+                .sorted(
+                    (o1, o2) -> {
+                      if (StringUtils.isNotBlank(o1.getLastName())
+                          && StringUtils.isNotBlank(o2.getLastName()))
+                        return o1.getLastName().compareTo(o2.getLastName());
+                      else return o1.getUsername().compareTo(o2.getUsername());
+                    })
+                .collect(Collectors.toList())));
   }
 
   @Cacheable("userByName")
@@ -329,14 +330,14 @@ public class KeycloakClient implements HasLogger {
   }
 
   @Cacheable("findUsers")
-  public ServiceResult<Page<SecurityKeycloakUser>> findUsers(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SecurityKeycloakUser>> findUsers(FindAnyMatchingQuery query) {
     int totalElements = getKeycloakRealmInstance().users().count(query.getFilter());
     int start =
         (query.getPageable().getPage() * query.getPageable().getSize())
             + query.getPageable().getOffset();
     int end = Math.min(start + query.getPageable().getSize(), totalElements);
 
-    Page<SecurityKeycloakUser> result = new Page<>();
+    PageDTO<SecurityKeycloakUser> result = new PageDTO<>();
 
     List<UserRepresentation> users =
         getKeycloakRealmInstance().users().search(query.getFilter(), start, end);
@@ -417,12 +418,13 @@ public class KeycloakClient implements HasLogger {
         securityConverter.convertToDtoSecurityKeycloakRoles(
             getKeycloakRealmInstance().roles().list().stream()
                 .filter(roleRepresentation -> roleRepresentation.getName().startsWith("ROLE"))
-                .sorted((o1, o2) -> {
-                  if ( StringUtils.isNotBlank(o1.getDescription() ) && StringUtils.isNotBlank(o2.getDescription() ))
-                    return o1.getDescription().compareTo(o2.getDescription());
-                  else
-                    return o1.getName().compareTo(o2.getName());
-                })
+                .sorted(
+                    (o1, o2) -> {
+                      if (StringUtils.isNotBlank(o1.getDescription())
+                          && StringUtils.isNotBlank(o2.getDescription()))
+                        return o1.getDescription().compareTo(o2.getDescription());
+                      else return o1.getName().compareTo(o2.getName());
+                    })
                 .collect(Collectors.toList())));
   }
 
@@ -457,7 +459,7 @@ public class KeycloakClient implements HasLogger {
   }
 
   @Cacheable(value = "findRoles", key = "#query")
-  public ServiceResult<Page<SecurityKeycloakRole>> findRoles(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SecurityKeycloakRole>> findRoles(FindAnyMatchingQuery query) {
     int totalElements = getKeycloakRealmInstance().roles().list(query.getFilter(), true).size();
     // int start = query.getPageable().getOffset();
     int start =
@@ -465,7 +467,7 @@ public class KeycloakClient implements HasLogger {
             + query.getPageable().getOffset();
     int end = Math.min(start + query.getPageable().getSize(), totalElements);
 
-    Page<SecurityKeycloakRole> result = new Page<>();
+    PageDTO<SecurityKeycloakRole> result = new PageDTO<>();
 
     List<RoleRepresentation> roles =
         getKeycloakRealmInstance().roles().list(query.getFilter(), true);
@@ -602,7 +604,7 @@ public class KeycloakClient implements HasLogger {
   }
 
   @Cacheable("findGroups")
-  public ServiceResult<Page<SecurityKeycloakGroup>> findGroups(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SecurityKeycloakGroup>> findGroups(FindAnyMatchingQuery query) {
     int totalElements =
         getKeycloakRealmInstance().groups().count(query.getFilter()).get("count").intValue();
     int start =
@@ -610,7 +612,7 @@ public class KeycloakClient implements HasLogger {
             + query.getPageable().getOffset();
     int end = Math.min(start + query.getPageable().getSize(), totalElements);
 
-    Page<SecurityKeycloakGroup> result = new Page<>();
+    PageDTO<SecurityKeycloakGroup> result = new PageDTO<>();
 
     List<GroupRepresentation> groups =
         getKeycloakRealmInstance().groups().groups(query.getFilter(), start, end, true);

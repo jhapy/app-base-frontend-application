@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.security.SecurityKeycloakUser;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -51,12 +51,12 @@ public class SecurityUserKeycloakDataProvider
   }
 
   @Override
-  protected Page<SecurityKeycloakUser> fetchFromBackEnd(
+  protected PageDTO<SecurityKeycloakUser> fetchFromBackEnd(
       Query<SecurityKeycloakUser, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
     String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
-    Page<SecurityKeycloakUser> page =
+    PageDTO<SecurityKeycloakUser> page =
         SecurityServices.getKeycloakClient()
             .findUsers(new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable))
             .getData();

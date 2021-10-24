@@ -26,7 +26,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.security.SecurityKeycloakUser;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
@@ -47,7 +47,7 @@ public class SecurityUserKeycloakStringDataProvider
     extends PageableDataProvider<SecurityKeycloakUser, String> implements Serializable {
 
   @Override
-  protected Page<SecurityKeycloakUser> fetchFromBackEnd(
+  protected PageDTO<SecurityKeycloakUser> fetchFromBackEnd(
       Query<SecurityKeycloakUser, String> query, Pageable pageable) {
     return SecurityServices.getKeycloakClient()
         .findUsers(new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable))

@@ -188,7 +188,7 @@ public abstract class DefaultCustomListFieldForTranslationV3<C extends EntityTra
       Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
       if (value.getId() == null) {
-        value.setId(uniqueLong.incrementAndGet());
+        value.setId(UUID.randomUUID());
         value.setIsNew(true);
       }
       if (!fieldsMap.containsKey(value.getIso3Language())) {

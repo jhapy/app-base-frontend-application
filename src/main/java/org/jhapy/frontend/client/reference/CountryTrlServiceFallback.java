@@ -19,7 +19,7 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.CountryTrl;
+import org.jhapy.dto.domain.reference.CountryTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -36,21 +36,21 @@ import org.springframework.stereotype.Component;
 public class CountryTrlServiceFallback implements CountryTrlService, HasLogger {
 
   @Override
-  public ServiceResult<CountryTrl> getCountryTrl(GetCountryTrlQuery query) {
+  public ServiceResult<CountryTrlDTO> getCountryTrl(GetCountryTrlQuery query) {
     logger().error(getLoggerPrefix("getCountryTrl") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<CountryTrl> getById(GetByIdQuery query) {
+  public ServiceResult<CountryTrlDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<CountryTrl> save(SaveQuery<CountryTrl> query) {
+  public ServiceResult<CountryTrlDTO> save(SaveQuery<CountryTrlDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

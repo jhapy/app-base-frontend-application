@@ -19,14 +19,14 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.SubRegion;
+import org.jhapy.dto.domain.reference.SubRegionDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.serviceQuery.reference.subRegion.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.reference.subRegion.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -41,17 +41,17 @@ import java.util.List;
 public class SubRegionServiceFallback implements SubRegionService, HasLogger {
 
   @Override
-  public ServiceResult<List<SubRegion>> findAll() {
+  public ServiceResult<List<SubRegionDTO>> findAll() {
     logger().error(getLoggerPrefix("findAll") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", Collections.emptyList());
   }
 
   @Override
-  public ServiceResult<Page<SubRegion>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SubRegionDTO>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override
@@ -62,14 +62,14 @@ public class SubRegionServiceFallback implements SubRegionService, HasLogger {
   }
 
   @Override
-  public ServiceResult<SubRegion> getById(GetByIdQuery query) {
+  public ServiceResult<SubRegionDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<SubRegion> save(SaveQuery<SubRegion> query) {
+  public ServiceResult<SubRegionDTO> save(SaveQuery<SubRegionDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

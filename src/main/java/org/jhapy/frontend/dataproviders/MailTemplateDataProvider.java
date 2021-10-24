@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.notification.MailTemplate;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.notification.NotificationServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,10 +48,10 @@ public class MailTemplateDataProvider extends DefaultDataProvider<MailTemplate, 
   }
 
   @Override
-  protected Page<MailTemplate> fetchFromBackEnd(
+  protected PageDTO<MailTemplate> fetchFromBackEnd(
       Query<MailTemplate, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<MailTemplate> page =
+    PageDTO<MailTemplate> page =
         NotificationServices.getMailTemplateService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

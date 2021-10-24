@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.audit.Session;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.audit.AuditServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,9 +48,10 @@ public class SessionDataProvider extends DefaultDataProvider<Session, DefaultFil
   }
 
   @Override
-  protected Page<Session> fetchFromBackEnd(Query<Session, DefaultFilter> query, Pageable pageable) {
+  protected PageDTO<Session> fetchFromBackEnd(
+      Query<Session, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<Session> page =
+    PageDTO<Session> page =
         AuditServices.getSessionService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

@@ -26,7 +26,6 @@ import org.jhapy.dto.domain.BaseInnerEntity;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +38,6 @@ public abstract class DefaultBackendFree<C extends BaseInnerEntity>
     extends AbstractBackEndDataProvider<C, CrudFilter> implements Serializable {
 
   protected final List<C> fieldsMap = new ArrayList<>();
-  protected final AtomicLong uniqueLong = new AtomicLong();
   private Comparator<C> comparator;
   private SerializablePredicate<C> filter;
 
@@ -101,14 +99,7 @@ public abstract class DefaultBackendFree<C extends BaseInnerEntity>
     if (comparing.isPresent()) {
       stream = stream.sorted();
     }
-    long maxId = 0;
-    List<C> result = stream.collect(Collectors.toList());
-    for (C c : result) {
-      if (c.getTemporaryId() > maxId) {
-        maxId = c.getTemporaryId();
-      }
-    }
-    uniqueLong.set(maxId + 1);
-    return result.stream().skip(query.getOffset()).limit(query.getLimit());
+
+    return stream.skip(query.getOffset()).limit(query.getLimit());
   }
 }

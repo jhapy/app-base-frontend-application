@@ -27,7 +27,7 @@ import org.jhapy.dto.serviceQuery.i18n.FindByIso3Query;
 import org.jhapy.dto.serviceQuery.i18n.GetByNameAndIso3Query;
 import org.jhapy.dto.serviceQuery.i18n.messageTrl.FindByMessageQuery;
 import org.jhapy.dto.serviceQuery.i18n.messageTrl.GetMessageTrlQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.frontend.client.AuthorizedFeignClient;
 import org.jhapy.frontend.client.RemoteServiceHandler;
 import org.springframework.context.annotation.Primary;
@@ -77,11 +77,11 @@ public interface MessageService extends RemoteServiceHandler {
 
   @PostMapping(value = "/findAnyMatching")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
-  ServiceResult<Page<MessageDTO>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<MessageDTO>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
-  default ServiceResult<Page<MessageDTO>> findAnyMatchingFallback(
+  default ServiceResult<PageDTO<MessageDTO>> findAnyMatchingFallback(
       FindAnyMatchingQuery query, Exception e) {
-    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new Page<>());
+    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new PageDTO<>());
   }
 
   @PostMapping(value = "/countAnyMatching")

@@ -18,7 +18,7 @@
 
 package org.jhapy.frontend.client.reference;
 
-import org.jhapy.dto.domain.reference.CountryTrl;
+import org.jhapy.dto.domain.reference.CountryTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -42,13 +42,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CountryTrlService {
 
   @PostMapping(value = "/getCountryTrl")
-  ServiceResult<CountryTrl> getCountryTrl(@RequestBody GetCountryTrlQuery query);
+  ServiceResult<CountryTrlDTO> getCountryTrl(@RequestBody GetCountryTrlQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<CountryTrl> getById(@RequestBody GetByIdQuery query);
+  ServiceResult<CountryTrlDTO> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
-  ServiceResult<CountryTrl> save(@RequestBody SaveQuery<CountryTrl> query);
+  ServiceResult<CountryTrlDTO> save(@RequestBody SaveQuery<CountryTrlDTO> query);
 
   @PostMapping(value = "/delete")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);

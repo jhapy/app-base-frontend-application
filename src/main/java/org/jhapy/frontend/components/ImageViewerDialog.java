@@ -12,7 +12,7 @@ import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.client.BaseServices;
 import org.jhapy.frontend.component.cropperjs.CropperConfiguration;
@@ -41,7 +41,7 @@ public class ImageViewerDialog extends AbstractDialog implements HasLogger {
     this.storedFile = storedFile;
     if (storedFile != null && storedFile.getId() != null) {
       ServiceResult<StoredFile> _storedFile = BaseServices
-          .getResourceService().getById(new GetByStrIdQuery(storedFile.getId()));
+          .getResourceService().getById(new GetByIdQuery(storedFile.getId()));
       if (_storedFile.getIsSuccess() && _storedFile.getData() != null) {
         storedFile.setContent(_storedFile.getData().getContent());
         storedFile.setOrginalContent(_storedFile.getData().getOrginalContent());

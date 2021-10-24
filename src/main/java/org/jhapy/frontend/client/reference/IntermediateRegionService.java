@@ -18,11 +18,11 @@
 
 package org.jhapy.frontend.client.reference;
 
-import org.jhapy.dto.domain.reference.IntermediateRegion;
+import org.jhapy.dto.domain.reference.IntermediateRegionDTO;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,19 +43,20 @@ import java.util.List;
 public interface IntermediateRegionService {
 
   @PostMapping(value = "/findAll")
-  ServiceResult<List<IntermediateRegion>> findAll(@RequestBody BaseRemoteQuery query);
+  ServiceResult<List<IntermediateRegionDTO>> findAll(@RequestBody BaseRemoteQuery query);
 
   @PostMapping(value = "/findAnyMatching")
-  ServiceResult<Page<IntermediateRegion>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<IntermediateRegionDTO>> findAnyMatching(
+      @RequestBody FindAnyMatchingQuery query);
 
   @PostMapping(value = "/countAnyMatching")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<IntermediateRegion> getById(@RequestBody GetByIdQuery query);
+  ServiceResult<IntermediateRegionDTO> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
-  ServiceResult<IntermediateRegion> save(@RequestBody SaveQuery<IntermediateRegion> query);
+  ServiceResult<IntermediateRegionDTO> save(@RequestBody SaveQuery<IntermediateRegionDTO> query);
 
   @PostMapping(value = "/delete")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);

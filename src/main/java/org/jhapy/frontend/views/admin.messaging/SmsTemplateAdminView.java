@@ -35,7 +35,7 @@ import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.notification.SmsTemplate;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.notification.NotificationServices;
@@ -51,6 +51,8 @@ import org.jhapy.frontend.utils.UIUtils;
 import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.views.JHapyMainView3;
+
+import java.util.UUID;
 
 /**
  * @author jHapy Lead Dev.
@@ -147,7 +149,7 @@ public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<S
   }
 
   protected void save() {
-    String id = binder.getBean().getId();
+    UUID id = binder.getBean().getId();
 
     boolean isNew = id == null;
 
@@ -161,7 +163,7 @@ public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<S
         if (isNew) {
           JHapyMainView3.get()
               .displayViewFromParentView(
-                  this, getParameter(), SmsTemplateAdminView.class, smsTemplate.getId());
+                  this, getParameter(), SmsTemplateAdminView.class, smsTemplate.getId().toString());
         } else {
           binder.readBean(smsTemplate);
         }
@@ -191,7 +193,7 @@ public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<S
     } else {
       smsTemplate =
           NotificationServices.getSmsTemplateService()
-              .getById(new GetByStrIdQuery(viewParameters))
+              .getById(new GetByIdQuery(UUID.fromString(viewParameters)))
               .getData();
       if (smsTemplate == null) {
         smsTemplate = new SmsTemplate();

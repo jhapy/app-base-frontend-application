@@ -168,7 +168,7 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
       return item.getId();
     }
 
-    public C getById(Long id) {
+    public C getById(UUID id) {
       return fieldsMap.stream().filter(c -> c.getId().equals(id)).findFirst().orElse(null);
     }
 

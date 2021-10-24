@@ -32,10 +32,7 @@ import org.jhapy.frontend.components.events.CustomListFieldFreeValueChangeEvent;
 import org.jhapy.frontend.dataproviders.DefaultBackendFree;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
@@ -175,7 +172,7 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
       values.forEach(
           value -> {
             if (value.getTemporaryId() == null) {
-              value.setTemporaryId(uniqueLong.incrementAndGet());
+              value.setTemporaryId(UUID.randomUUID());
             }
           });
       fieldsMap.addAll(values);
@@ -185,7 +182,7 @@ public abstract class DefaultCustomListFieldFree<C extends BaseInnerEntity> exte
       List<C> previousValues = new ArrayList<>(fieldsMap);
 
       if (value.getTemporaryId() == null) {
-        value.setTemporaryId(uniqueLong.incrementAndGet());
+        value.setTemporaryId(UUID.randomUUID());
       }
       if (!fieldsMap.contains(value)) {
         fieldsMap.add(value);

@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.security.SecurityKeycloakRole;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,12 +48,12 @@ public class SecurityRoleKeycloakDataProvider
   }
 
   @Override
-  protected Page<SecurityKeycloakRole> fetchFromBackEnd(
+  protected PageDTO<SecurityKeycloakRole> fetchFromBackEnd(
       Query<SecurityKeycloakRole, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
     String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
-    Page<SecurityKeycloakRole> page =
+    PageDTO<SecurityKeycloakRole> page =
         SecurityServices.getKeycloakClient()
             .findRoles(new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable))
             .getData();

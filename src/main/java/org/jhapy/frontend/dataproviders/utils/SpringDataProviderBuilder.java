@@ -19,7 +19,7 @@
 package org.jhapy.frontend.dataproviders.utils;
 
 import com.vaadin.flow.data.provider.*;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 
 import java.io.Serializable;
@@ -35,20 +35,20 @@ import java.util.function.ToLongFunction;
  */
 public class SpringDataProviderBuilder<T extends Serializable, F> {
 
-  private final BiFunction<Pageable, F, Page<T>> queryFunction;
+  private final BiFunction<Pageable, F, PageDTO<T>> queryFunction;
   private final ToLongFunction<F> lengthFunction;
   private final List<QuerySortOrder> defaultSortOrders = new ArrayList<>();
 
   private F defaultFilter = null;
 
   public SpringDataProviderBuilder(
-      BiFunction<Pageable, F, Page<T>> queryFunction, ToLongFunction<F> lengthFunction) {
+      BiFunction<Pageable, F, PageDTO<T>> queryFunction, ToLongFunction<F> lengthFunction) {
     this.queryFunction = queryFunction;
     this.lengthFunction = lengthFunction;
   }
 
   public static <T extends Serializable, F> SpringDataProviderBuilder<T, F> forFunctions(
-      BiFunction<Pageable, F, Page<T>> queryFunction, ToLongFunction<F> lengthFunction) {
+      BiFunction<Pageable, F, PageDTO<T>> queryFunction, ToLongFunction<F> lengthFunction) {
     return new SpringDataProviderBuilder<>(queryFunction, lengthFunction);
   }
 
@@ -65,7 +65,7 @@ public class SpringDataProviderBuilder<T extends Serializable, F> {
   public DataProvider<T, F> build() {
     return new PageableDataProvider<>() {
       @Override
-      protected Page<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable) {
+      protected PageDTO<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable) {
         return queryFunction.apply(pageable, query.getFilter().orElse(defaultFilter));
       }
 

@@ -28,12 +28,13 @@ import org.jhapy.dto.domain.audit.AuditLog;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.auditLog.CountAuditLogQuery;
 import org.jhapy.dto.serviceQuery.auditLog.FindAuditLogQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.dataproviders.AuditLogDataProvider.AuditLogFilter;
 import org.jhapy.frontend.utils.AppConst;
 
 import java.io.Serializable;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -46,11 +47,11 @@ import java.util.function.Function;
 public class AuditLogDataProvider extends DefaultDataProvider<AuditLog, AuditLogFilter>
     implements Serializable {
 
-  private final Function<FindAuditLogQuery, ServiceResult<Page<AuditLog>>> findHandler;
+  private final Function<FindAuditLogQuery, ServiceResult<PageDTO<AuditLog>>> findHandler;
   private final Function<CountAuditLogQuery, ServiceResult<Long>> countHandler;
 
   public AuditLogDataProvider(
-      Function<FindAuditLogQuery, ServiceResult<Page<AuditLog>>> findHandler,
+      Function<FindAuditLogQuery, ServiceResult<PageDTO<AuditLog>>> findHandler,
       Function<CountAuditLogQuery, ServiceResult<Long>> countHandler) {
     super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
     this.findHandler = findHandler;
@@ -58,10 +59,10 @@ public class AuditLogDataProvider extends DefaultDataProvider<AuditLog, AuditLog
   }
 
   @Override
-  protected Page<AuditLog> fetchFromBackEnd(
+  protected PageDTO<AuditLog> fetchFromBackEnd(
       Query<AuditLog, AuditLogFilter> query, Pageable pageable) {
     AuditLogFilter filter = query.getFilter().orElse(null);
-    Page<AuditLog> page =
+    PageDTO<AuditLog> page =
         findHandler
             .apply(new FindAuditLogQuery(filter.getClassName(), filter.getRecordId(), pageable))
             .getData();
@@ -91,6 +92,6 @@ public class AuditLogDataProvider extends DefaultDataProvider<AuditLog, AuditLog
   public static class AuditLogFilter extends DefaultFilter {
 
     private String className = null;
-    private String recordId = null;
+    private UUID recordId = null;
   }
 }

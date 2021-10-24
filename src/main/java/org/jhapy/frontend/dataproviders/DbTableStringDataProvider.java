@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.DbTableDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
@@ -44,8 +44,9 @@ public class DbTableStringDataProvider extends PageableDataProvider<DbTableDTO, 
     implements Serializable {
 
   @Override
-  protected Page<DbTableDTO> fetchFromBackEnd(Query<DbTableDTO, String> query, Pageable pageable) {
-    Page<DbTableDTO> page =
+  protected PageDTO<DbTableDTO> fetchFromBackEnd(
+      Query<DbTableDTO, String> query, Pageable pageable) {
+    PageDTO<DbTableDTO> page =
         SecurityServices.getTableService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(query.getFilter().orElse(null), false, pageable))

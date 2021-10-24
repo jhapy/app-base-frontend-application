@@ -26,23 +26,20 @@ import com.vaadin.flow.component.crud.CrudI18n;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.shared.Registration;
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.BaseEntityStrId;
+import org.jhapy.dto.domain.BaseEntityUUIDId;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.events.CustomListFieldStrIdValueChangeEvent;
 import org.jhapy.frontend.dataproviders.DefaultBackendStrId;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * @author jHapy Lead Dev.
  * @version 1.0
  * @since 2019-04-21
  */
-public abstract class DefaultCustomListFieldStrId<C extends BaseEntityStrId> extends FlexBoxLayout
+public abstract class DefaultCustomListFieldStrId<C extends BaseEntityUUIDId> extends FlexBoxLayout
     implements HasValue<CustomListFieldStrIdValueChangeEvent<C>, List<C>>, HasLogger, Serializable {
 
   protected final String i18nPrefix;
@@ -171,7 +168,7 @@ public abstract class DefaultCustomListFieldStrId<C extends BaseEntityStrId> ext
       values.forEach(
           value -> {
             if (value.getTemporaryId() == null) {
-              value.setTemporaryId(uniqueLong.incrementAndGet());
+              value.setTemporaryId(UUID.randomUUID());
             }
           });
       fieldsMap.addAll(values);
@@ -181,7 +178,7 @@ public abstract class DefaultCustomListFieldStrId<C extends BaseEntityStrId> ext
       List<C> previousValues = new ArrayList<>(fieldsMap);
 
       if (value.getTemporaryId() == null) {
-        value.setTemporaryId(uniqueLong.incrementAndGet());
+        value.setTemporaryId(UUID.randomUUID());
       }
       if (!fieldsMap.contains(value)) {
         fieldsMap.add(value);

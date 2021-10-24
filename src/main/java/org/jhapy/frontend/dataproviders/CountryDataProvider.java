@@ -21,11 +21,11 @@ package org.jhapy.frontend.dataproviders;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.jhapy.dto.domain.reference.Country;
+import org.jhapy.dto.domain.reference.CountryDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
 import org.jhapy.dto.utils.AppContext;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.reference.ReferenceServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -40,7 +40,7 @@ import java.io.Serializable;
  */
 @SpringComponent
 @UIScope
-public class CountryDataProvider extends DefaultDataProvider<Country, DefaultFilter>
+public class CountryDataProvider extends DefaultDataProvider<CountryDTO, DefaultFilter>
     implements Serializable {
 
   @Autowired
@@ -51,9 +51,10 @@ public class CountryDataProvider extends DefaultDataProvider<Country, DefaultFil
   }
 
   @Override
-  protected Page<Country> fetchFromBackEnd(Query<Country, DefaultFilter> query, Pageable pageable) {
+  protected PageDTO<CountryDTO> fetchFromBackEnd(
+      Query<CountryDTO, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<Country> page =
+    PageDTO<CountryDTO> page =
         ReferenceServices.getCountryService()
             .findAnyMatching(new FindAnyMatchingQuery(filter.getFilter(), null, pageable))
             .getData();
@@ -64,7 +65,7 @@ public class CountryDataProvider extends DefaultDataProvider<Country, DefaultFil
   }
 
   @Override
-  protected int sizeInBackEnd(Query<Country, DefaultFilter> query) {
+  protected int sizeInBackEnd(Query<CountryDTO, DefaultFilter> query) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
     return ReferenceServices.getCountryService()
         .countAnyMatching(new CountAnyMatchingQuery(filter.getFilter(), null))

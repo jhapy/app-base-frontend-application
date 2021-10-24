@@ -22,7 +22,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.DbTableDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -46,10 +46,10 @@ public class DbTableDataProvider extends DefaultDataProvider<DbTableDTO, Default
   }
 
   @Override
-  protected Page<DbTableDTO> fetchFromBackEnd(
+  protected PageDTO<DbTableDTO> fetchFromBackEnd(
       Query<DbTableDTO, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<DbTableDTO> page =
+    PageDTO<DbTableDTO> page =
         SecurityServices.getTableService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

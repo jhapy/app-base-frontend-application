@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.notification.Sms;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.notification.NotificationServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,9 +48,9 @@ public class SmsDataProvider extends DefaultDataProvider<Sms, DefaultFilter>
   }
 
   @Override
-  protected Page<Sms> fetchFromBackEnd(Query<Sms, DefaultFilter> query, Pageable pageable) {
+  protected PageDTO<Sms> fetchFromBackEnd(Query<Sms, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<Sms> page =
+    PageDTO<Sms> page =
         NotificationServices.getSmsService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

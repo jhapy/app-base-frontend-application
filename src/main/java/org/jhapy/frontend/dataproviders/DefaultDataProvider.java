@@ -23,7 +23,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.utils.DirectionEnum;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.frontend.dataproviders.utils.FilterablePageableDataProvider;
 
 import java.io.Serializable;
@@ -39,7 +39,7 @@ public abstract class DefaultDataProvider<T extends BaseEntity, F extends Defaul
     extends FilterablePageableDataProvider<T, F> implements Serializable {
 
   private List<QuerySortOrder> defaultSortOrder;
-  private Consumer<Page<T>> pageObserver;
+  private Consumer<PageDTO<T>> pageObserver;
   private Query<T, F> currentQuery;
 
   public DefaultDataProvider(DirectionEnum defaultSortDirection, String[] defaultSortFields) {
@@ -71,11 +71,11 @@ public abstract class DefaultDataProvider<T extends BaseEntity, F extends Defaul
     return defaultSortOrder;
   }
 
-  public Consumer<Page<T>> getPageObserver() {
+  public Consumer<PageDTO<T>> getPageObserver() {
     return pageObserver;
   }
 
-  public void setPageObserver(Consumer<Page<T>> pageObserver) {
+  public void setPageObserver(Consumer<PageDTO<T>> pageObserver) {
     this.pageObserver = pageObserver;
   }
 

@@ -22,7 +22,7 @@ import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.dto.utils.Pageable.Order;
 import org.jhapy.dto.utils.Pageable.Order.Direction;
@@ -91,11 +91,11 @@ public abstract class PageableDataProvider<T extends Serializable, F>
   @Override
   protected Stream<T> fetchFromBackEnd(Query<T, F> query) {
     Pageable pageable = getPageable(query);
-    Page<T> result = fetchFromBackEnd(query, pageable);
+    PageDTO<T> result = fetchFromBackEnd(query, pageable);
     return fromPageable(result, pageable, query);
   }
 
-  protected abstract Page<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable);
+  protected abstract PageDTO<T> fetchFromBackEnd(Query<T, F> query, Pageable pageable);
 
   private Pageable getPageable(Query<T, F> q) {
 
@@ -130,7 +130,7 @@ public abstract class PageableDataProvider<T extends Serializable, F>
   protected abstract List<QuerySortOrder> getDefaultSortOrders();
 
   private <T extends Serializable> Stream<T> fromPageable(
-      Page<T> result, Pageable pageable, Query<T, ?> query) {
+      PageDTO<T> result, Pageable pageable, Query<T, ?> query) {
     List<T> items = result.getContent();
 
     int firstRequested = query.getOffset();

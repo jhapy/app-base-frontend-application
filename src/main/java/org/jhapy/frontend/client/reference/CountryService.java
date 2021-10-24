@@ -18,11 +18,11 @@
 
 package org.jhapy.frontend.client.reference;
 
-import org.jhapy.dto.domain.reference.Country;
+import org.jhapy.dto.domain.reference.CountryDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.reference.country.GetByIso2OrIso3Query;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,20 +41,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CountryService {
 
   @PostMapping(value = "/findAnyMatching")
-  ServiceResult<Page<Country>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<CountryDTO>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
   @PostMapping(value = "/countAnyMatching")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<Country> getById(@RequestBody GetByIdQuery query);
+  ServiceResult<CountryDTO> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
-  ServiceResult<Country> save(@RequestBody SaveQuery<Country> query);
+  ServiceResult<CountryDTO> save(@RequestBody SaveQuery<CountryDTO> query);
 
   @PostMapping(value = "/delete")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
 
   @PostMapping(value = "/getByIso2OrIso3")
-  ServiceResult<Country> getByIso2OrIso3(@RequestBody GetByIso2OrIso3Query query);
+  ServiceResult<CountryDTO> getByIso2OrIso3(@RequestBody GetByIso2OrIso3Query query);
 }

@@ -23,10 +23,10 @@ import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.notification.Mail;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
@@ -63,10 +63,10 @@ public class MailServiceFallback
   }
 
   @Override
-  public ServiceResult<Page<Mail>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<Mail>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override
@@ -77,14 +77,14 @@ public class MailServiceFallback
   }
 
   @Override
-  public ServiceResult<Mail> getById(GetByStrIdQuery query) {
+  public ServiceResult<Mail> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<Void> delete(DeleteByStrIdQuery query) {
+  public ServiceResult<Void> delete(DeleteByIdQuery query) {
     logger().error(getLoggerPrefix("delete") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

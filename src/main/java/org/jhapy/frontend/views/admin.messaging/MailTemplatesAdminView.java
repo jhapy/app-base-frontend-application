@@ -128,6 +128,6 @@ public class MailTemplatesAdminView extends ViewFrame implements RouterLayout, H
             this,
             getParameter(),
             MailTemplateAdminView.class,
-            mailTemplate.getId() == null ? "-1" : mailTemplate.getId());
+            mailTemplate.getId() == null ? "-1" : mailTemplate.getId().toString());
   }
 }

@@ -186,7 +186,7 @@ public abstract class DefaultCustomListFieldForEmbeddedEntity<C extends BaseEmbe
       Map<String, C> previousValues = new HashMap<>(fieldsMap);
 
       if (value.getId() == null) {
-        value.setId(uniqueLong.incrementAndGet());
+        value.setId(UUID.randomUUID());
         value.setIsNew(true);
       }
       if (!fieldsMap.containsKey(value.getDiscriminator())) {

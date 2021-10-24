@@ -24,7 +24,7 @@ import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.security.securityUser.GetSecurityUserByUsernameQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
@@ -69,10 +69,10 @@ public class SecurityUserServiceFallback
   }
 
   @Override
-  public ServiceResult<Page<SecurityUser>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SecurityUser>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override

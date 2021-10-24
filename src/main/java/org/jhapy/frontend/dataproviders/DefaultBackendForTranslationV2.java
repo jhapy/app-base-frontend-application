@@ -26,8 +26,6 @@ import org.jhapy.dto.domain.EntityTranslationV2;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +37,6 @@ public abstract class DefaultBackendForTranslationV2<C extends EntityTranslation
     extends AbstractBackEndDataProvider<C, CrudFilter> implements Serializable {
 
   protected final Map<String, C> fieldsMap = new HashMap<>();
-  protected final AtomicLong uniqueLong = new AtomicLong();
   private Comparator<C> comparator;
   private SerializablePredicate<C> filter;
 
@@ -97,14 +94,6 @@ public abstract class DefaultBackendForTranslationV2<C extends EntityTranslation
     if (comparing.isPresent()) {
       stream = stream.sorted();
     }
-    long maxId = 0;
-    List<C> result = stream.collect(Collectors.toList());
-    for (C c : result) {
-      if (c.getId() != null && c.getId() > maxId) {
-        maxId = c.getId();
-      }
-    }
-    uniqueLong.set(maxId + 1);
-    return result.stream().skip(query.getOffset()).limit(query.getLimit());
+    return stream.skip(query.getOffset()).limit(query.getLimit());
   }
 }

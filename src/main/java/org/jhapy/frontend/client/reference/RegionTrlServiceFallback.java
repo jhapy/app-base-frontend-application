@@ -19,7 +19,7 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.RegionTrl;
+import org.jhapy.dto.domain.reference.RegionTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -36,21 +36,21 @@ import org.springframework.stereotype.Component;
 public class RegionTrlServiceFallback implements RegionTrlService, HasLogger {
 
   @Override
-  public ServiceResult<RegionTrl> getRegionTrl(GetRegionTrlQuery query) {
+  public ServiceResult<RegionTrlDTO> getRegionTrl(GetRegionTrlQuery query) {
     logger().error(getLoggerPrefix("getRegionTrl") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<RegionTrl> getById(GetByIdQuery query) {
+  public ServiceResult<RegionTrlDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<RegionTrl> save(SaveQuery<RegionTrl> query) {
+  public ServiceResult<RegionTrlDTO> save(SaveQuery<RegionTrlDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

@@ -31,7 +31,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import org.jhapy.dto.domain.reference.IntermediateRegionTrl;
+import org.jhapy.dto.domain.reference.IntermediateRegionTrlDTO;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.frontend.client.reference.ReferenceServices;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
@@ -46,7 +46,7 @@ import java.util.Locale;
  * @since 2019-02-14
  */
 public abstract class IntermediateRegionTrlListField
-    extends DefaultCustomListField<IntermediateRegionTrl> implements Serializable {
+    extends DefaultCustomListField<IntermediateRegionTrlDTO> implements Serializable {
 
   public IntermediateRegionTrlListField() {
     super("intermediateRegionTrl.");
@@ -68,9 +68,9 @@ public abstract class IntermediateRegionTrlListField
   }
 
   protected Component initContent() {
-    Grid<IntermediateRegionTrl> grid = new Grid<>();
+    Grid<IntermediateRegionTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud(IntermediateRegionTrl.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud(IntermediateRegionTrlDTO.class, grid, createInterfaceTrlEditor());
     gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -90,7 +90,7 @@ public abstract class IntermediateRegionTrlListField
             .setWidth("4em")
             .setFlexGrow(0);
 
-    grid.addColumn(IntermediateRegionTrl::getName)
+    grid.addColumn(IntermediateRegionTrlDTO::getName)
         .setHeader(getTranslation("element." + i18nPrefix + "name"));
     grid.addColumn(
             new TextRenderer<>(row -> row.getIso3Language() == null ? "" : row.getIso3Language()))
@@ -108,7 +108,7 @@ public abstract class IntermediateRegionTrlListField
     return gridCrud;
   }
 
-  protected CrudEditor<IntermediateRegionTrl> createInterfaceTrlEditor() {
+  protected CrudEditor<IntermediateRegionTrlDTO> createInterfaceTrlEditor() {
     TextField value = new TextField(getTranslation("element." + i18nPrefix + "value"));
 
     ComboBox<Locale> language =
@@ -119,11 +119,12 @@ public abstract class IntermediateRegionTrlListField
 
     FormLayout form = new FormLayout(value, language);
 
-    Binder<IntermediateRegionTrl> binder = new BeanValidationBinder<>(IntermediateRegionTrl.class);
+    Binder<IntermediateRegionTrlDTO> binder =
+        new BeanValidationBinder<>(IntermediateRegionTrlDTO.class);
     binder
         .forField(value)
         .asRequired()
-        .bind(IntermediateRegionTrl::getName, IntermediateRegionTrl::setName);
+        .bind(IntermediateRegionTrlDTO::getName, IntermediateRegionTrlDTO::setName);
     binder
         .forField(language)
         .asRequired()
@@ -140,11 +141,11 @@ public abstract class IntermediateRegionTrlListField
 
   class MyBackend extends Backend {
 
-    public void setValues(Collection<IntermediateRegionTrl> intermediateRegionTrls) {
+    public void setValues(Collection<IntermediateRegionTrlDTO> intermediateRegionTrls) {
       if (intermediateRegionTrls != null) {
         intermediateRegionTrls.forEach(
             intermediateRegionTrl -> {
-              IntermediateRegionTrl _intermediateRegionTrl =
+              IntermediateRegionTrlDTO _intermediateRegionTrl =
                   ReferenceServices.getIntermediateRegionTrlService()
                       .getById(new GetByIdQuery(intermediateRegionTrl.getId()))
                       .getData();

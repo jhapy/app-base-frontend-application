@@ -21,7 +21,7 @@ package org.jhapy.frontend.client.notification;
 import org.jhapy.dto.domain.notification.SmsTemplate;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,19 +40,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface SmsTemplateService {
 
   @PostMapping(value = "/findAnyMatching")
-  ServiceResult<Page<SmsTemplate>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<SmsTemplate>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
   @PostMapping(value = "/countAnyMatching")
   ServiceResult<Long> countAnyMatching(@RequestBody CountAnyMatchingQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<SmsTemplate> getById(@RequestBody GetByStrIdQuery query);
+  ServiceResult<SmsTemplate> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
   ServiceResult<SmsTemplate> save(@RequestBody SaveQuery<SmsTemplate> query);
 
   @PostMapping(value = "/delete")
-  ServiceResult<Void> delete(@RequestBody DeleteByStrIdQuery query);
+  ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
 
   @PostMapping(value = "/getBySmsAction")
   ServiceResult<SmsTemplate> getBySmsAction(@RequestBody GetByNameQuery query);

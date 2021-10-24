@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.security.SecurityKeycloakGroup;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,12 +48,12 @@ public class SecurityGroupKeycloakDataProvider
   }
 
   @Override
-  protected Page<SecurityKeycloakGroup> fetchFromBackEnd(
+  protected PageDTO<SecurityKeycloakGroup> fetchFromBackEnd(
       Query<SecurityKeycloakGroup, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
     String filterStr = filter.getFilter() != null ? filter.getFilter().replaceAll("\\*", "") : null;
 
-    Page<SecurityKeycloakGroup> page =
+    PageDTO<SecurityKeycloakGroup> page =
         SecurityServices.getKeycloakClient()
             .findGroups(new FindAnyMatchingQuery(filterStr, filter.isShowInactive(), pageable))
             .getData();

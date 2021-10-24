@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.security.SecurityUser;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,10 +48,10 @@ public class SecurityUserDataProvider extends DefaultDataProvider<SecurityUser, 
   }
 
   @Override
-  protected Page<SecurityUser> fetchFromBackEnd(
+  protected PageDTO<SecurityUser> fetchFromBackEnd(
       Query<SecurityUser, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<SecurityUser> page =
+    PageDTO<SecurityUser> page =
         SecurityServices.getSecurityUserService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

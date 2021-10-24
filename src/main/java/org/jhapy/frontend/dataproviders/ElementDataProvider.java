@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.i18n.ElementDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,10 +48,10 @@ public class ElementDataProvider extends DefaultDataProvider<ElementDTO, Default
   }
 
   @Override
-  protected Page<ElementDTO> fetchFromBackEnd(
+  protected PageDTO<ElementDTO> fetchFromBackEnd(
       Query<ElementDTO, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<ElementDTO> page =
+    PageDTO<ElementDTO> page =
         I18NServices.getElementService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

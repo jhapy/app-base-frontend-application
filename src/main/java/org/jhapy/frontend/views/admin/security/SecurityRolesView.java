@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jhapy.dto.domain.security.SecurityRole;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.security.SecurityServices;
@@ -54,7 +54,7 @@ public class SecurityRolesView
         SecurityRole.class,
         new SecurityRoleDataProvider(),
         (e) -> SecurityServices.getSecurityRoleService().save(new SaveQuery<>(e)),
-        e -> SecurityServices.getSecurityRoleService().delete(new DeleteByStrIdQuery(e.getId())),
+        e -> SecurityServices.getSecurityRoleService().delete(new DeleteByIdQuery(e.getId())),
         myI18NProvider);
   }
 

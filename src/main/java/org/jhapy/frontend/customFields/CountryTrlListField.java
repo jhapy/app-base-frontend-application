@@ -31,7 +31,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import org.jhapy.dto.domain.reference.CountryTrl;
+import org.jhapy.dto.domain.reference.CountryTrlDTO;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 
 import java.io.Serializable;
@@ -44,7 +44,7 @@ import java.util.Locale;
  * @version 1.0
  * @since 2019-02-14
  */
-public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
+public class CountryTrlListField extends DefaultCustomListField<CountryTrlDTO>
     implements Serializable {
 
   public CountryTrlListField() {
@@ -67,9 +67,9 @@ public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
   }
 
   protected Component initContent() {
-    Grid<CountryTrl> grid = new Grid<>();
+    Grid<CountryTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud(CountryTrl.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud(CountryTrlDTO.class, grid, createInterfaceTrlEditor());
     // gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -84,7 +84,7 @@ public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
             .setWidth("4em")
             .setFlexGrow(0);
 
-    grid.addColumn(CountryTrl::getName)
+    grid.addColumn(CountryTrlDTO::getName)
         .setHeader(getTranslation("element." + i18nPrefix + "name"))
         .setSortProperty("t.name");
     grid.addColumn(
@@ -103,7 +103,7 @@ public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
     return gridCrud;
   }
 
-  protected CrudEditor<CountryTrl> createInterfaceTrlEditor() {
+  protected CrudEditor<CountryTrlDTO> createInterfaceTrlEditor() {
     TextField value = new TextField(getTranslation("element." + i18nPrefix + "value"));
 
     ComboBox<Locale> language =
@@ -114,8 +114,8 @@ public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
 
     FormLayout form = new FormLayout(value, language);
 
-    Binder<CountryTrl> binder = new BeanValidationBinder<>(CountryTrl.class);
-    binder.forField(value).asRequired().bind(CountryTrl::getName, CountryTrl::setName);
+    Binder<CountryTrlDTO> binder = new BeanValidationBinder<>(CountryTrlDTO.class);
+    binder.forField(value).asRequired().bind(CountryTrlDTO::getName, CountryTrlDTO::setName);
     binder
         .forField(language)
         .asRequired()
@@ -131,7 +131,7 @@ public class CountryTrlListField extends DefaultCustomListField<CountryTrl>
 
   class MyBackend extends Backend {
 
-    public void setValues(Collection<CountryTrl> countryTrls) {
+    public void setValues(Collection<CountryTrlDTO> countryTrls) {
       if (countryTrls != null) {
         setValue(new ArrayList<>(countryTrls));
       }

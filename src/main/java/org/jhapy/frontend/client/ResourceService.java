@@ -20,8 +20,8 @@ package org.jhapy.frontend.client;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.DeleteByStrIdQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
+import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.StoredFile;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -50,9 +50,9 @@ public interface ResourceService extends RemoteServiceHandler {
 
   @PostMapping(value = "/getById")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getByIdFallback")
-  ServiceResult<StoredFile> getById(@RequestBody GetByStrIdQuery query);
+  ServiceResult<StoredFile> getById(@RequestBody GetByIdQuery query);
 
-  default ServiceResult<StoredFile> getByIdFallback(GetByStrIdQuery query, Exception e) {
+  default ServiceResult<StoredFile> getByIdFallback(GetByIdQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("getByIdFallback"), e, null);
   }
 
@@ -60,9 +60,9 @@ public interface ResourceService extends RemoteServiceHandler {
   @CircuitBreaker(
       name = "defaultServiceCircuitBreaker",
       fallbackMethod = "getByIdNoContentFallback")
-  ServiceResult<StoredFile> getByIdNoContent(@RequestBody GetByStrIdQuery query);
+  ServiceResult<StoredFile> getByIdNoContent(@RequestBody GetByIdQuery query);
 
-  default ServiceResult<StoredFile> getByIdNoContentFallback(GetByStrIdQuery query, Exception e) {
+  default ServiceResult<StoredFile> getByIdNoContentFallback(GetByIdQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("getByIdNoContentFallback"), e, null);
   }
 
@@ -70,17 +70,17 @@ public interface ResourceService extends RemoteServiceHandler {
   @CircuitBreaker(
       name = "defaultServiceCircuitBreaker",
       fallbackMethod = "getByIdPdfContentFallback")
-  ServiceResult<StoredFile> getByIdPdfContent(@RequestBody GetByStrIdQuery query);
+  ServiceResult<StoredFile> getByIdPdfContent(@RequestBody GetByIdQuery query);
 
-  default ServiceResult<StoredFile> getByIdPdfContentFallback(GetByStrIdQuery query, Exception e) {
+  default ServiceResult<StoredFile> getByIdPdfContentFallback(GetByIdQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("getByIdPdfContentFallback"), e, null);
   }
 
   @PostMapping(value = "/delete")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "deleteFallback")
-  ServiceResult<Void> delete(@RequestBody DeleteByStrIdQuery query);
+  ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
 
-  default ServiceResult<Void> deleteFallback(DeleteByStrIdQuery query, Exception e) {
+  default ServiceResult<Void> deleteFallback(DeleteByIdQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("deleteFallback"), e, null);
   }
 }

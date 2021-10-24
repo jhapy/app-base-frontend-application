@@ -26,7 +26,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.notification.MailTemplate;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.notification.NotificationServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
@@ -46,7 +46,7 @@ public class MailTemplateStringDataProvider extends PageableDataProvider<MailTem
     implements Serializable {
 
   @Override
-  protected Page<MailTemplate> fetchFromBackEnd(
+  protected PageDTO<MailTemplate> fetchFromBackEnd(
       Query<MailTemplate, String> query, Pageable pageable) {
 
     return NotificationServices.getMailTemplateService()

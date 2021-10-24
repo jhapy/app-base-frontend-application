@@ -23,8 +23,8 @@ import org.jhapy.dto.domain.audit.Session;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.GetByStrIdQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.frontend.client.RemoteServiceHandler;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
@@ -42,11 +42,11 @@ public interface SessionService extends RemoteServiceHandler {
 
   @PostMapping(value = "/findAnyMatching")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
-  ServiceResult<Page<Session>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<Session>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
-  default ServiceResult<Page<Session>> findAnyMatchingFallback(
+  default ServiceResult<PageDTO<Session>> findAnyMatchingFallback(
       FindAnyMatchingQuery query, Exception e) {
-    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new Page<>());
+    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new PageDTO<>());
   }
 
   @PostMapping(value = "/countAnyMatching")
@@ -61,9 +61,9 @@ public interface SessionService extends RemoteServiceHandler {
 
   @PostMapping(value = "/getById")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "getByIdFallback")
-  ServiceResult<Session> getById(@RequestBody GetByStrIdQuery query);
+  ServiceResult<Session> getById(@RequestBody GetByIdQuery query);
 
-  default ServiceResult<Session> getByIdFallback(GetByStrIdQuery query, Exception e) {
+  default ServiceResult<Session> getByIdFallback(GetByIdQuery query, Exception e) {
     return defaultFallback(getLoggerPrefix("getByIdFallback"), e, null);
   }
 }

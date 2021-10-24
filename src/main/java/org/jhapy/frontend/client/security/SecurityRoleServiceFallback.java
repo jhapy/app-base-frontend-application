@@ -24,7 +24,7 @@ import org.jhapy.dto.domain.security.SecurityRole;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.security.securityRole.GetSecurityRoleByNameQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
@@ -85,10 +85,10 @@ public class SecurityRoleServiceFallback
   }
 
   @Override
-  public ServiceResult<Page<SecurityRole>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<SecurityRole>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override
@@ -99,7 +99,7 @@ public class SecurityRoleServiceFallback
   }
 
   @Override
-  public ServiceResult<SecurityRole> getById(GetByStrIdQuery query) {
+  public ServiceResult<SecurityRole> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
@@ -113,7 +113,7 @@ public class SecurityRoleServiceFallback
   }
 
   @Override
-  public ServiceResult<Void> delete(DeleteByStrIdQuery query) {
+  public ServiceResult<Void> delete(DeleteByIdQuery query) {
     logger().error(getLoggerPrefix("delete") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

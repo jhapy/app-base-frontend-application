@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.i18n.MessageDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.utils.AppConst;
@@ -48,10 +48,10 @@ public class MessageDataProvider extends DefaultDataProvider<MessageDTO, Default
   }
 
   @Override
-  protected Page<MessageDTO> fetchFromBackEnd(
+  protected PageDTO<MessageDTO> fetchFromBackEnd(
       Query<MessageDTO, DefaultFilter> query, Pageable pageable) {
     DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    Page<MessageDTO> page =
+    PageDTO<MessageDTO> page =
         I18NServices.getMessageService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))

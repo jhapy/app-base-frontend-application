@@ -92,10 +92,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.jhapy.frontend.utils.AppConst.*;
@@ -782,7 +779,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     if (SecurityUtils.isUserLoggedIn()) {
       Avatar ownAvatar = new Avatar();
       ownAvatar.setName((String) VaadinSession.getCurrent().getAttribute(NICKNAME_ATTRIBUTE));
-      String userId = (String) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
+      UUID userId = (UUID) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
       StoredFile storedFile =
           ((StoredFile) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
       if (storedFile != null) {

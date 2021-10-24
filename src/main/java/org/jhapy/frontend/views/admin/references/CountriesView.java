@@ -62,12 +62,12 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 @I18NPageTitle(messageKey = AppConst.TITLE_COUNTRIES)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class CountriesView
-    extends DefaultMasterDetailsView<Country, DefaultFilter, SearchQuery, SearchQueryResult> {
+    extends DefaultMasterDetailsView<CountryDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
   public CountriesView(MyI18NProvider myI18NProvider) {
     super(
         "country.",
-        Country.class,
+        CountryDTO.class,
         new CountryDataProvider(),
         (e) -> ReferenceServices.getCountryService().save(new SaveQuery<>(e)),
         e -> ReferenceServices.getCountryService().delete(new DeleteByIdQuery(e.getId())),
@@ -83,12 +83,12 @@ public class CountriesView
     grid.setDataProvider(dataProvider);
     grid.setHeight("100%");
 
-    grid.addColumn(Country::getName)
+    grid.addColumn(CountryDTO::getName)
         .setKey("name")
         .setSortProperty("name." + AppContext.getInstance().getCurrentIso3Language() + ".value");
-    grid.addColumn(Country::getIso2).setKey("iso2").setSortProperty("iso3");
-    grid.addColumn(Country::getIso3).setKey("iso3").setSortProperty("iso3");
-    grid.addColumn(new BooleanOkRenderer<>(Country::getIsEU)).setKey("isEU");
+    grid.addColumn(CountryDTO::getIso2).setKey("iso2").setSortProperty("iso3");
+    grid.addColumn(CountryDTO::getIso3).setKey("iso3").setSortProperty("iso3");
+    grid.addColumn(new BooleanOkRenderer<>(CountryDTO::getIsEU)).setKey("isEU");
 
     grid.addColumn(e -> (e.getRegion() != null) ? e.getRegion().getName() : "")
         .setKey("region")
@@ -117,7 +117,7 @@ public class CountriesView
     return grid;
   }
 
-  protected Component createDetails(Country country) {
+  protected Component createDetails(CountryDTO country) {
     Div mainView = new Div();
 
     boolean isNew = country.getId() == null;
@@ -139,12 +139,12 @@ public class CountriesView
     TextField dialingCode = new TextField();
     dialingCode.setWidth("100%");
 
-    ComboBox<Region> region = new ComboBox<>();
+    ComboBox<RegionDTO> region = new ComboBox<>();
     region.setItems(ReferenceServices.getRegionService().findAll().getData());
     region.setItemLabelGenerator(
-        (ItemLabelGenerator<Region>)
+        (ItemLabelGenerator<RegionDTO>)
             e -> {
-              RegionTrl regionTrl =
+              RegionTrlDTO regionTrl =
                   ReferenceServices.getRegionTrlService()
                       .getRegionTrl(new GetRegionTrlQuery(e.getId(), getLocale().getLanguage()))
                       .getData();
@@ -156,12 +156,12 @@ public class CountriesView
             });
     region.setWidth("100%");
 
-    ComboBox<SubRegion> subRegion = new ComboBox<>();
+    ComboBox<SubRegionDTO> subRegion = new ComboBox<>();
     subRegion.setItems(ReferenceServices.getSubRegionService().findAll().getData());
     subRegion.setItemLabelGenerator(
-        (ItemLabelGenerator<SubRegion>)
+        (ItemLabelGenerator<SubRegionDTO>)
             e -> {
-              SubRegionTrl subRegionTrl =
+              SubRegionTrlDTO subRegionTrl =
                   ReferenceServices.getSubRegionTrlService()
                       .getSubRegionTrl(
                           new GetSubRegionTrlQuery(e.getId(), getLocale().getLanguage()))
@@ -174,13 +174,13 @@ public class CountriesView
             });
     subRegion.setWidth("100%");
 
-    ComboBox<IntermediateRegion> intermediateRegion = new ComboBox<>();
+    ComboBox<IntermediateRegionDTO> intermediateRegion = new ComboBox<>();
     intermediateRegion.setItems(
         ReferenceServices.getIntermediateRegionService().findAll(new BaseRemoteQuery()).getData());
     intermediateRegion.setItemLabelGenerator(
-        (ItemLabelGenerator<IntermediateRegion>)
+        (ItemLabelGenerator<IntermediateRegionDTO>)
             e -> {
-              IntermediateRegionTrl intermediateRegionTrl =
+              IntermediateRegionTrlDTO intermediateRegionTrl =
                   ReferenceServices.getIntermediateRegionTrlService()
                       .getIntermediateRegionTrl(
                           new GetIntermediateRegionTrlQuery(e.getId(), getLocale().getLanguage()))
@@ -242,23 +242,23 @@ public class CountriesView
 
     binder.setBean(country);
 
-    binder.bind(iso2, Country::getIso2, Country::setIso2);
-    binder.bind(iso3, Country::getIso3, Country::setIso3);
-    binder.bind(isEU, Country::getIsEU, Country::setIsEU);
-    binder.bind(dialingCode, Country::getDialingCode, Country::setDialingCode);
-    binder.bind(region, this::getRegion, Country::setRegion);
-    binder.bind(subRegion, this::getSubRegion, Country::setSubRegion);
-    binder.bind(intermediateRegion, this::getIntermediateRegion, Country::setIntermediateRegion);
+    binder.bind(iso2, CountryDTO::getIso2, CountryDTO::setIso2);
+    binder.bind(iso3, CountryDTO::getIso3, CountryDTO::setIso3);
+    binder.bind(isEU, CountryDTO::getIsEU, CountryDTO::setIsEU);
+    binder.bind(dialingCode, CountryDTO::getDialingCode, CountryDTO::setDialingCode);
+    binder.bind(region, this::getRegion, CountryDTO::setRegion);
+    binder.bind(subRegion, this::getSubRegion, CountryDTO::setSubRegion);
+    binder.bind(intermediateRegion, this::getIntermediateRegion, CountryDTO::setIntermediateRegion);
     // binder.bind(translations, country1 -> new ArrayList<>(country1.getTranslations()), (country1,
     // countryTrls) -> country1.setTranslations(new HashSet<>(countryTrls)));
 
-    binder.bind(isActive, Country::getIsActive, Country::setIsActive);
+    binder.bind(isActive, CountryDTO::getIsActive, CountryDTO::setIsActive);
 
     return editingForm;
   }
 
-  private Region getRegion(Country country) {
-    Country c =
+  private RegionDTO getRegion(CountryDTO country) {
+    CountryDTO c =
         ReferenceServices.getCountryService().getById(new GetByIdQuery(country.getId())).getData();
     if (c == null || c.getRegion() == null) {
       return null;
@@ -267,8 +267,8 @@ public class CountriesView
     }
   }
 
-  private SubRegion getSubRegion(Country country) {
-    Country c =
+  private SubRegionDTO getSubRegion(CountryDTO country) {
+    CountryDTO c =
         ReferenceServices.getCountryService().getById(new GetByIdQuery(country.getId())).getData();
     if (c == null || c.getSubRegion() == null) {
       return null;
@@ -277,8 +277,8 @@ public class CountriesView
     }
   }
 
-  private IntermediateRegion getIntermediateRegion(Country country) {
-    Country c =
+  private IntermediateRegionDTO getIntermediateRegion(CountryDTO country) {
+    CountryDTO c =
         ReferenceServices.getCountryService().getById(new GetByIdQuery(country.getId())).getData();
     if (c == null || c.getIntermediateRegion() == null) {
       return null;

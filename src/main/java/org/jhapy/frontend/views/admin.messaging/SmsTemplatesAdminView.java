@@ -128,6 +128,6 @@ public class SmsTemplatesAdminView extends ViewFrame implements RouterLayout, Ha
             this,
             getParameter(),
             SmsTemplateAdminView.class,
-            smsTemplate.getId() == null ? "-1" : smsTemplate.getId());
+            smsTemplate.getId() == null ? "-1" : smsTemplate.getId().toString());
   }
 }

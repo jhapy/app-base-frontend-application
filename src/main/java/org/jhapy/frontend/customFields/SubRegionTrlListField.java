@@ -31,7 +31,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
-import org.jhapy.dto.domain.reference.SubRegionTrl;
+import org.jhapy.dto.domain.reference.SubRegionTrlDTO;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
 import org.jhapy.frontend.client.reference.ReferenceServices;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
@@ -45,7 +45,7 @@ import java.util.Locale;
  * @version 1.0
  * @since 2019-02-14
  */
-public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRegionTrl>
+public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRegionTrlDTO>
     implements Serializable {
 
   public SubRegionTrlListField() {
@@ -68,9 +68,9 @@ public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRe
   }
 
   protected Component initContent() {
-    Grid<SubRegionTrl> grid = new Grid<>();
+    Grid<SubRegionTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud<>(SubRegionTrl.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud<>(SubRegionTrlDTO.class, grid, createInterfaceTrlEditor());
     gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -90,7 +90,7 @@ public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRe
             .setWidth("4em")
             .setFlexGrow(0);
 
-    grid.addColumn(SubRegionTrl::getName)
+    grid.addColumn(SubRegionTrlDTO::getName)
         .setHeader(getTranslation("element." + i18nPrefix + "name"));
     grid.addColumn(
             new TextRenderer<>(row -> row.getIso3Language() == null ? "" : row.getIso3Language()))
@@ -108,7 +108,7 @@ public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRe
     return gridCrud;
   }
 
-  protected CrudEditor<SubRegionTrl> createInterfaceTrlEditor() {
+  protected CrudEditor<SubRegionTrlDTO> createInterfaceTrlEditor() {
     TextField value = new TextField(getTranslation("element." + i18nPrefix + "value"));
 
     ComboBox<Locale> language =
@@ -119,8 +119,8 @@ public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRe
 
     FormLayout form = new FormLayout(value, language);
 
-    Binder<SubRegionTrl> binder = new BeanValidationBinder<>(SubRegionTrl.class);
-    binder.forField(value).asRequired().bind(SubRegionTrl::getName, SubRegionTrl::setName);
+    Binder<SubRegionTrlDTO> binder = new BeanValidationBinder<>(SubRegionTrlDTO.class);
+    binder.forField(value).asRequired().bind(SubRegionTrlDTO::getName, SubRegionTrlDTO::setName);
     binder
         .forField(language)
         .asRequired()
@@ -136,11 +136,11 @@ public abstract class SubRegionTrlListField extends DefaultCustomListField<SubRe
 
   class MyBackend extends Backend {
 
-    public void setValues(Collection<SubRegionTrl> values) {
+    public void setValues(Collection<SubRegionTrlDTO> values) {
       if (values != null) {
         values.forEach(
             subRegionTrl -> {
-              SubRegionTrl _subRegionTrl =
+              SubRegionTrlDTO _subRegionTrl =
                   ReferenceServices.getSubRegionTrlService()
                       .getById(new GetByIdQuery(subRegionTrl.getId()))
                       .getData();

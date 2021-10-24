@@ -24,7 +24,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.jhapy.dto.domain.ClientDTO;
 import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
 import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.jhapy.dto.utils.Pageable;
 import org.jhapy.frontend.client.security.SecurityServices;
 import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
@@ -44,8 +44,8 @@ public class ClientStringDataProvider extends PageableDataProvider<ClientDTO, St
     implements Serializable {
 
   @Override
-  protected Page<ClientDTO> fetchFromBackEnd(Query<ClientDTO, String> query, Pageable pageable) {
-    Page<ClientDTO> page =
+  protected PageDTO<ClientDTO> fetchFromBackEnd(Query<ClientDTO, String> query, Pageable pageable) {
+    PageDTO<ClientDTO> page =
         SecurityServices.getClientService()
             .findAnyMatching(
                 new FindAnyMatchingQuery(query.getFilter().orElse(null), false, pageable))

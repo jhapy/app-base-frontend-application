@@ -84,6 +84,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -162,9 +163,9 @@ public abstract class DefaultMasterDetailsCollabView<
       MyI18NProvider myI18NProvider) {
     this.I18N_PREFIX = I18N_PREFIX;
     this.entityType = entityType;
-    String userId = (String) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
+    UUID userId = (UUID) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
     String userNickname = (String) VaadinSession.getCurrent().getAttribute(NICKNAME_ATTRIBUTE);
-    this.userInfo = new UserInfo(userId, userNickname);
+    this.userInfo = new UserInfo(userId.toString(), userNickname);
     this.binder = new CollaborationBinder<>(entityType, userInfo);
     ((CollaborationBinder<T>) binder).setExpirationTimeout(Duration.ofSeconds(10));
     ((CollaborationBinder<T>) binder)
@@ -521,7 +522,7 @@ public abstract class DefaultMasterDetailsCollabView<
               var topicId = fetchQuery.getTopicId();
               String loggerPrefix = getLoggerPrefix("createDiscussion::fromCallbacks", topicId);
               var relatedEntityName = topicId.substring(0, topicId.indexOf("/")).replace("DTO", "");
-              var relatedEntityId = Long.valueOf(topicId.substring(topicId.indexOf("/") + 1));
+              var relatedEntityId = UUID.fromString(topicId.substring(topicId.indexOf("/") + 1));
               var entityCommentsSR =
                   BaseServices.getEntityCommentService()
                       .getEntityComments(
@@ -549,7 +550,7 @@ public abstract class DefaultMasterDetailsCollabView<
               var topicId = persistRequest.getTopicId();
               String loggerPrefix = getLoggerPrefix("createDiscussion::fromCallbacks", topicId);
               var relatedEntityName = topicId.substring(0, topicId.indexOf("/")).replace("DTO", "");
-              var relatedEntityId = Long.valueOf(topicId.substring(topicId.indexOf("/") + 1));
+              var relatedEntityId = UUID.fromString(topicId.substring(topicId.indexOf("/") + 1));
 
               CollaborationMessage message = persistRequest.getMessage();
 

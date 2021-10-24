@@ -19,11 +19,11 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.IntermediateRegion;
+import org.jhapy.dto.domain.reference.IntermediateRegionDTO;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -38,17 +38,17 @@ import java.util.List;
 public class IntermediateRegionServiceFallback implements IntermediateRegionService, HasLogger {
 
   @Override
-  public ServiceResult<List<IntermediateRegion>> findAll(BaseRemoteQuery query) {
+  public ServiceResult<List<IntermediateRegionDTO>> findAll(BaseRemoteQuery query) {
     logger().error(getLoggerPrefix("findAll") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", Collections.emptyList());
   }
 
   @Override
-  public ServiceResult<Page<IntermediateRegion>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<IntermediateRegionDTO>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override
@@ -59,14 +59,14 @@ public class IntermediateRegionServiceFallback implements IntermediateRegionServ
   }
 
   @Override
-  public ServiceResult<IntermediateRegion> getById(GetByIdQuery query) {
+  public ServiceResult<IntermediateRegionDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<IntermediateRegion> save(SaveQuery<IntermediateRegion> query) {
+  public ServiceResult<IntermediateRegionDTO> save(SaveQuery<IntermediateRegionDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

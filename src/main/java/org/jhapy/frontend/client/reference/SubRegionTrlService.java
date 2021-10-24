@@ -18,7 +18,7 @@
 
 package org.jhapy.frontend.client.reference;
 
-import org.jhapy.dto.domain.reference.SubRegionTrl;
+import org.jhapy.dto.domain.reference.SubRegionTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -42,13 +42,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface SubRegionTrlService {
 
   @PostMapping(value = "/getSubRegionTrl")
-  ServiceResult<SubRegionTrl> getSubRegionTrl(@RequestBody GetSubRegionTrlQuery query);
+  ServiceResult<SubRegionTrlDTO> getSubRegionTrl(@RequestBody GetSubRegionTrlQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<SubRegionTrl> getById(@RequestBody GetByIdQuery query);
+  ServiceResult<SubRegionTrlDTO> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
-  ServiceResult<SubRegionTrl> save(@RequestBody SaveQuery<SubRegionTrl> query);
+  ServiceResult<SubRegionTrlDTO> save(@RequestBody SaveQuery<SubRegionTrlDTO> query);
 
   @PostMapping(value = "/delete")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);

@@ -19,11 +19,11 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.Country;
+import org.jhapy.dto.domain.reference.CountryDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.serviceQuery.reference.country.GetByIso2OrIso3Query;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,10 +35,10 @@ import org.springframework.stereotype.Component;
 public class CountryServiceFallback implements CountryService, HasLogger {
 
   @Override
-  public ServiceResult<Page<Country>> findAnyMatching(FindAnyMatchingQuery query) {
+  public ServiceResult<PageDTO<CountryDTO>> findAnyMatching(FindAnyMatchingQuery query) {
     logger().error(getLoggerPrefix("findAnyMatching") + "Cannot connect to the server");
 
-    return new ServiceResult<>(false, "Cannot connect to server", new Page<>());
+    return new ServiceResult<>(false, "Cannot connect to server", new PageDTO<>());
   }
 
   @Override
@@ -49,14 +49,14 @@ public class CountryServiceFallback implements CountryService, HasLogger {
   }
 
   @Override
-  public ServiceResult<Country> getById(GetByIdQuery query) {
+  public ServiceResult<CountryDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<Country> save(SaveQuery<Country> query) {
+  public ServiceResult<CountryDTO> save(SaveQuery<CountryDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
@@ -70,7 +70,7 @@ public class CountryServiceFallback implements CountryService, HasLogger {
   }
 
   @Override
-  public ServiceResult<Country> getByIso2OrIso3(GetByIso2OrIso3Query query) {
+  public ServiceResult<CountryDTO> getByIso2OrIso3(GetByIso2OrIso3Query query) {
     logger().error(getLoggerPrefix("getByIso2OrIso3") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

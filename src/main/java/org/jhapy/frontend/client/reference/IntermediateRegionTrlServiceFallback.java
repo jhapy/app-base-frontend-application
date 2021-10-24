@@ -19,7 +19,7 @@
 package org.jhapy.frontend.client.reference;
 
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.domain.reference.IntermediateRegionTrl;
+import org.jhapy.dto.domain.reference.IntermediateRegionTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -37,7 +37,7 @@ public class IntermediateRegionTrlServiceFallback
     implements IntermediateRegionTrlService, HasLogger {
 
   @Override
-  public ServiceResult<IntermediateRegionTrl> getIntermediateRegionTrl(
+  public ServiceResult<IntermediateRegionTrlDTO> getIntermediateRegionTrl(
       GetIntermediateRegionTrlQuery query) {
     logger().error(getLoggerPrefix("getIntermediateRegionTrl") + "Cannot connect to the server");
 
@@ -45,14 +45,14 @@ public class IntermediateRegionTrlServiceFallback
   }
 
   @Override
-  public ServiceResult<IntermediateRegionTrl> getById(GetByIdQuery query) {
+  public ServiceResult<IntermediateRegionTrlDTO> getById(GetByIdQuery query) {
     logger().error(getLoggerPrefix("getById") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);
   }
 
   @Override
-  public ServiceResult<IntermediateRegionTrl> save(SaveQuery<IntermediateRegionTrl> query) {
+  public ServiceResult<IntermediateRegionTrlDTO> save(SaveQuery<IntermediateRegionTrlDTO> query) {
     logger().error(getLoggerPrefix("save") + "Cannot connect to the server");
 
     return new ServiceResult<>(false, "Cannot connect to server", null);

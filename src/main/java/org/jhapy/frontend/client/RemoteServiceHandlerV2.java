@@ -16,7 +16,7 @@ import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.*;
 import org.jhapy.dto.utils.AppContextThread;
-import org.jhapy.dto.utils.Page;
+import org.jhapy.dto.utils.PageDTO;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.zalando.problem.jackson.ProblemModule;
@@ -34,10 +34,11 @@ public interface RemoteServiceHandlerV2<T extends BaseEntity> {
 
   @PostMapping(value = "/findAnyMatching")
   @CircuitBreaker(name = "defaultServiceCircuitBreaker", fallbackMethod = "findAnyMatchingFallback")
-  ServiceResult<Page<T>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
+  ServiceResult<PageDTO<T>> findAnyMatching(@RequestBody FindAnyMatchingQuery query);
 
-  default ServiceResult<Page<T>> findAnyMatchingFallback(FindAnyMatchingQuery query, Exception e) {
-    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new Page<>());
+  default ServiceResult<PageDTO<T>> findAnyMatchingFallback(
+      FindAnyMatchingQuery query, Exception e) {
+    return defaultFallback(getLoggerPrefix("findAnyMatchingFallback"), e, new PageDTO<>());
   }
 
   @PostMapping(value = "/countAnyMatching")

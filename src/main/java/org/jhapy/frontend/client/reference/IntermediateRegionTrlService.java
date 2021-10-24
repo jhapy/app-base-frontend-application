@@ -18,7 +18,7 @@
 
 package org.jhapy.frontend.client.reference;
 
-import org.jhapy.dto.domain.reference.IntermediateRegionTrl;
+import org.jhapy.dto.domain.reference.IntermediateRegionTrlDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
 import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
@@ -42,14 +42,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface IntermediateRegionTrlService {
 
   @PostMapping(value = "/getIntermediateRegionTrl")
-  ServiceResult<IntermediateRegionTrl> getIntermediateRegionTrl(
+  ServiceResult<IntermediateRegionTrlDTO> getIntermediateRegionTrl(
       @RequestBody GetIntermediateRegionTrlQuery query);
 
   @PostMapping(value = "/getById")
-  ServiceResult<IntermediateRegionTrl> getById(@RequestBody GetByIdQuery query);
+  ServiceResult<IntermediateRegionTrlDTO> getById(@RequestBody GetByIdQuery query);
 
   @PostMapping(value = "/save")
-  ServiceResult<IntermediateRegionTrl> save(@RequestBody SaveQuery<IntermediateRegionTrl> query);
+  ServiceResult<IntermediateRegionTrlDTO> save(
+      @RequestBody SaveQuery<IntermediateRegionTrlDTO> query);
 
   @PostMapping(value = "/delete")
   ServiceResult<Void> delete(@RequestBody DeleteByIdQuery query);
