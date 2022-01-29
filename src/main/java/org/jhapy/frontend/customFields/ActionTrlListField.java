@@ -70,7 +70,7 @@ public class ActionTrlListField extends DefaultCustomListField<ActionTrlDTO>
     Grid<ActionTrlDTO> grid = new Grid<>();
 
     gridCrud = new Crud<>(ActionTrlDTO.class, grid, createInterfaceTrlEditor());
-    // gridCrud.setMinHeight("300px");
+    gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
     gridCrud.getGrid().setEnabled(false);
@@ -94,7 +94,7 @@ public class ActionTrlListField extends DefaultCustomListField<ActionTrlDTO>
                         : (new Locale(row.getIso3Language())).getDisplayLanguage(getLocale())))
         .setHeader(getTranslation("element." + i18nPrefix + "language"));
 
-    grid.addColumn(new BooleanOkRenderer<>(ActionTrlDTO::getIsDefault))
+    grid.addColumn(new BooleanOkRenderer<>(ActionTrlDTO::isDefault))
         .setHeader(getTranslation("element." + i18nPrefix + "isDefault"));
 
     newButton = new Button(getTranslation("action.global.addButton"));
@@ -119,12 +119,14 @@ public class ActionTrlListField extends DefaultCustomListField<ActionTrlDTO>
     language.setItemLabelGenerator(Locale::getDisplayLanguage);
 
     Checkbox isDefault = new Checkbox(getTranslation("element." + i18nPrefix + "isDefault"));
+    Checkbox translated = new Checkbox(getTranslation("element." + i18nPrefix + "translated"));
 
-    FormLayout form = new FormLayout(value, isDefault, language);
+    FormLayout form = new FormLayout(value, isDefault, translated, language);
 
     Binder<ActionTrlDTO> binder = new BeanValidationBinder<>(ActionTrlDTO.class);
     binder.forField(value).asRequired().bind(ActionTrlDTO::getValue, ActionTrlDTO::setValue);
-    binder.forField(isDefault).bind(ActionTrlDTO::getIsDefault, ActionTrlDTO::setIsDefault);
+    binder.forField(isDefault).bind(ActionTrlDTO::isDefault, ActionTrlDTO::setDefault);
+    binder.forField(translated).bind(ActionTrlDTO::isTranslated, ActionTrlDTO::setTranslated);
     binder
         .forField(language)
         .asRequired()

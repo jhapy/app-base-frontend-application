@@ -18,39 +18,32 @@
 
 package org.jhapy.frontend.views.admin.messaging;
 
-import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
-import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.notification.SmsTemplate;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.notification.CreateSmsTemplateCommand;
+import org.jhapy.cqrs.command.notification.DeleteSmsTemplateCommand;
+import org.jhapy.cqrs.command.notification.UpdateSmsTemplateCommand;
+import org.jhapy.cqrs.query.notification.GetSmsTemplateByIdQuery;
+import org.jhapy.cqrs.query.notification.GetSmsTemplateByIdResponse;
+import org.jhapy.dto.domain.notification.SmsTemplateDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.SecurityConst;
-import org.jhapy.frontend.client.notification.NotificationServices;
-import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.dataproviders.DefaultDataProvider;
-import org.jhapy.frontend.dataproviders.DefaultFilter;
-import org.jhapy.frontend.layout.ViewFrame;
-import org.jhapy.frontend.layout.size.Horizontal;
-import org.jhapy.frontend.layout.size.Top;
 import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.LumoStyles;
 import org.jhapy.frontend.utils.UIUtils;
-import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
-import org.jhapy.frontend.views.JHapyMainView3;
+import org.jhapy.frontend.utils.i18n.MyI18NProvider;
+import org.jhapy.frontend.views.DefaultDetailsView;
 
 import java.util.UUID;
 
@@ -62,148 +55,111 @@ import java.util.UUID;
 @Tag("sms-template-admin-view")
 @I18NPageTitle(messageKey = AppConst.TITLE_SMS_TEMPLATE_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class SmsTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
+public class SmsTemplateAdminView extends DefaultDetailsView<SmsTemplateDTO>
+    implements HasUrlParameter<String> {
 
-  private final Binder<SmsTemplate> binder = new Binder<>();
-  private final Registration contextIconRegistration = null;
-  private SmsTemplate smsTemplate;
-  private DefaultDataProvider<SmsTemplate, DefaultFilter> securityUserDataProvider;
+  private final QueryGateway queryGateway;
+  private final CommandGateway commandGateway;
 
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
+  public SmsTemplateAdminView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
+    super(
+        "smsTemplate.",
+        SmsTemplateDTO.class,
+        SmsTemplatesAdminView.class,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateSmsTemplateCommand(e);
+          } else {
+            command = new UpdateSmsTemplateCommand(e.getId(), e);
+          }
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway.subscriptionQuery(
+                  new GetSmsTemplateByIdQuery(e.getId() == null ? uuid : e.getId()),
+                  ResponseTypes.instanceOf(GetSmsTemplateByIdResponse.class),
+                  ResponseTypes.instanceOf(GetSmsTemplateByIdResponse.class));
 
-    setViewContent(createContent());
-    setViewFooter(getFooter());
+          return new ServiceResult<>(response.initialResult().block().getData());
+        },
+        e -> commandGateway.sendAndWait(new DeleteSmsTemplateCommand(e.getId())),
+        myI18NProvider);
+    this.queryGateway = queryGateway;
+    this.commandGateway = commandGateway;
   }
 
   @Override
-  protected void onDetach(DetachEvent detachEvent) {
-    if (contextIconRegistration != null) {
-      contextIconRegistration.remove();
+  protected String getTitle(SmsTemplateDTO entity) {
+    if (entity.getName() != null) {
+      return entity.getName();
+    } else {
+      return "";
     }
   }
 
-  protected Component getFooter() {
-    Button saveButton = new Button(getTranslation("action.global.saveButton"));
-    saveButton.addClickListener(event -> save());
-
-    Button cancelButton = new Button(getTranslation("action.global.cancelButton"));
-    cancelButton.addClickListener(event -> cancel());
-
-    HorizontalLayout footer = new HorizontalLayout(saveButton, cancelButton);
-    footer.setPadding(true);
-    footer.setSpacing(true);
-
-    return footer;
-  }
-
-  private Component createContent() {
-    FlexBoxLayout content = new FlexBoxLayout(getSettingsForm());
-    content.setBoxSizing(BoxSizing.BORDER_BOX);
-    content.setHeightFull();
-    content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-    return content;
-  }
-
-  public Component getSettingsForm() {
-    FormLayout formLayout = new FormLayout();
-    formLayout.addClassNames(
-        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
-    formLayout.setResponsiveSteps(
-        new ResponsiveStep("26em", 1, ResponsiveStep.LabelsPosition.TOP),
-        new ResponsiveStep("32em", 2, ResponsiveStep.LabelsPosition.TOP));
-
-    TextField nameField = new TextField();
+  public Component createDetails(SmsTemplateDTO entry) {
+    var nameField = new TextField();
     nameField.setWidthFull();
 
-    TextArea bodyField = new TextArea();
+    var bodyField = new TextArea();
     bodyField.setWidthFull();
 
-    TextField smsActionField = new TextField();
+    var smsActionField = new TextField();
     smsActionField.setWidthFull();
 
-    formLayout.addFormItem(nameField, getTranslation("element.smsTemplate.name"));
-    formLayout.addFormItem(smsActionField, getTranslation("element.smsTemplate.action"));
-    FormItem bodyFieldItem =
-        formLayout.addFormItem(bodyField, getTranslation("element.smsTemplate.body"));
+    var editingForm = new FormLayout();
+    editingForm.setWidthFull();
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.setResponsiveSteps(
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+
+    editingForm.addFormItem(nameField, getTranslation("element." + I18N_PREFIX + "name"));
+    editingForm.addFormItem(smsActionField, getTranslation("element." + I18N_PREFIX + "action"));
+    var bodyFieldItem =
+        editingForm.addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
 
     UIUtils.setColSpan(2, bodyFieldItem);
+
+    binder.setBean(entry);
 
     binder
         .forField(nameField)
         .asRequired(getTranslation("message.error.nameRequired"))
-        .bind(SmsTemplate::getName, SmsTemplate::setName);
+        .bind(SmsTemplateDTO::getName, SmsTemplateDTO::setName);
     binder
         .forField(bodyField)
         .asRequired(getTranslation("message.error.bodyRequired"))
-        .bind(SmsTemplate::getBody, SmsTemplate::setBody);
+        .bind(SmsTemplateDTO::getBody, SmsTemplateDTO::setBody);
     binder
         .forField(smsActionField)
         .asRequired(getTranslation("message.error.smsAction"))
-        .bind(SmsTemplate::getSmsAction, SmsTemplate::setSmsAction);
+        .bind(SmsTemplateDTO::getSmsAction, SmsTemplateDTO::setSmsAction);
 
-    Div content = new Div(formLayout);
-    content.addClassName("grid-view");
-    return content;
-  }
-
-  protected void save() {
-    UUID id = binder.getBean().getId();
-
-    boolean isNew = id == null;
-
-    if (binder.writeBeanIfValid(smsTemplate)) {
-      ServiceResult<SmsTemplate> _smsTemplate =
-          NotificationServices.getSmsTemplateService().save(new SaveQuery<>(smsTemplate));
-      if (_smsTemplate.getIsSuccess() && _smsTemplate.getData() != null) {
-        JHapyMainView3.get()
-            .displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
-        smsTemplate = _smsTemplate.getData();
-        if (isNew) {
-          JHapyMainView3.get()
-              .displayViewFromParentView(
-                  this, getParameter(), SmsTemplateAdminView.class, smsTemplate.getId().toString());
-        } else {
-          binder.readBean(smsTemplate);
-        }
-      } else {
-        JHapyMainView3.get()
-            .displayErrorMessage(getTranslation("message.global.error", _smsTemplate.getMessage()));
-        // Notification.show(getTranslation("message.global.error", _user.getMessage()), 3000,
-        // Position.MIDDLE);
-      }
-    } else {
-      JHapyMainView3.get()
-          .displayErrorMessage(getTranslation("message.global.validationErrorMessage"));
-      // Notification.show(getTranslation("message.global.validationErrorMessage"), 3000,
-      // Notification.Position.BOTTOM_CENTER);
-    }
-  }
-
-  protected void cancel() {
-    binder.readBean(smsTemplate);
+    return editingForm;
   }
 
   @Override
   public void setParameter(BeforeEvent event, String viewParameters) {
     super.setParameter(event, viewParameters);
-    if (StringUtils.isBlank(viewParameters)) {
-      smsTemplate = new SmsTemplate();
-    } else {
-      smsTemplate =
-          NotificationServices.getSmsTemplateService()
-              .getById(new GetByIdQuery(UUID.fromString(viewParameters)))
+    currentEditing = null;
+    var id = viewParameters.equals("-1") ? null : UUID.fromString(viewParameters);
+    if (id != null) {
+      var smsTemplateDTO =
+          queryGateway
+              .query(
+                  new GetSmsTemplateByIdQuery(UUID.fromString(viewParameters)),
+                  ResponseTypes.instanceOf(GetSmsTemplateByIdResponse.class))
+              .join()
               .getData();
-      if (smsTemplate == null) {
-        smsTemplate = new SmsTemplate();
+      if (smsTemplateDTO != null) {
+        currentEditing = smsTemplateDTO;
       }
     }
-
-    binder.setBean(smsTemplate);
-  }
-
-  private void goBack() {
-    UI.getCurrent().navigate(SmsTemplatesAdminView.class);
+    if (currentEditing == null) {
+      currentEditing = new SmsTemplateDTO();
+    }
   }
 }

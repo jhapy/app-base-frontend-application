@@ -35,7 +35,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.io.IOUtils;
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.frontend.component.cropperjs.CropperConfiguration;
 import org.jhapy.frontend.component.cropperjs.CropperJs;
 import org.jhapy.frontend.component.cropperjs.model.Data;
@@ -58,11 +58,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0
  * @since 2019-05-13
  */
-public class ImageField extends CustomField<StoredFile> implements HasStyle, Serializable,
+public class ImageField extends CustomField<StoredFileDTO> implements HasStyle, Serializable,
     HasLogger {
 
   private final Image image;
-  private StoredFile storedFile;
+  private StoredFileDTO storedFile;
   private AbstractDialog uploadDialog;
   private CropperJs cropperJs;
   private int nbAddedFile = 0;
@@ -116,10 +116,10 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
         contentLayout.add(upload);
 
         if (storedFile != null) {
-          if (storedFile.getOrginalContent() == null) {
-            storedFile.setOrginalContent(storedFile.getContent());
+          if (storedFile.getOriginalContent() == null) {
+            storedFile.setOriginalContent(storedFile.getContent());
           }
-          buildCropper(storedFile.getOrginalContent(), storedFile.getFilename(),
+          buildCropper(storedFile.getOriginalContent(), storedFile.getFilename(),
               storedFile != null ? storedFile.getMetadata().get("copperData") : null);
         }
 
@@ -147,7 +147,7 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
 
           logger().debug(loggerPrefix + "Data = " + data);
 
-          javaxt.io.Image imagext = new javaxt.io.Image(storedFile.getOrginalContent());
+          javaxt.io.Image imagext = new javaxt.io.Image(storedFile.getOriginalContent());
           //dumpImageInfo(imagext, loggerPrefix);
 
           if (data.getRotate() != 0) {
@@ -265,14 +265,14 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
     };
 
     upload.addSucceededListener(event -> {
-      storedFile = new StoredFile();
+      storedFile = new StoredFileDTO();
       storedFile.setMimeType(event.getMIMEType());
       try {
         storedFile.setContent(IOUtils.toByteArray(buffer.getInputStream()));
       } catch (IOException e) {
         Notification.show(e.getLocalizedMessage());
       }
-      storedFile.setOrginalContent(storedFile.getContent());
+      storedFile.setOriginalContent(storedFile.getContent());
       storedFile.setFilesize((long) storedFile.getContent().length);
       storedFile.setFilename(buffer.getFileName());
 
@@ -290,7 +290,7 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
   }
 
   @Override
-  protected StoredFile generateModelValue() {
+  protected StoredFileDTO generateModelValue() {
     return storedFile;
   }
 
@@ -371,7 +371,7 @@ public class ImageField extends CustomField<StoredFile> implements HasStyle, Ser
   }
 
   @Override
-  protected void setPresentationValue(StoredFile newPresentationValue) {
+  protected void setPresentationValue(StoredFileDTO newPresentationValue) {
     if (newPresentationValue.getContent() != null) {
       storedFile = newPresentationValue;
 

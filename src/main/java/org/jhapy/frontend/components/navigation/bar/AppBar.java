@@ -46,10 +46,10 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.lumo.Lumo;
 import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.utils.AppContext;
-import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.navigation.tab.NaviTab;
 import org.jhapy.frontend.components.navigation.tab.NaviTabs;
@@ -272,7 +272,7 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     avatar.setAlt("User menu");
     avatar.setSrc(UIUtils.IMG_PATH + "icons8-question-mark-64.png");
 
-    StoredFile userAvatar = AppContext.getInstance().getCurrentAvatar();
+    StoredFileDTO userAvatar = AppContext.getInstance().getCurrentAvatar();
     if (userAvatar != null) {
       avatar.setSrc(
           new StreamResource(
@@ -294,7 +294,8 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
     languageMenu = contextMenu.addItem(languageButton);
 
     List<MenuItem> menuItems = new ArrayList<>();
-    MyI18NProvider.getAvailableLanguagesInDB(getLocale())
+    getMyI18NProvider()
+        .getAvailableLanguagesInDB(getLocale())
         .forEach(
             locale -> {
               MenuItem menu =
@@ -373,6 +374,10 @@ public class AppBar extends FlexBoxLayout implements LocaleChangeObserver, HasLo
                   + appProperties.getSecurity().getRealm(),
               loginButton));
     }
+  }
+
+  protected MyI18NProvider getMyI18NProvider() {
+    return (MyI18NProvider) VaadinService.getCurrent().getInstantiator().getI18NProvider();
   }
 
   private void setLanguage(Locale language) {

@@ -40,7 +40,13 @@ public class Menu {
   }
 
   public Menu(
-          long id, long parentId, String menuName, String iconName, Class browser, String badge, String newViewParams) {
+      long id,
+      long parentId,
+      String menuName,
+      String iconName,
+      Class browser,
+      String badge,
+      String newViewParams) {
     this(id, parentId, menuName, iconName, browser, badge, null, newViewParams);
   }
 

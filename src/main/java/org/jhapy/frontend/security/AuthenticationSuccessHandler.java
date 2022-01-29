@@ -18,10 +18,11 @@
 
 package org.jhapy.frontend.security;
 
+import com.vaadin.flow.server.VaadinRequest;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.jhapy.cqrs.command.audit.LoginCommand;
 import org.jhapy.dto.domain.security.SecurityUser;
-import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
-import org.jhapy.frontend.client.audit.AuditServiceQueue;
 import org.jhapy.frontend.client.security.SecurityUserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -40,12 +41,12 @@ import java.time.Instant;
 public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
   private final SecurityUserService securityUserService;
-  private final AuditServiceQueue auditServiceQueue;
+  private final CommandGateway commandGateway;
 
   public AuthenticationSuccessHandler(
-      SecurityUserService securityUserService, AuditServiceQueue auditServiceQueue) {
+      SecurityUserService securityUserService, CommandGateway commandGateway) {
     this.securityUserService = securityUserService;
-    this.auditServiceQueue = auditServiceQueue;
+    this.commandGateway = commandGateway;
   }
 
   @Override
@@ -58,14 +59,13 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
     securityUser.setFailedLoginAttempts(0);
     securityUserService.save(new SaveQuery<>(securityUser));
 
-    auditServiceQueue.newSession(
-        new NewSession(
-            request.getRequestedSessionId(),
-            securityUser.getUsername(),
-            null,
-            Instant.now(),
-            true,
-            null));
+    LoginCommand loginCommand = new LoginCommand();
+    loginCommand.setJsessionId(request.getRequestedSessionId());
+    loginCommand.setUsername(securityUser.getUsername());
+    loginCommand.setSourceIp(VaadinRequest.getCurrent().getRemoteAddr());
+    loginCommand.setSuccess(true);
+    commandGateway.send(loginCommand);
+
     super.onAuthenticationSuccess(request, response, authentication);
   }
 }

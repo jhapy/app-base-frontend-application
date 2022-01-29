@@ -24,28 +24,30 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.i18n.CreateActionCommand;
+import org.jhapy.cqrs.command.i18n.DeleteActionCommand;
+import org.jhapy.cqrs.command.i18n.UpdateActionCommand;
+import org.jhapy.cqrs.query.i18n.GetActionByIdQuery;
+import org.jhapy.cqrs.query.i18n.GetActionByIdResponse;
+import org.jhapy.cqrs.query.i18n.GetActionTrlsByActionIdQuery;
 import org.jhapy.dto.domain.i18n.ActionDTO;
-import org.jhapy.dto.domain.i18n.ActionTrlDTO;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.serviceQuery.i18n.ImportI18NFileQuery;
-import org.jhapy.dto.serviceQuery.i18n.actionTrl.GetActionTrlQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.components.CheckboxColumnComponent;
@@ -62,7 +64,7 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 import org.jhapy.frontend.views.JHapyMainView3;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * @author jHapy Lead Dev.
@@ -74,28 +76,48 @@ import java.util.List;
 public class ActionsView
     extends DefaultMasterDetailsView<ActionDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
-  public ActionsView(MyI18NProvider myI18NProvider) {
+  public ActionsView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
     super(
         "action.",
         ActionDTO.class,
-        new ActionDataProvider(),
-        (e) -> {
-          ServiceResult<ActionDTO> _elt = I18NServices.getActionService().save(new SaveQuery<>(e));
-          if (_elt.getIsSuccess()) {
-            myI18NProvider.reloadActions();
+        null,
+        false,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateActionCommand(e);
+          } else {
+            command = new UpdateActionCommand(e.getId(), e);
           }
-          return _elt;
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway
+                  .query(
+                      new GetActionByIdQuery(e.getId() == null ? uuid : e.getId()),
+                      GetActionByIdResponse.class)
+                  .join();
+          myI18NProvider.reloadActions();
+          return new ServiceResult<>(response.getData());
         },
-        e -> I18NServices.getActionService().delete(new DeleteByIdQuery(e.getId())),
+        e -> {
+          commandGateway.sendAndWait(new DeleteActionCommand(e.getId()));
+          myI18NProvider.reloadActions();
+          return new ServiceResult<>();
+        },
         myI18NProvider);
+    lazyDataProvider = new ActionDataProvider(queryGateway);
+    this.queryGateway = queryGateway;
   }
 
   @Override
   protected boolean beforeSave(ActionDTO entity) {
-    long hasDefault = 0;
-    List<ActionTrlDTO> actionTrlList = entity.getTranslations();
-    for (ActionTrlDTO actionTrl : actionTrlList) {
-      if (actionTrl != null && actionTrl.getIsDefault() != null && actionTrl.getIsDefault()) {
+    var hasDefault = 0;
+    var actionTrlList = entity.getTranslations();
+    for (var actionTrl : actionTrlList) {
+      if (actionTrl != null
+          && actionTrl.isDefault() != null
+          && Boolean.TRUE.equals(actionTrl.isDefault())) {
         hasDefault++;
       }
     }
@@ -109,20 +131,29 @@ public class ActionsView
     return hasDefault == 1;
   }
 
-  protected Grid createGrid() {
+  @Override
+  protected void afterSave(ActionDTO entity) {
+    lazyDataProvider.refreshItem(entity);
+  }
+
+  @Override
+  protected void afterDelete() {
+    lazyDataProvider.refreshAll();
+  }
+
+  protected Grid<ActionDTO> createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
     grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+    grid.setItems(lazyDataProvider);
+    grid.setHeightFull();
 
-    grid.setDataProvider(dataProvider);
-    grid.setHeight("100%");
-
-    Column categoryColumn =
+    var categoryColumn =
         grid.addColumn(ActionDTO::getCategory).setKey("category").setSortable(true);
-    Column nameColumn = grid.addColumn(ActionDTO::getName).setKey("name").setSortable(true);
-    grid.addComponentColumn(action -> new CheckboxColumnComponent(action.getIsTranslated()))
-        .setKey("isTranslated")
+    var nameColumn = grid.addColumn(ActionDTO::getName).setKey("name").setSortable(true);
+    grid.addComponentColumn(action -> new CheckboxColumnComponent(action.getTranslated()))
+        .setKey("translated")
         .setSortable(true);
 
     grid.getColumns()
@@ -134,28 +165,27 @@ public class ActionsView
               }
             });
 
-    HeaderRow headerRow = grid.prependHeaderRow();
+    var headerRow = grid.prependHeaderRow();
 
-    HeaderCell buttonsCell = headerRow.join(categoryColumn, nameColumn);
+    var buttonsCell = headerRow.join(categoryColumn, nameColumn);
 
-    Button exportI18NButton = new Button(getTranslation("action.i18n.download"));
+    var exportI18NButton = new Button(getTranslation("action.i18n.download"));
     exportI18NButton.addClickListener(
         buttonClickEvent -> {
-          ServiceResult<Byte[]> result =
-              I18NServices.getI18NService().getI18NFile(new BaseRemoteQuery());
-          final StreamResource resource =
+          var result = I18NServices.getI18NService().getI18NFile(new BaseRemoteQuery());
+          final var resource =
               new StreamResource(
                   "i18n.xlsx",
                   () -> new ByteArrayInputStream(ArrayUtils.toPrimitive(result.getData())));
-          final StreamRegistration registration =
+          final var registration =
               VaadinSession.getCurrent().getResourceRegistry().registerResource(resource);
           UI.getCurrent().getPage().setLocation(registration.getResourceUri());
         });
 
-    Button importI18NButton = new Button(getTranslation("action.i18n.upload"));
+    var importI18NButton = new Button(getTranslation("action.i18n.upload"));
     importI18NButton.addClickListener(
         buttonClickEvent -> {
-          ImportFileDialog<byte[]> importFileDialog = new ImportFileDialog();
+          var importFileDialog = new ImportFileDialog<byte[]>();
           importFileDialog.open(
               getTranslation("element.i18n.upload"),
               getTranslation("message.i18n.upload"),
@@ -163,7 +193,7 @@ public class ActionsView
               getTranslation("action.i18n.upload"),
               bytes -> {
                 importFileDialog.close();
-                ServiceResult<Void> result =
+                var result =
                     I18NServices.getI18NService()
                         .importI18NFile(
                             new ImportI18NFileQuery("i18n.xlsx", ArrayUtils.toObject(bytes)));
@@ -179,14 +209,14 @@ public class ActionsView
               importFileDialog::close);
         });
 
-    HorizontalLayout headerHLayout = new HorizontalLayout(exportI18NButton, importI18NButton);
+    var headerHLayout = new HorizontalLayout(exportI18NButton, importI18NButton);
     buttonsCell.setComponent(headerHLayout);
 
     return grid;
   }
 
   protected Component createDetails(ActionDTO action) {
-    boolean isNew = action.getId() == null;
+    var isNew = action.getId() == null;
     detailsDrawerHeader.setTitle(
         isNew
             ? getTranslation("element.global.new") + " : "
@@ -194,62 +224,67 @@ public class ActionsView
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
-    TextField name = new TextField();
-    name.setWidth("100%");
+    var nameField = new TextField();
+    nameField.setWidthFull();
 
-    TextField categoryField = new TextField();
-    categoryField.setWidth("100%");
+    var categoryField = new TextField();
+    categoryField.setWidthFull();
 
-    Checkbox isActive = new Checkbox();
+    var isActiveField = new Checkbox();
 
-    Checkbox isTranslated = new Checkbox();
+    var translatedField = new Checkbox();
 
-    ActionTrlListField actionTrl = new ActionTrlListField();
-    actionTrl.setReadOnly(false);
-    actionTrl.setWidth("100%");
+    var actionTrlField = new ActionTrlListField();
+    actionTrlField.setReadOnly(false);
+    actionTrlField.setWidthFull();
 
     // Form layout
-    FormLayout editingForm = new FormLayout();
+    var editingForm = new FormLayout();
     editingForm.addClassNames(
         LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
         new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
         new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
-    FormLayout.FormItem nameItem =
-        editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
-    FormLayout.FormItem categoryItem =
+    var nameItem =
+        editingForm.addFormItem(nameField, getTranslation("element." + I18N_PREFIX + "name"));
+    var categoryItem =
         editingForm.addFormItem(
             categoryField, getTranslation("element." + I18N_PREFIX + "category"));
-    FormLayout.FormItem translationsItem =
+    var translationsItem =
         editingForm.addFormItem(
-            actionTrl, getTranslation("element." + I18N_PREFIX + "translations"));
+            actionTrlField, getTranslation("element." + I18N_PREFIX + "translations"));
     editingForm.addFormItem(
-        isTranslated, getTranslation("element." + I18N_PREFIX + "isTranslated"));
-    editingForm.addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
+        translatedField, getTranslation("element." + I18N_PREFIX + "translated"));
+    editingForm.addFormItem(isActiveField, getTranslation("element." + I18N_PREFIX + "isActive"));
 
     UIUtils.setColSpan(2, nameItem, categoryItem, translationsItem);
 
-    if (action.getTranslations().size() == 0) {
-      action.setTranslations(
-          I18NServices.getActionService()
-              .getActionTrls(new GetActionTrlQuery(action.getId()))
-              .getData());
+    if (action.getTranslations().isEmpty() && action.getId() != null) {
+      var response =
+          queryGateway
+              .query(
+                  new GetActionTrlsByActionIdQuery(action.getId()),
+                  ResponseTypes.instanceOf(GetActionTrlsByActionIdQuery.Response.class))
+              .join();
+      if (response != null) action.setTranslations(response.getData());
     }
 
     binder.setBean(action);
 
-    binder.bind(name, ActionDTO::getName, ActionDTO::setName);
+    binder.bind(nameField, ActionDTO::getName, ActionDTO::setName);
     binder.bind(categoryField, ActionDTO::getCategory, ActionDTO::setCategory);
-    binder.bind(isActive, ActionDTO::getIsActive, ActionDTO::setIsActive);
-    binder.bind(isTranslated, ActionDTO::getIsTranslated, ActionDTO::setIsTranslated);
-    binder.bind(actionTrl, ActionDTO::getTranslations, ActionDTO::setTranslations);
+    binder.bind(isActiveField, ActionDTO::isActive, ActionDTO::setActive);
+    binder.bind(translatedField, ActionDTO::getTranslated, ActionDTO::setTranslated);
+    binder.bind(actionTrlField, ActionDTO::getTranslations, ActionDTO::setTranslations);
 
     return editingForm;
   }
 
-  protected void filter(String filter) {
-    dataProvider.setFilter(
-        new DefaultFilter(StringUtils.isBlank(filter) ? null : "%" + filter + "%", Boolean.TRUE));
+  @Override
+  protected void filter(String filter, Boolean showInactive) {
+    lazyDataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "%" + filter + "%", showInactive));
+    lazyDataProvider.refreshAll();
   }
 }

@@ -121,7 +121,7 @@ public class SecurityRolesView
     binder.bind(name, SecurityRole::getName, SecurityRole::setName);
     binder.bind(description, SecurityRole::getDescription, SecurityRole::setDescription);
     binder.bind(canLogin, SecurityRole::getCanLogin, SecurityRole::setCanLogin);
-    binder.bind(isActive, SecurityRole::getIsActive, SecurityRole::setIsActive);
+    binder.bind(isActive, SecurityRole::isActive, SecurityRole::setActive);
 
     return editingForm;
   }

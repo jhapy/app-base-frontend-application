@@ -89,7 +89,7 @@ public class SecurityUsersView
         .setKey("isAccountLocked");
     grid.addColumn(new BooleanOkRenderer<>(SecurityUser::getIsAccountExpired))
         .setKey("isAccountExpired");
-    grid.addColumn(new BooleanOkRenderer<>(BaseEntity::getIsActive)).setKey("isActive");
+    grid.addColumn(new BooleanOkRenderer<>(BaseEntity::isActive)).setKey("isActive");
 
     grid.addColumn(
             new TextRenderer<>(
@@ -260,7 +260,7 @@ public class SecurityUsersView
                 ? null
                 : e.getLastSuccessfulLogin().atZone(ZoneId.systemDefault()).toLocalDate(),
         null);
-    binder.bind(isActiveField, SecurityUser::getIsActive, SecurityUser::setIsActive);
+    binder.bind(isActiveField, SecurityUser::isActive, SecurityUser::setActive);
     binder.bind(
         isAccountExpiredField,
         SecurityUser::getIsAccountExpired,

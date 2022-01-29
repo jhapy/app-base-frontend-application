@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.Registration;
 import io.rocketbase.vaadin.croppie.Croppie;
 import io.rocketbase.vaadin.croppie.model.ViewPortConfig;
 import io.rocketbase.vaadin.croppie.model.ViewPortType;
-import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -95,9 +95,9 @@ public class CroppieDialog extends Dialog {
    */
   public void open(
       String title,
-      StoredFile storedFile,
+      StoredFileDTO storedFile,
       String actionName,
-      Consumer<StoredFile> confirmHandler,
+      Consumer<StoredFileDTO> confirmHandler,
       Runnable cancelHandler) {
     buildCropie(storedFile);
     titleField.setText(title);
@@ -134,11 +134,11 @@ public class CroppieDialog extends Dialog {
     }
   }
 
-  protected void buildCropie(StoredFile storedFile) {
+  protected void buildCropie(StoredFileDTO storedFile) {
     StreamResource imageResource =
         new StreamResource(
             storedFile.getFilename(),
-            () -> new ByteArrayInputStream(storedFile.getOrginalContent()));
+            () -> new ByteArrayInputStream(storedFile.getOriginalContent()));
 
     Croppie croppie = new Croppie(imageResource);
     croppie.setWidth("300px");
@@ -160,7 +160,7 @@ public class CroppieDialog extends Dialog {
             final String originalExtension =
                 storedFile.getFilename().substring(storedFile.getFilename().lastIndexOf('.') + 1);
             ByteArrayInputStream outputStream =
-                new ByteArrayInputStream(storedFile.getOrginalContent());
+                new ByteArrayInputStream(storedFile.getOriginalContent());
             BufferedImage bufferedImage = ImageIO.read(outputStream);
 
             int imgH = bufferedImage.getHeight();

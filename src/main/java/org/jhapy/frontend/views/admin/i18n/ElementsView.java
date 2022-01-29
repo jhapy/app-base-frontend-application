@@ -19,24 +19,39 @@
 package org.jhapy.frontend.views.admin.i18n;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.i18n.CreateElementCommand;
+import org.jhapy.cqrs.command.i18n.DeleteElementCommand;
+import org.jhapy.cqrs.command.i18n.UpdateElementCommand;
+import org.jhapy.cqrs.query.i18n.GetElementByIdQuery;
+import org.jhapy.cqrs.query.i18n.GetElementByIdResponse;
+import org.jhapy.cqrs.query.i18n.GetElementTrlsByElementIdQuery;
 import org.jhapy.dto.domain.i18n.ElementDTO;
-import org.jhapy.dto.domain.i18n.ElementTrlDTO;
+import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.DeleteByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
-import org.jhapy.dto.serviceQuery.i18n.elementTrl.GetElementTrlQuery;
+import org.jhapy.dto.serviceQuery.i18n.ImportI18NFileQuery;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.components.CheckboxColumnComponent;
+import org.jhapy.frontend.components.ImportFileDialog;
 import org.jhapy.frontend.customFields.ElementTrlListField;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.ElementDataProvider;
@@ -48,7 +63,8 @@ import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
 import org.jhapy.frontend.views.JHapyMainView3;
 
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.util.UUID;
 
 /**
  * @author jHapy Lead Dev.
@@ -59,30 +75,51 @@ import java.util.List;
 @RequiresRole({SecurityConst.ROLE_I18N_WRITE, SecurityConst.ROLE_ADMIN})
 public class ElementsView
     extends DefaultMasterDetailsView<ElementDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
+  private final ElementDataProvider lazyDataProvider;
+  private final QueryGateway queryGateway;
 
-  public ElementsView(MyI18NProvider myI18NProvider) {
+  public ElementsView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
     super(
         "element.",
         ElementDTO.class,
-        new ElementDataProvider(),
-        (e) -> {
-          ServiceResult<ElementDTO> _elt =
-              I18NServices.getElementService().save(new SaveQuery<>(e));
-          if (_elt.getIsSuccess()) {
-            myI18NProvider.reloadElements();
+        null,
+        false,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateElementCommand(e);
+          } else {
+            command = new UpdateElementCommand(e.getId(), e);
           }
-          return _elt;
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway
+                  .query(
+                      new GetElementByIdQuery(e.getId() == null ? uuid : e.getId()),
+                      GetElementByIdResponse.class)
+                  .join();
+          myI18NProvider.reloadElements();
+          return new ServiceResult<>(response.getData());
         },
-        e -> I18NServices.getElementService().delete(new DeleteByIdQuery(e.getId())),
+        e -> {
+          commandGateway.sendAndWait(new DeleteElementCommand(e.getId()));
+          myI18NProvider.reloadElements();
+          return new ServiceResult<>();
+        },
         myI18NProvider);
+    lazyDataProvider = new ElementDataProvider(queryGateway);
+    this.queryGateway = queryGateway;
   }
 
   @Override
   protected boolean beforeSave(ElementDTO entity) {
-    long hasDefault = 0;
-    List<ElementTrlDTO> elementTrls = entity.getTranslations();
-    for (ElementTrlDTO elementTrl : elementTrls) {
-      if (elementTrl != null && elementTrl.getIsDefault() != null && elementTrl.getIsDefault()) {
+    var hasDefault = 0;
+    var elementTrlList = entity.getTranslations();
+    for (var elementTrl : elementTrlList) {
+      if (elementTrl != null
+          && elementTrl.isDefault() != null
+          && Boolean.TRUE.equals(elementTrl.isDefault())) {
         hasDefault++;
       }
     }
@@ -96,19 +133,29 @@ public class ElementsView
     return hasDefault == 1;
   }
 
-  protected Grid createGrid() {
+  @Override
+  protected void afterSave(ElementDTO entity) {
+    lazyDataProvider.refreshItem(entity);
+  }
+
+  @Override
+  protected void afterDelete() {
+    lazyDataProvider.refreshAll();
+  }
+
+  protected Grid<ElementDTO> createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
     grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
-
-    grid.setDataProvider(dataProvider);
+    grid.setItems(lazyDataProvider);
     grid.setHeight("100%");
 
-    grid.addColumn(ElementDTO::getCategory).setKey("category").setSortable(true);
-    grid.addColumn(ElementDTO::getName).setKey("name").setSortable(true);
-    grid.addComponentColumn(element -> new CheckboxColumnComponent(element.getIsTranslated()))
-        .setKey("isTranslated")
+    var categoryColumn =
+        grid.addColumn(ElementDTO::getCategory).setKey("category").setSortable(true);
+    var nameColumn = grid.addColumn(ElementDTO::getName).setKey("name").setSortable(true);
+    grid.addComponentColumn(element -> new CheckboxColumnComponent(element.getTranslated()))
+        .setKey("translated")
         .setSortable(true);
 
     grid.getColumns()
@@ -119,11 +166,60 @@ public class ElementsView
                 column.setResizable(true);
               }
             });
+
+    var headerRow = grid.prependHeaderRow();
+
+    var buttonsCell = headerRow.join(categoryColumn, nameColumn);
+
+    var exportI18NButton = new Button(getTranslation("element.i18n.download"));
+    exportI18NButton.addClickListener(
+        buttonClickEvent -> {
+          var result = I18NServices.getI18NService().getI18NFile(new BaseRemoteQuery());
+          final var resource =
+              new StreamResource(
+                  "i18n.xlsx",
+                  () -> new ByteArrayInputStream(ArrayUtils.toPrimitive(result.getData())));
+          final var registration =
+              VaadinSession.getCurrent().getResourceRegistry().registerResource(resource);
+          UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+        });
+
+    var importI18NButton = new Button(getTranslation("element.i18n.upload"));
+    importI18NButton.addClickListener(
+        buttonClickEvent -> {
+          var importFileDialog = new ImportFileDialog<byte[]>();
+          importFileDialog.open(
+              getTranslation("element.i18n.upload"),
+              getTranslation("message.i18n.upload"),
+              null,
+              getTranslation("action.i18n.upload"),
+              bytes -> {
+                importFileDialog.close();
+                var result =
+                    I18NServices.getI18NService()
+                        .importI18NFile(
+                            new ImportI18NFileQuery("i18n.xlsx", ArrayUtils.toObject(bytes)));
+                if (result.getIsSuccess()) {
+                  JHapyMainView3.get()
+                      .displayInfoMessage(getTranslation("message.fileImport.success"));
+                } else {
+                  JHapyMainView3.get()
+                      .displayInfoMessage(
+                          getTranslation("message.fileImport.error", result.getMessage()));
+                }
+              },
+              importFileDialog::close);
+        });
+
+    var headerHLayout = new HorizontalLayout(exportI18NButton, importI18NButton);
+    buttonsCell.setComponent(headerHLayout);
+
     return grid;
   }
 
   protected Component createDetails(ElementDTO element) {
-    boolean isNew = element.getId() == null;
+    String loggerPrefix = getLoggerPrefix("createDetails");
+    var isNew = element.getId() == null;
     detailsDrawerHeader.setTitle(
         isNew
             ? getTranslation("element.global.new") + " : "
@@ -131,60 +227,65 @@ public class ElementsView
 
     detailsDrawerFooter.setDeleteButtonVisible(!isNew);
 
-    TextField name = new TextField();
+    var name = new TextField();
     name.setWidth("100%");
 
-    TextField categoryField = new TextField();
+    var categoryField = new TextField();
     categoryField.setWidth("100%");
 
-    Checkbox isActive = new Checkbox();
+    var active = new Checkbox();
 
-    Checkbox isTranslated = new Checkbox();
+    var translated = new Checkbox();
 
-    ElementTrlListField elementTrl = new ElementTrlListField();
+    var elementTrl = new ElementTrlListField();
     elementTrl.setReadOnly(false);
     elementTrl.setWidth("100%");
 
     // Form layout
-    FormLayout editingForm = new FormLayout();
+    var editingForm = new FormLayout();
     editingForm.addClassNames(
         LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
         new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
         new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem nameItem =
-        editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
-    FormLayout.FormItem categoryItem =
+
+    var nameItem = editingForm.addFormItem(name, getTranslation("element." + I18N_PREFIX + "name"));
+    var categoryItem =
         editingForm.addFormItem(
             categoryField, getTranslation("element." + I18N_PREFIX + "category"));
-    FormLayout.FormItem translationsItem =
+    var translationsItem =
         editingForm.addFormItem(
             elementTrl, getTranslation("element." + I18N_PREFIX + "translations"));
-    editingForm.addFormItem(
-        isTranslated, getTranslation("element." + I18N_PREFIX + "isTranslated"));
-    editingForm.addFormItem(isActive, getTranslation("element." + I18N_PREFIX + "isActive"));
+    editingForm.addFormItem(translated, getTranslation("element." + I18N_PREFIX + "translated"));
+    editingForm.addFormItem(active, getTranslation("element." + I18N_PREFIX + "active"));
 
     UIUtils.setColSpan(2, nameItem, categoryItem, translationsItem);
 
-    if (element.getTranslations().size() == 0) {
-      element.setTranslations(
-          I18NServices.getElementService()
-              .getElementTrls(new GetElementTrlQuery(element.getId()))
-              .getData());
+    if (element.getTranslations().isEmpty() && element.getId() != null) {
+      var response =
+          queryGateway
+              .query(
+                  new GetElementTrlsByElementIdQuery(element.getId()),
+                  ResponseTypes.instanceOf(GetElementTrlsByElementIdQuery.Response.class))
+              .join();
+      if (response != null) element.setTranslations(response.getData());
     }
+
     binder.setBean(element);
 
     binder.bind(name, ElementDTO::getName, ElementDTO::setName);
     binder.bind(categoryField, ElementDTO::getCategory, ElementDTO::setCategory);
-    binder.bind(isActive, ElementDTO::getIsActive, ElementDTO::setIsActive);
-    binder.bind(isTranslated, ElementDTO::getIsTranslated, ElementDTO::setIsTranslated);
+    binder.bind(active, ElementDTO::isActive, ElementDTO::setActive);
+    binder.bind(translated, ElementDTO::getTranslated, ElementDTO::setTranslated);
     binder.bind(elementTrl, ElementDTO::getTranslations, ElementDTO::setTranslations);
 
     return editingForm;
   }
 
-  protected void filter(String filter) {
-    dataProvider.setFilter(
-        new DefaultFilter(StringUtils.isBlank(filter) ? null : "%" + filter + "%", Boolean.TRUE));
+  @Override
+  protected void filter(String filter, Boolean showInactive) {
+    lazyDataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "%" + filter + "%", showInactive));
+    lazyDataProvider.refreshAll();
   }
 }

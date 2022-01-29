@@ -71,6 +71,7 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
     logger().debug(loggerPrefix + "Param =  " + values);
     if (values != null) {
       dataProvider.setValues(values);
+      dataProvider.refreshAll();
     }
   }
 
@@ -181,8 +182,7 @@ public abstract class DefaultCustomListField<C extends BaseEntity> extends FlexB
       List<C> previousValues = new ArrayList<>(fieldsMap);
 
       if (value.getId() == null) {
-        value.setId(uniqueLong.incrementAndGet());
-        value.setIsNew(true);
+        value.setId(UUID.randomUUID());
       }
       if (!fieldsMap.contains(value)) {
         fieldsMap.add(value);

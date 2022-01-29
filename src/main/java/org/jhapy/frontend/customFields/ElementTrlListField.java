@@ -69,7 +69,7 @@ public class ElementTrlListField extends DefaultCustomListField<ElementTrlDTO>
   protected Component initContent() {
     Grid<ElementTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud(ElementTrlDTO.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud<>(ElementTrlDTO.class, grid, createInterfaceTrlEditor());
     gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -94,7 +94,7 @@ public class ElementTrlListField extends DefaultCustomListField<ElementTrlDTO>
                         : (new Locale(row.getIso3Language())).getDisplayLanguage(getLocale())))
         .setHeader(getTranslation("element." + i18nPrefix + "language"));
 
-    grid.addColumn(new BooleanOkRenderer<>(ElementTrlDTO::getIsDefault))
+    grid.addColumn(new BooleanOkRenderer<>(ElementTrlDTO::isDefault))
         .setHeader(getTranslation("element." + i18nPrefix + "isDefault"));
 
     newButton = new Button(getTranslation("action.global.addButton"));
@@ -119,16 +119,14 @@ public class ElementTrlListField extends DefaultCustomListField<ElementTrlDTO>
     language.setItemLabelGenerator(Locale::getDisplayLanguage);
 
     Checkbox isDefault = new Checkbox(getTranslation("element." + i18nPrefix + "isDefault"));
-    Checkbox isTranslated = new Checkbox(getTranslation("element." + i18nPrefix + "isTranslated"));
+    Checkbox translated = new Checkbox(getTranslation("element." + i18nPrefix + "translated"));
 
-    FormLayout form = new FormLayout(value, isDefault, isTranslated, language);
+    FormLayout form = new FormLayout(value, isDefault, translated, language);
 
     Binder<ElementTrlDTO> binder = new BeanValidationBinder<>(ElementTrlDTO.class);
     binder.forField(value).asRequired().bind(ElementTrlDTO::getValue, ElementTrlDTO::setValue);
-    binder.forField(isDefault).bind(ElementTrlDTO::getIsDefault, ElementTrlDTO::setIsDefault);
-    binder
-        .forField(isTranslated)
-        .bind(ElementTrlDTO::getIsTranslated, ElementTrlDTO::setIsTranslated);
+    binder.forField(isDefault).bind(ElementTrlDTO::isDefault, ElementTrlDTO::setDefault);
+    binder.forField(translated).bind(ElementTrlDTO::isTranslated, ElementTrlDTO::setTranslated);
     binder
         .forField(language)
         .asRequired()

@@ -19,16 +19,12 @@
 package org.jhapy.frontend.security;
 
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import de.codecamp.vaadin.security.spring.access.VaadinSecurity;
 import de.codecamp.vaadin.security.spring.access.rules.PermitAll;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.jhapy.dto.domain.security.SecurityUser;
-import org.jhapy.dto.messageQueue.EndSession;
-import org.jhapy.dto.messageQueue.NewSession;
-import org.jhapy.frontend.client.audit.AuditServices;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,7 +35,6 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -171,6 +166,9 @@ public final class SecurityUtils {
         .setAttribute(SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
     VaadinSession.getCurrent().setAttribute(SECURITY_USER_ATTRIBUTE, securityUser);
 
+    // TODO: Fix that
+    /*
+
     AuditServices.getAuditServiceQueue()
         .newSession(
             new NewSession(
@@ -180,10 +178,8 @@ public final class SecurityUtils {
                 Instant.now(),
                 true,
                 null));
-  }
 
-  public static void endSession(String jSessionId) {
-    AuditServices.getAuditServiceQueue().endSession(new EndSession(jSessionId, Instant.now()));
+     */
   }
 
   public static boolean hasRole(String role) {

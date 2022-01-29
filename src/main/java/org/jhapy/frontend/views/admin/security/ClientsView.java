@@ -125,7 +125,7 @@ public class ClientsView
     binder.bind(nameField, ClientDTO::getName, ClientDTO::setName);
     binder.bind(mailboxDomainField, ClientDTO::getMailboxDomain, ClientDTO::setMailboxDomain);
     binder.bind(descriptionField, ClientDTO::getDescription, ClientDTO::setDescription);
-    binder.bind(isActive, ClientDTO::getIsActive, ClientDTO::setIsActive);
+    binder.bind(isActive, ClientDTO::isActive, ClientDTO::setActive);
 
     return editingForm;
   }

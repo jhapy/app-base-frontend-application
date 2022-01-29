@@ -47,6 +47,7 @@ import dev.mett.vaadin.tooltip.Tooltips;
 import dev.mett.vaadin.tooltip.config.TC_HIDE_ON_CLICK;
 import dev.mett.vaadin.tooltip.config.TooltipConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.queryhandling.QueryGateway;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.jhapy.dto.domain.BaseEntity;
@@ -61,6 +62,7 @@ import org.jhapy.frontend.components.navigation.menubar.ModuleToolbar;
 import org.jhapy.frontend.dataproviders.DefaultDataProvider;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.DefaultSearchDataProvider;
+import org.jhapy.frontend.dataproviders.JHapyAbstractDataProvider;
 import org.jhapy.frontend.layout.SplitViewFrame;
 import org.jhapy.frontend.layout.size.Horizontal;
 import org.jhapy.frontend.layout.size.Top;
@@ -100,6 +102,8 @@ public abstract class DefaultMasterDetailsView<
   protected Binder<T> binder;
   protected T currentEditing;
   protected ModuleToolbar moduleToolbar;
+  protected JHapyAbstractDataProvider<T> lazyDataProvider;
+  protected QueryGateway queryGateway;
   private Tabs tabs;
   private Boolean initialFetch = Boolean.TRUE;
   private FlexBoxLayout content;
@@ -210,7 +214,7 @@ public abstract class DefaultMasterDetailsView<
     moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
     moduleToolbar.addGoBackListener(
         () -> {
-          if ( displayInANewTab() ) {
+          if (displayInANewTab()) {
             getParentTab().closeTab();
             return;
           }
@@ -242,11 +246,11 @@ public abstract class DefaultMasterDetailsView<
   }
 
   protected void disableCreateRecord() {
-    moduleToolbar.setAddButtonVisible( false );
+    moduleToolbar.setAddButtonVisible(false);
   }
 
   protected void enableCreateRecord() {
-    moduleToolbar.setAddButtonVisible( true );
+    moduleToolbar.setAddButtonVisible(true);
   }
 
   protected void showDetails() {
@@ -476,7 +480,7 @@ public abstract class DefaultMasterDetailsView<
     binder.bind(
         idField, entity1 -> entity1.getId() == null ? null : entity1.getId().toString(), null);
     binder.bind(clientNameField, BaseEntity::getClientName, null);
-    binder.bind(isActiveField, BaseEntity::getIsActive, BaseEntity::setIsActive);
+    binder.bind(isActiveField, BaseEntity::isActive, BaseEntity::setActive);
     binder.bind(
         createdField,
         entity1 ->
@@ -528,12 +532,13 @@ public abstract class DefaultMasterDetailsView<
 
       JHapyMainView3.get().displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
 
-      if (!isNew) {
-        dataProvider.refreshItem(currentEditing);
-      } else {
-        dataProvider.refreshAll();
+      if (dataProvider != null) {
+        if (!isNew) {
+          dataProvider.refreshItem(currentEditing);
+        } else {
+          dataProvider.refreshAll();
+        }
       }
-
       if (saveAndNew) {
         showDetails();
         return;

@@ -24,7 +24,7 @@ import com.vaadin.flow.data.provider.Query;
 import org.apache.commons.text.WordUtils;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseEntity;
-import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.frontend.dataproviders.DefaultDataProvider;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.views.JHapyMainView3;
@@ -109,7 +109,7 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
       if (method.getName().startsWith("get")
           && !Collection.class.isAssignableFrom(method.getReturnType())
           && !method.getReturnType().isArray()
-          && !method.getReturnType().equals(StoredFile.class)
+          && !method.getReturnType().equals(StoredFileDTO.class)
           && !BaseEntity.class.isAssignableFrom(method.getReturnType())) {
         onNewCell();
         String attrName = WordUtils.uncapitalize(method.getName().substring(3));
@@ -159,7 +159,7 @@ public class ExcelExporter<T extends BaseEntity, F extends DefaultFilter> implem
         if (method.getName().startsWith("get")
             && !Collection.class.isAssignableFrom(method.getReturnType())
             && !method.getReturnType().isArray()
-            && !method.getReturnType().equals(StoredFile.class)) {
+            && !method.getReturnType().equals(StoredFileDTO.class)) {
           String attrName = WordUtils.uncapitalize(method.getName().substring(3));
           values.put(attrName, method.invoke(item));
         }

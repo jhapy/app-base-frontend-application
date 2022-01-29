@@ -31,8 +31,9 @@ import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.io.IOUtils;
+import org.axonframework.queryhandling.QueryGateway;
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.ImageViewerDialog;
 import org.jhapy.frontend.components.ListItem;
@@ -62,26 +63,33 @@ import java.util.List;
 public class AttachmentField extends FlexBoxLayout
     implements HasStyle,
         HasSize,
-        HasValue<AttachmentsFieldValueChangeEvent, StoredFile[]>,
+        HasValue<AttachmentsFieldValueChangeEvent, StoredFileDTO[]>,
         HasLogger {
 
   private final Upload upload;
   private final Div documentList;
   private final List<ValueChangeListener<? super AttachmentsFieldValueChangeEvent>>
       changeListeners = new ArrayList<>();
-  private List<StoredFile> storedFiles = new ArrayList<>();
+  private final QueryGateway queryGateway;
+  private List<StoredFileDTO> storedFiles = new ArrayList<>();
 
-  public AttachmentField() {
+  public AttachmentField(QueryGateway queryGateway) {
     this(
         null,
         new String[] {"image/jpeg", "image/png", "image/gif", "image/tiff", "application/pdf"},
         10,
-        10);
+        10,
+        queryGateway);
   }
 
-  public AttachmentField(String label, String[] acceptedFileType, int maxFileSizeMb, int maxFiles) {
+  public AttachmentField(
+      String label,
+      String[] acceptedFileType,
+      int maxFileSizeMb,
+      int maxFiles,
+      QueryGateway queryGateway) {
     setFlexDirection(FlexDirection.COLUMN);
-
+    this.queryGateway = queryGateway;
     documentList = new Div();
 
     documentList.addClassNames(LumoStyles.Padding.Vertical.S);
@@ -109,7 +117,7 @@ public class AttachmentField extends FlexBoxLayout
           var loggerPrefix = getLoggerPrefix("upload.succeeded");
           logger().debug(loggerPrefix + "Start");
 
-          StoredFile storedFile = new StoredFile();
+          StoredFileDTO storedFile = new StoredFileDTO();
           storedFile.setMimeType(event.getMIMEType());
           try {
             storedFile.setContent(IOUtils.toByteArray(buffer.getInputStream(event.getFileName())));
@@ -117,12 +125,12 @@ public class AttachmentField extends FlexBoxLayout
             Notification.show(e.getLocalizedMessage());
           }
           if (event.getMIMEType().contains("image")) {
-            storedFile.setOrginalContent(storedFile.getContent());
+            storedFile.setOriginalContent(storedFile.getContent());
           }
           storedFile.setFilesize((long) storedFile.getContent().length);
           storedFile.setFilename(event.getFileName());
 
-          List<StoredFile> oldValues = new ArrayList<>(storedFiles);
+          List<StoredFileDTO> oldValues = new ArrayList<>(storedFiles);
           storedFiles.add(storedFile);
 
           logger()
@@ -132,8 +140,8 @@ public class AttachmentField extends FlexBoxLayout
               listener ->
                   listener.valueChanged(
                       new AttachmentsFieldValueChangeEvent(
-                          oldValues.toArray(new StoredFile[0]),
-                          storedFiles.toArray(new StoredFile[0]),
+                          oldValues.toArray(new StoredFileDTO[0]),
+                          storedFiles.toArray(new StoredFileDTO[0]),
                           this)));
 
           logger().debug(loggerPrefix + "End");
@@ -143,7 +151,7 @@ public class AttachmentField extends FlexBoxLayout
     add(documentList);
   }
 
-  protected void addDocumentInList(StoredFile file) {
+  protected void addDocumentInList(StoredFileDTO file) {
     String iconFile =
         file.getFilename().substring(file.getFilename().lastIndexOf(".") + 1) + "-icon-48x48.png";
     if (!FileExtLookup.getInstance().doesExtExists(iconFile)) {
@@ -160,7 +168,7 @@ public class AttachmentField extends FlexBoxLayout
     documentList.add(item);
   }
 
-  private Component createDownloadButton(StoredFile item) {
+  private Component createDownloadButton(StoredFileDTO item) {
     Button downloadButton = UIUtils.createSmallButton(VaadinIcon.DOWNLOAD);
     downloadButton.addClickListener(event -> {});
 
@@ -176,16 +184,17 @@ public class AttachmentField extends FlexBoxLayout
     return downloadLink;
   }
 
-  private Button createViewButton(StoredFile item) {
+  private Button createViewButton(StoredFileDTO item) {
     Button infoButton = UIUtils.createSmallButton(VaadinIcon.GLASSES);
     infoButton.addClickListener(
         e -> {
           if (item != null && item.getId() != null) {
             if (item.getMimeType().startsWith("image")) {
-              ImageViewerDialog imageViewerDialog = new ImageViewerDialog(item, false);
+              ImageViewerDialog imageViewerDialog =
+                  new ImageViewerDialog(item, false, queryGateway);
               imageViewerDialog.open();
             } else {
-              PdfViewerDialog pdfViewerDialog = new PdfViewerDialog(item);
+              PdfViewerDialog pdfViewerDialog = new PdfViewerDialog(item, queryGateway);
               pdfViewerDialog.open();
               pdfViewerDialog.setWidth("600px");
               pdfViewerDialog.setHeight("800px");
@@ -195,11 +204,11 @@ public class AttachmentField extends FlexBoxLayout
     return infoButton;
   }
 
-  private Button createRemoveButton(StoredFile item, ListItem listItem) {
+  private Button createRemoveButton(StoredFileDTO item, ListItem listItem) {
     Button infoButton = UIUtils.createSmallButton(VaadinIcon.CLOSE_SMALL);
     infoButton.addClickListener(
         e -> {
-          List<StoredFile> oldValues = new ArrayList<>(storedFiles);
+          List<StoredFileDTO> oldValues = new ArrayList<>(storedFiles);
 
           storedFiles.remove(item);
           documentList.remove(listItem);
@@ -208,20 +217,20 @@ public class AttachmentField extends FlexBoxLayout
               listener ->
                   listener.valueChanged(
                       new AttachmentsFieldValueChangeEvent(
-                          oldValues.toArray(new StoredFile[0]),
-                          storedFiles.toArray(new StoredFile[0]),
+                          oldValues.toArray(new StoredFileDTO[0]),
+                          storedFiles.toArray(new StoredFileDTO[0]),
                           this)));
         });
     return infoButton;
   }
 
   @Override
-  public StoredFile[] getValue() {
-    return storedFiles.toArray(new StoredFile[0]);
+  public StoredFileDTO[] getValue() {
+    return storedFiles.toArray(new StoredFileDTO[0]);
   }
 
   @Override
-  public void setValue(StoredFile[] value) {
+  public void setValue(StoredFileDTO[] value) {
     documentList.removeAll();
     if (value == null) {
       storedFiles = new ArrayList<>();

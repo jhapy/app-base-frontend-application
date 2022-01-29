@@ -42,15 +42,15 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
 import de.codecamp.vaadin.components.messagedialog.MessageDialog;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.commons.utils.HasLoggerStatic;
+import org.jhapy.cqrs.command.audit.LoginCommand;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.dto.domain.security.SecurityUser;
-import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.utils.StoredFile;
-import org.jhapy.frontend.client.audit.AuditServices;
 import org.jhapy.frontend.components.AppCookieConsent;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.navigation.bar.AppBar;
@@ -81,7 +81,6 @@ import org.jhapy.frontend.views.menu.MenuEntry;
 import org.springframework.core.env.Environment;
 import org.vaadin.tatu.Tree;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +113,7 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
 
   private static final String CLASS_NAME = "root";
   protected final MenuHierarchicalDataProvider menuProvider;
+  protected final CommandGateway commandGateway;
   private final ConfirmDialog confirmDialog;
   private final HazelcastInstance hazelcastInstance;
   private final List<AttributeContextListener> contextListeners = new ArrayList<>();
@@ -135,10 +135,12 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
       Environment environment,
       AppProperties appProperties,
       boolean hasGlobalSearch,
-      boolean hasGlobalNotification) {
+      boolean hasGlobalNotification,
+      CommandGateway commandGateway) {
     this.menuProvider = menuProvider;
     this.hazelcastInstance = hazelcastInstance;
     this.appProperties = appProperties;
+    this.commandGateway = commandGateway;
 
     getElement()
         .executeJs("return window.matchMedia('(prefers-color-scheme: dark)').matches")
@@ -252,7 +254,7 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
     return Locale.ENGLISH;
   }
 
-  public StoredFile getLoggedUserAvatar(SecurityUser securityUser) {
+  public StoredFileDTO getLoggedUserAvatar(SecurityUser securityUser) {
     return null;
   }
 
@@ -291,15 +293,12 @@ public abstract class JHapyMainView4 extends FlexBoxLayout
                 loggerPrefix
                     + "Create remote session, Session ID = "
                     + currentSession.getSession().getId());
-        AuditServices.getAuditServiceQueue()
-            .newSession(
-                new NewSession(
-                    currentSession.getSession().getId(),
-                    currentSecurityUser.getUsername(),
-                    currentRequest.getRemoteAddr(),
-                    Instant.now(),
-                    true,
-                    null));
+        LoginCommand loginCommand = new LoginCommand();
+        loginCommand.setJsessionId(currentSession.getSession().getId());
+        loginCommand.setUsername(currentSecurityUser.getUsername());
+        loginCommand.setSourceIp(currentRequest.getRemoteAddr());
+        loginCommand.setSuccess(true);
+        commandGateway.send(loginCommand);
 
         var sessionInfo = new SessionInfo();
         sessionInfo.setJSessionId(currentSession.getSession().getId());

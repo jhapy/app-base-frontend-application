@@ -18,19 +18,29 @@
 
 package org.jhapy.frontend.dataproviders;
 
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import lombok.Synchronized;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
+import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.cqrs.CountChangedUpdate;
+import org.jhapy.cqrs.query.i18n.CountAnyMatchingActionQuery;
+import org.jhapy.cqrs.query.i18n.CountAnyMatchingActionResponse;
+import org.jhapy.cqrs.query.i18n.FindAnyMatchingActionQuery;
+import org.jhapy.cqrs.query.i18n.FindAnyMatchingActionResponse;
 import org.jhapy.dto.domain.i18n.ActionDTO;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.PageDTO;
-import org.jhapy.dto.utils.Pageable;
-import org.jhapy.frontend.client.i18n.I18NServices;
-import org.jhapy.frontend.utils.AppConst;
-import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author jHapy Lead Dev.
@@ -39,35 +49,107 @@ import java.io.Serializable;
  */
 @SpringComponent
 @UIScope
-public class ActionDataProvider extends DefaultDataProvider<ActionDTO, DefaultFilter>
-    implements Serializable {
+public class ActionDataProvider extends JHapyAbstractDataProvider<ActionDTO>
+    implements Serializable, HasLogger {
 
-  @Autowired
-  public ActionDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
+  private transient SubscriptionQueryResult<FindAnyMatchingActionResponse, ActionDTO>
+      fetchQueryResult;
+
+  private transient SubscriptionQueryResult<CountAnyMatchingActionResponse, CountChangedUpdate>
+      countQueryResult;
+
+  public ActionDataProvider(QueryGateway queryGateway) {
+    super(queryGateway);
   }
 
   @Override
-  protected PageDTO<ActionDTO> fetchFromBackEnd(
-      Query<ActionDTO, DefaultFilter> query, Pageable pageable) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    PageDTO<ActionDTO> page =
-        I18NServices.getActionService()
-            .findAnyMatching(
-                new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))
-            .getData();
-    if (getPageObserver() != null) {
-      getPageObserver().accept(page);
+  @Synchronized
+  protected Stream<ActionDTO> fetchFromBackEnd(Query<ActionDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("fetchFromBackEnd");
+
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
     }
-    return page;
+
+    FindAnyMatchingActionQuery fetchCardSummariesQuery =
+        new FindAnyMatchingActionQuery(filter.getFilter(), null, getPageable(query));
+
+    fetchQueryResult =
+        queryGateway.subscriptionQuery(
+            fetchCardSummariesQuery,
+            ResponseTypes.instanceOf(FindAnyMatchingActionResponse.class),
+            ResponseTypes.instanceOf(ActionDTO.class));
+
+    fetchQueryResult
+        .updates()
+        .subscribe(
+            cardSummary -> {
+              trace(
+                  loggerPrefix,
+                  "processing query update for {0}: {1}",
+                  fetchCardSummariesQuery,
+                  cardSummary);
+              fireEvent(new DataChangeEvent.DataRefreshEvent<>(this, cardSummary));
+            });
+
+    return fetchQueryResult
+        .initialResult()
+        .onErrorResume(e -> Mono.just(new FindAnyMatchingActionResponse(Collections.emptyList())))
+        .blockOptional()
+        .orElse(new FindAnyMatchingActionResponse(Collections.emptyList()))
+        .getData()
+        .stream();
   }
 
   @Override
-  protected int sizeInBackEnd(Query<ActionDTO, DefaultFilter> query) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    return I18NServices.getActionService()
-        .countAnyMatching(new CountAnyMatchingQuery(filter.getFilter(), filter.isShowInactive()))
-        .getData()
-        .intValue();
+  @Synchronized
+  protected int sizeInBackEnd(Query<ActionDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("sizeInBackEnd");
+
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+
+    CountAnyMatchingActionQuery countQuery =
+        new CountAnyMatchingActionQuery(filter.getFilter(), null);
+    countQueryResult =
+        queryGateway.subscriptionQuery(
+            countQuery,
+            ResponseTypes.instanceOf(CountAnyMatchingActionResponse.class),
+            ResponseTypes.instanceOf(CountChangedUpdate.class));
+
+    countQueryResult
+        .updates()
+        .buffer(Duration.ofMillis(250))
+        .subscribe(
+            countChanged -> {
+              trace(loggerPrefix, "Processing query update for {0}: {1}", countQuery, countChanged);
+              executorService.execute(() -> fireEvent(new DataChangeEvent<>(this)));
+            });
+    return Math.toIntExact(
+        countQueryResult
+            .initialResult()
+            .onErrorResume(e -> Mono.just(new CountAnyMatchingActionResponse(0L)))
+            .blockOptional()
+            .orElse(new CountAnyMatchingActionResponse(0L))
+            .getCount());
+  }
+
+  @Synchronized
+  void shutDown() {
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
+    }
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+  }
+
+  protected List<QuerySortOrder> getDefaultSortOrders() {
+    return QuerySortOrder.asc("category").thenAsc("name").build();
   }
 }

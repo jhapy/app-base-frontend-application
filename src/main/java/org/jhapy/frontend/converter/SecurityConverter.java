@@ -22,10 +22,10 @@ import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.dto.domain.security.SecurityKeycloakGroup;
 import org.jhapy.dto.domain.security.SecurityKeycloakRole;
 import org.jhapy.dto.domain.security.SecurityKeycloakUser;
-import org.jhapy.dto.utils.StoredFile;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -116,9 +116,9 @@ public abstract class SecurityConverter {
                   .forName((new Tika()).detect(pictureDecoded));
           String fileExt = mimeType.getExtension();
 
-          StoredFile storedFile = new StoredFile();
+          StoredFileDTO storedFile = new StoredFileDTO();
           storedFile.setContent(pictureDecoded);
-          storedFile.setOrginalContent(pictureDecoded);
+          storedFile.setOriginalContent(pictureDecoded);
           storedFile.setId(UUID.randomUUID().toString());
           storedFile.setFilename(storedFile.getId() + fileExt);
           storedFile.setFilesize((long) pictureDecoded.length);

@@ -28,12 +28,20 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.notification.Mail;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.notification.CreateMailCommand;
+import org.jhapy.cqrs.command.notification.DeleteMailCommand;
+import org.jhapy.cqrs.command.notification.UpdateMailCommand;
+import org.jhapy.cqrs.query.notification.GetMailByIdQuery;
+import org.jhapy.cqrs.query.notification.GetMailByIdResponse;
+import org.jhapy.dto.domain.notification.MailDTO;
 import org.jhapy.dto.domain.notification.MailStatusEnum;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
+import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.SecurityConst;
-import org.jhapy.frontend.config.AppProperties;
 import org.jhapy.frontend.customFields.AttachmentField;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.MailDataProvider;
@@ -44,31 +52,67 @@ import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
 
+import java.util.UUID;
+
 @I18NPageTitle(messageKey = AppConst.TITLE_MAILS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class MailAdminView
-    extends DefaultMasterDetailsView<Mail, DefaultFilter, SearchQuery, SearchQueryResult> {
+    extends DefaultMasterDetailsView<MailDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
-  protected final AppProperties appProperties;
-
-  public MailAdminView(MyI18NProvider myI18NProvider, AppProperties appProperties) {
-    super("mail.", Mail.class, new MailDataProvider(), myI18NProvider);
-    this.appProperties = appProperties;
+  public MailAdminView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
+    super(
+        "mail.",
+        MailDTO.class,
+        null,
+        false,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateMailCommand(e);
+          } else {
+            command = new UpdateMailCommand(e.getId(), e);
+          }
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway
+                  .query(
+                      new GetMailByIdQuery(e.getId() == null ? uuid : e.getId()),
+                      GetMailByIdResponse.class)
+                  .join();
+          return new ServiceResult<>(response.getData());
+        },
+        e -> {
+          commandGateway.sendAndWait(new DeleteMailCommand(e.getId()));
+          return new ServiceResult<>();
+        },
+        myI18NProvider);
+    lazyDataProvider = new MailDataProvider(queryGateway);
+    this.queryGateway = queryGateway;
   }
 
-  protected Grid createGrid() {
+  @Override
+  protected void afterSave(MailDTO entity) {
+    lazyDataProvider.refreshItem(entity);
+  }
+
+  @Override
+  protected void afterDelete() {
+    lazyDataProvider.refreshAll();
+  }
+
+  protected Grid<MailDTO> createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
     grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+    grid.setItems(lazyDataProvider);
+    grid.setHeightFull();
 
-    grid.setDataProvider(dataProvider);
-    grid.setHeight("100%");
-
-    grid.addColumn(Mail::getCreated).setKey("created");
+    grid.addColumn(MailDTO::getCreated).setKey("created");
     // grid.addColumn(Mail::getMailAction).setKey("action");
-    grid.addColumn(Mail::getTo).setKey("to");
-    grid.addColumn(Mail::getMailStatus).setKey("mailStatus");
+    grid.addColumn(MailDTO::getTo).setKey("to");
+    grid.addColumn(MailDTO::getMailStatus).setKey("mailStatus");
 
     grid.getColumns()
         .forEach(
@@ -81,8 +125,8 @@ public class MailAdminView
     return grid;
   }
 
-  protected Component createDetails(Mail mail) {
-    boolean isNew = mail.getId() == null;
+  protected Component createDetails(MailDTO mail) {
+    var isNew = mail.getId() == null;
     detailsDrawerHeader.setTitle(
         isNew
             ? getTranslation("element.global.new") + " : "
@@ -90,53 +134,54 @@ public class MailAdminView
 
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
-    TextField fromField = new TextField();
-    fromField.setWidth("100%");
+    var fromField = new TextField();
+    fromField.setWidthFull();
 
-    TextField toField = new TextField();
-    toField.setWidth("100%");
+    var toField = new TextField();
+    toField.setWidthFull();
 
-    TextField copyToField = new TextField();
-    copyToField.setWidth("100%");
+    var copyToField = new TextField();
+    copyToField.setWidthFull();
 
-    TextField subjectField = new TextField();
-    subjectField.setWidth("100%");
+    var subjectField = new TextField();
+    subjectField.setWidthFull();
 
-    TextArea bodyField = new TextArea();
-    bodyField.setWidth("100%");
+    var bodyField = new TextArea();
+    bodyField.setWidthFull();
 
-    AttachmentField attachmentField = new AttachmentField();
-    attachmentField.setWidth("100%");
+    var attachmentField = new AttachmentField(queryGateway);
+    attachmentField.setWidthFull();
 
-    TextField mailActionField = new TextField();
-    mailActionField.setWidth("100%");
+    var mailActionField = new TextField();
+    mailActionField.setWidthFull();
 
-    ComboBox<MailStatusEnum> mailStatusField = new ComboBox<>();
+    var mailStatusField = new ComboBox<>();
     mailStatusField.setItems(MailStatusEnum.values());
 
-    TextArea errorMessageField = new TextArea();
-    errorMessageField.setWidth("100%");
+    var errorMessageField = new TextArea();
+    errorMessageField.setWidthFull();
 
-    NumberField nbRetryField = new NumberField();
+    var nbRetryField = new NumberField();
 
     // Form layout
-    FormLayout editingForm = new FormLayout();
+    var editingForm = new FormLayout();
     editingForm.addClassNames(
         LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
         new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
         new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem fromFieldItem =
+
+    var fromFieldItem =
         editingForm.addFormItem(fromField, getTranslation("element." + I18N_PREFIX + "from"));
-    FormLayout.FormItem toFieldItem =
+    var toFieldItem =
         editingForm.addFormItem(toField, getTranslation("element." + I18N_PREFIX + "to"));
-    FormLayout.FormItem copyToFieldItem =
+    var copyToFieldItem =
         editingForm.addFormItem(copyToField, getTranslation("element." + I18N_PREFIX + "copyTo"));
-    FormLayout.FormItem subjectFieldItem =
+    var subjectFieldItem =
         editingForm.addFormItem(subjectField, getTranslation("element." + I18N_PREFIX + "subject"));
-    FormLayout.FormItem bodyFieldItem =
+    var bodyFieldItem =
         editingForm.addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
-    FormLayout.FormItem attachmentFieldItem =
+    var attachmentFieldItem =
         editingForm.addFormItem(
             attachmentField, getTranslation("element." + I18N_PREFIX + "attachment"));
     editingForm.addFormItem(
@@ -158,22 +203,23 @@ public class MailAdminView
 
     binder.setBean(mail);
 
-    binder.bind(fromField, Mail::getFrom, null);
-    binder.bind(toField, Mail::getTo, null);
-    binder.bind(copyToField, Mail::getCopyTo, null);
-    binder.bind(subjectField, Mail::getSubject, null);
-    binder.bind(bodyField, Mail::getBody, null);
+    binder.bind(fromField, MailDTO::getFrom, null);
+    binder.bind(toField, MailDTO::getTo, null);
+    binder.bind(copyToField, MailDTO::getCopyTo, null);
+    binder.bind(subjectField, MailDTO::getSubject, null);
+    binder.bind(bodyField, MailDTO::getBody, null);
     // binder.bind(attachmentField, Mail::getAttachements, Mail::setAttachements);
     // binder.bind(mailActionField, Mail::getMailAction, null);
-    binder.bind(mailStatusField, Mail::getMailStatus, null);
-    binder.bind(errorMessageField, Mail::getErrorMessage, null);
-    binder.bind(nbRetryField, (e) -> e.getNbRetry().doubleValue(), null);
+    binder.bind(mailStatusField, MailDTO::getMailStatus, null);
+    binder.bind(errorMessageField, MailDTO::getErrorMessage, null);
+    binder.bind(nbRetryField, MailDTO::getNbRetry, null);
 
     return editingForm;
   }
 
-  protected void filter(String filter) {
-    dataProvider.setFilter(
-        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", Boolean.TRUE));
+  protected void filter(String filter, Boolean showInactive) {
+    lazyDataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", showInactive));
+    lazyDataProvider.refreshAll();
   }
 }

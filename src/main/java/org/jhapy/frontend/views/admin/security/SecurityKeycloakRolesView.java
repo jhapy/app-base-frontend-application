@@ -138,7 +138,7 @@ public class SecurityKeycloakRolesView
     binder.bind(
         description, SecurityKeycloakRole::getDescription, SecurityKeycloakRole::setDescription);
     binder.bind(canLogin, SecurityKeycloakRole::getCanLogin, SecurityKeycloakRole::setCanLogin);
-    binder.bind(isActive, SecurityKeycloakRole::getIsActive, SecurityKeycloakRole::setIsActive);
+    binder.bind(isActive, SecurityKeycloakRole::isActive, SecurityKeycloakRole::setActive);
 
     return editingForm;
   }

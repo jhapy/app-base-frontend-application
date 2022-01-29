@@ -33,10 +33,6 @@ import javax.servlet.ServletContext;
 @Service
 public class BaseServices {
 
-  public static ResourceService getResourceService() {
-    return getApplicationContext().getBean(ResourceService.class);
-  }
-
   public static EntityCommentService getEntityCommentService() {
     return getApplicationContext().getBean(EntityCommentService.class);
   }

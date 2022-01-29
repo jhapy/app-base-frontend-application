@@ -18,12 +18,12 @@
 
 package org.jhapy.frontend.security;
 
+import com.vaadin.flow.server.VaadinRequest;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.jhapy.cqrs.command.audit.LoginCommand;
 import org.jhapy.dto.domain.security.SecurityUser;
-import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.serviceQuery.security.securityUser.GetSecurityUserByUsernameQuery;
-import org.jhapy.frontend.client.audit.AuditServices;
-import org.jhapy.frontend.client.audit.SessionService;
 import org.jhapy.frontend.client.security.SecurityUserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -33,7 +33,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Instant;
 
 /**
  * @author jHapy Lead Dev.
@@ -43,12 +42,12 @@ import java.time.Instant;
 public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
   private final SecurityUserService securityUserService;
-  private final SessionService sessionService;
+  private final CommandGateway commandGateway;
 
   public AuthenticationFailureHandler(
-      String failureUrl, SecurityUserService securityUserService, SessionService sessionService) {
+      String failureUrl, SecurityUserService securityUserService, CommandGateway commandGateway) {
     super(failureUrl);
-    this.sessionService = sessionService;
+    this.commandGateway = commandGateway;
     setUseForward(true);
     this.securityUserService = securityUserService;
   }
@@ -72,15 +71,13 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
         securityUserService.save(new SaveQuery<>(securityUser));
       }
     }
-    AuditServices.getAuditServiceQueue()
-        .newSession(
-            new NewSession(
-                request.getRequestedSessionId(),
-                username,
-                null,
-                Instant.now(),
-                false,
-                exception.getLocalizedMessage()));
+    LoginCommand loginCommand = new LoginCommand();
+    loginCommand.setJsessionId(VaadinRequest.getCurrent().getWrappedSession().getId());
+    loginCommand.setUsername(username);
+    loginCommand.setSourceIp(null);
+    loginCommand.setSuccess(false);
+    loginCommand.setError(exception.getLocalizedMessage());
+    commandGateway.send(loginCommand);
 
     if (request.getSession() != null) {
       request.changeSessionId();

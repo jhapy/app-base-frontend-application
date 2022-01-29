@@ -38,21 +38,17 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
   public static final String ERROR_MSG_NO_LOCALE =
       "no locale provided and i18nProvider #getProvidedLocales()# list is empty !! ";
   public static final String ERROR_MSG_NO_ANNOTATION = "no annotation found at class ";
-  /**
-   * The Parameter used to open this view
-   */
+  /** The Parameter used to open this view */
   protected String currentViewParams;
-  /**
-   * The tab the current view belong to
-   */
+  /** The tab the current view belong to */
   protected ModuleTab parentTab;
+
   private ModuleToolbar.GoBackListener goBackListener;
   private ModuleToolbar.GoBackListener menuBackListener;
   private String title = "-- Unknown --";
   private Class<? extends View> navigationRootClass;
   /**
-   * In case of a master / detail navigation, this is the parent view
-   * Should be used to 'go back'
+   * In case of a master / detail navigation, this is the parent view Should be used to 'go back'
    */
   private View parentView;
 
@@ -71,6 +67,7 @@ public abstract class View extends FlexBoxLayout implements HasLogger {
 
   /**
    * Should be overriden if the view has to be displayed in a new Tab
+   *
    * @return true to display the view in a new Tab
    */
   public boolean displayInANewTab() {

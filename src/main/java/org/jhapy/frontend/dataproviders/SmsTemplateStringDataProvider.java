@@ -18,22 +18,29 @@
 
 package org.jhapy.frontend.dataproviders;
 
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.jhapy.dto.domain.notification.SmsTemplate;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.PageDTO;
-import org.jhapy.dto.utils.Pageable;
-import org.jhapy.frontend.client.notification.NotificationServices;
-import org.jhapy.frontend.dataproviders.utils.PageableDataProvider;
+import lombok.Synchronized;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
+import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.cqrs.CountChangedUpdate;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingSmsTemplateQuery;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingSmsTemplateResponse;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingSmsTemplateQuery;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingSmsTemplateResponse;
+import org.jhapy.dto.domain.notification.SmsTemplateDTO;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author jHapy Lead Dev.
@@ -42,28 +49,108 @@ import java.util.List;
  */
 @SpringComponent
 @UIScope
-public class SmsTemplateStringDataProvider extends PageableDataProvider<SmsTemplate, String>
-    implements Serializable {
+public class SmsTemplateStringDataProvider extends JHapyAbstractStringDataProvider<SmsTemplateDTO>
+    implements Serializable, HasLogger {
 
-  @Override
-  protected PageDTO<SmsTemplate> fetchFromBackEnd(
-      Query<SmsTemplate, String> query, Pageable pageable) {
+  private transient SubscriptionQueryResult<FindAnyMatchingSmsTemplateResponse, SmsTemplateDTO>
+      fetchQueryResult;
 
-    return NotificationServices.getSmsTemplateService()
-        .findAnyMatching(new FindAnyMatchingQuery(query.getFilter().orElse(null), true, pageable))
-        .getData();
+  private transient SubscriptionQueryResult<CountAnyMatchingSmsTemplateResponse, CountChangedUpdate>
+      countQueryResult;
+
+  public SmsTemplateStringDataProvider(QueryGateway queryGateway) {
+    super(queryGateway);
   }
 
   @Override
-  protected List<QuerySortOrder> getDefaultSortOrders() {
-    return Collections.singletonList(new QuerySortOrder("name", SortDirection.ASCENDING));
-  }
+  @Synchronized
+  protected Stream<SmsTemplateDTO> fetchFromBackEnd(Query<SmsTemplateDTO, String> query) {
+    String loggerPrefix = getLoggerPrefix("fetchFromBackEnd");
 
-  @Override
-  protected int sizeInBackEnd(Query<SmsTemplate, String> query) {
-    return NotificationServices.getSmsTemplateService()
-        .countAnyMatching(new CountAnyMatchingQuery(query.getFilter().orElse(null), true))
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
+    }
+
+    FindAnyMatchingSmsTemplateQuery fetchCardSummariesQuery =
+        new FindAnyMatchingSmsTemplateQuery(filter.getFilter(), null, getPageable(query));
+
+    fetchQueryResult =
+        queryGateway.subscriptionQuery(
+            fetchCardSummariesQuery,
+            ResponseTypes.instanceOf(FindAnyMatchingSmsTemplateResponse.class),
+            ResponseTypes.instanceOf(SmsTemplateDTO.class));
+
+    fetchQueryResult
+        .updates()
+        .subscribe(
+            cardSummary -> {
+              trace(
+                  loggerPrefix,
+                  "processing query update for {0}: {1}",
+                  fetchCardSummariesQuery,
+                  cardSummary);
+              fireEvent(new DataChangeEvent.DataRefreshEvent<>(this, cardSummary));
+            });
+
+    return fetchQueryResult
+        .initialResult()
+        .onErrorResume(
+            e -> Mono.just(new FindAnyMatchingSmsTemplateResponse(Collections.emptyList())))
+        .blockOptional()
+        .orElse(new FindAnyMatchingSmsTemplateResponse(Collections.emptyList()))
         .getData()
-        .intValue();
+        .stream();
+  }
+
+  @Override
+  @Synchronized
+  protected int sizeInBackEnd(Query<SmsTemplateDTO, String> query) {
+    String loggerPrefix = getLoggerPrefix("sizeInBackEnd");
+
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+
+    CountAnyMatchingSmsTemplateQuery countQuery =
+        new CountAnyMatchingSmsTemplateQuery(filter.getFilter(), null);
+    countQueryResult =
+        queryGateway.subscriptionQuery(
+            countQuery,
+            ResponseTypes.instanceOf(CountAnyMatchingSmsTemplateResponse.class),
+            ResponseTypes.instanceOf(CountChangedUpdate.class));
+
+    countQueryResult
+        .updates()
+        .buffer(Duration.ofMillis(250))
+        .subscribe(
+            countChanged -> {
+              trace(loggerPrefix, "Processing query update for {0}: {1}", countQuery, countChanged);
+              executorService.execute(() -> fireEvent(new DataChangeEvent<>(this)));
+            });
+    return Math.toIntExact(
+        countQueryResult
+            .initialResult()
+            .onErrorResume(e -> Mono.just(new CountAnyMatchingSmsTemplateResponse(0L)))
+            .blockOptional()
+            .orElse(new CountAnyMatchingSmsTemplateResponse(0L))
+            .getCount());
+  }
+
+  @Synchronized
+  void shutDown() {
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
+    }
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+  }
+
+  protected List<QuerySortOrder> getDefaultSortOrders() {
+    return QuerySortOrder.asc("smsAction").build();
   }
 }

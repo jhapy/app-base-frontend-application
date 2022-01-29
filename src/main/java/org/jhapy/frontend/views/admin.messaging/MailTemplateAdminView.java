@@ -18,40 +18,33 @@
 
 package org.jhapy.frontend.views.admin.messaging;
 
-import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.FormItem;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.richtexteditor.RichTextEditor;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.shared.Registration;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
-import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.notification.MailTemplate;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.notification.CreateMailTemplateCommand;
+import org.jhapy.cqrs.command.notification.DeleteMailTemplateCommand;
+import org.jhapy.cqrs.command.notification.UpdateMailTemplateCommand;
+import org.jhapy.cqrs.query.notification.GetMailTemplateByIdQuery;
+import org.jhapy.cqrs.query.notification.GetMailTemplateByIdResponse;
+import org.jhapy.dto.domain.notification.MailTemplateDTO;
 import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.serviceQuery.generic.SaveQuery;
 import org.jhapy.dto.utils.SecurityConst;
-import org.jhapy.frontend.client.notification.NotificationServices;
-import org.jhapy.frontend.components.FlexBoxLayout;
-import org.jhapy.frontend.dataproviders.DefaultDataProvider;
-import org.jhapy.frontend.dataproviders.DefaultFilter;
-import org.jhapy.frontend.layout.ViewFrame;
-import org.jhapy.frontend.layout.size.Horizontal;
-import org.jhapy.frontend.layout.size.Top;
 import org.jhapy.frontend.utils.AppConst;
 import org.jhapy.frontend.utils.LumoStyles;
 import org.jhapy.frontend.utils.UIUtils;
-import org.jhapy.frontend.utils.css.BoxSizing;
 import org.jhapy.frontend.utils.i18n.I18NPageTitle;
-import org.jhapy.frontend.views.JHapyMainView3;
+import org.jhapy.frontend.utils.i18n.MyI18NProvider;
+import org.jhapy.frontend.views.DefaultDetailsView;
 
 import java.util.UUID;
 
@@ -63,74 +56,66 @@ import java.util.UUID;
 @Tag("mail-template-admin-view")
 @I18NPageTitle(messageKey = AppConst.TITLE_MAIL_TEMPLATE_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
-public class MailTemplateAdminView extends ViewFrame implements HasUrlParameter<String> {
+public class MailTemplateAdminView extends DefaultDetailsView<MailTemplateDTO>
+    implements HasUrlParameter<String> {
 
-  private final Binder<MailTemplate> binder = new Binder<>();
-  private final Registration contextIconRegistration = null;
-  private MailTemplate mailTemplate;
-  private DefaultDataProvider<MailTemplate, DefaultFilter> securityUserDataProvider;
+  private final QueryGateway queryGateway;
+  private final CommandGateway commandGateway;
 
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
+  public MailTemplateAdminView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
+    super(
+        "mailTemplate.",
+        MailTemplateDTO.class,
+        MailTemplatesAdminView.class,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateMailTemplateCommand(e);
+          } else {
+            command = new UpdateMailTemplateCommand(e.getId(), e);
+          }
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway.subscriptionQuery(
+                  new GetMailTemplateByIdQuery(e.getId() == null ? uuid : e.getId()),
+                  ResponseTypes.instanceOf(GetMailTemplateByIdResponse.class),
+                  ResponseTypes.instanceOf(GetMailTemplateByIdResponse.class));
 
-    setViewContent(createContent());
-    setViewFooter(getFooter());
+          return new ServiceResult<>(response.initialResult().block().getData());
+        },
+        e -> commandGateway.sendAndWait(new DeleteMailTemplateCommand(e.getId())),
+        myI18NProvider);
+    this.queryGateway = queryGateway;
+    this.commandGateway = commandGateway;
   }
 
   @Override
-  protected void onDetach(DetachEvent detachEvent) {
-    if (contextIconRegistration != null) {
-      contextIconRegistration.remove();
+  protected String getTitle(MailTemplateDTO entity) {
+    if (entity.getName() != null) {
+      return entity.getName();
+    } else {
+      return "";
     }
   }
 
-  protected Component getFooter() {
-    Button saveButton = new Button(getTranslation("action.global.saveButton"));
-    saveButton.addClickListener(event -> save());
-
-    Button cancelButton = new Button(getTranslation("action.global.cancelButton"));
-    cancelButton.addClickListener(event -> cancel());
-
-    HorizontalLayout footer = new HorizontalLayout(saveButton, cancelButton);
-    footer.setPadding(true);
-    footer.setSpacing(true);
-
-    return footer;
-  }
-
-  private Component createContent() {
-    FlexBoxLayout content = new FlexBoxLayout(getSettingsForm());
-    content.setBoxSizing(BoxSizing.BORDER_BOX);
-    content.setHeightFull();
-    content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-    return content;
-  }
-
-  public Component getSettingsForm() {
-    FormLayout formLayout = new FormLayout();
-    formLayout.addClassNames(
-        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
-    formLayout.setResponsiveSteps(
-        new ResponsiveStep("26em", 1, ResponsiveStep.LabelsPosition.TOP),
-        new ResponsiveStep("32em", 2, ResponsiveStep.LabelsPosition.TOP));
-
-    TextField nameField = new TextField();
+  public Component createDetails(MailTemplateDTO entry) {
+    var nameField = new TextField();
     nameField.setWidthFull();
 
-    TextField subjectField = new TextField();
+    var subjectField = new TextField();
     subjectField.setWidthFull();
 
-    EmailField fromField = new EmailField();
+    var fromField = new EmailField();
     fromField.setWidthFull();
 
-    EmailField copyToField = new EmailField();
+    var copyToField = new EmailField();
     copyToField.setWidthFull();
 
-    RichTextEditor bodyField = new RichTextEditor();
+    var bodyField = new RichTextEditor();
     bodyField.setWidthFull();
 
-    TextField bodyAsHtml = new TextField();
+    var bodyAsHtml = new TextField();
     bodyAsHtml.setVisible(false);
     bodyField.addValueChangeListener(
         value -> {
@@ -140,108 +125,75 @@ public class MailTemplateAdminView extends ViewFrame implements HasUrlParameter<
           }
         });
 
-    TextField mailActionField = new TextField();
+    var mailActionField = new TextField();
     mailActionField.setWidthFull();
 
-    formLayout.addFormItem(nameField, getTranslation("element.mailTemplate.name"));
-    formLayout.addFormItem(mailActionField, getTranslation("element.mailTemplate.action"));
-    formLayout.addFormItem(subjectField, getTranslation("element.mailTemplate.subject"));
-    formLayout.addFormItem(fromField, getTranslation("element.mailTemplate.from"));
-    formLayout.addFormItem(copyToField, getTranslation("element.mailTemplate.copyTo"));
+    var editingForm = new FormLayout();
+    editingForm.setWidthFull();
+    editingForm.addClassNames(
+        LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
+    editingForm.setResponsiveSteps(
+        new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+        new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
-    FormItem bodyFieldItem =
-        formLayout.addFormItem(bodyField, getTranslation("element.mailTemplate.body"));
+    editingForm.addFormItem(nameField, getTranslation("element." + I18N_PREFIX + "name"));
+    editingForm.addFormItem(mailActionField, getTranslation("element." + I18N_PREFIX + "action"));
+    editingForm.addFormItem(subjectField, getTranslation("element." + I18N_PREFIX + "subject"));
+    editingForm.addFormItem(fromField, getTranslation("element." + I18N_PREFIX + "from"));
+    editingForm.addFormItem(copyToField, getTranslation("element." + I18N_PREFIX + "copyTo"));
+
+    var bodyFieldItem =
+        editingForm.addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
 
     UIUtils.setColSpan(2, bodyFieldItem);
+
+    binder.setBean(entry);
 
     binder
         .forField(nameField)
         .asRequired(getTranslation("message.error.nameRequired"))
-        .bind(MailTemplate::getName, MailTemplate::setName);
+        .bind(MailTemplateDTO::getName, MailTemplateDTO::setName);
     binder
         .forField(subjectField)
         .asRequired(getTranslation("message.error.subjectRequired"))
-        .bind(MailTemplate::getSubject, MailTemplate::setSubject);
+        .bind(MailTemplateDTO::getSubject, MailTemplateDTO::setSubject);
     binder
         .forField(fromField)
         .asRequired(getTranslation("message.error.fromRequired"))
-        .bind(MailTemplate::getFrom, MailTemplate::setFrom);
-    binder.bind(copyToField, MailTemplate::getCopyTo, MailTemplate::setCopyTo);
+        .bind(MailTemplateDTO::getFrom, MailTemplateDTO::setFrom);
+    binder.bind(copyToField, MailTemplateDTO::getCopyTo, MailTemplateDTO::setCopyTo);
     binder
         .forField(bodyField.asHtml())
         .asRequired(getTranslation("message.error.bodyRequired"))
-        .bind(MailTemplate::getBody, MailTemplate::setBody);
-    binder.forField(bodyAsHtml).bind(MailTemplate::getBodyHtml, MailTemplate::setBodyHtml);
+        .bind(MailTemplateDTO::getBody, MailTemplateDTO::setBody);
+    binder.forField(bodyAsHtml).bind(MailTemplateDTO::getBodyHtml, MailTemplateDTO::setBodyHtml);
     binder
         .forField(mailActionField)
         .asRequired(getTranslation("message.error.mailAction"))
-        .bind(MailTemplate::getMailAction, MailTemplate::setMailAction);
+        .bind(MailTemplateDTO::getMailAction, MailTemplateDTO::setMailAction);
 
-    Div content = new Div(formLayout);
-    content.addClassName("grid-view");
-    return content;
-  }
-
-  protected void save() {
-    UUID id = binder.getBean().getId();
-
-    boolean isNew = id == null;
-
-    if (binder.writeBeanIfValid(mailTemplate)) {
-      ServiceResult<MailTemplate> _mailTemplate =
-          NotificationServices.getMailTemplateService().save(new SaveQuery<>(mailTemplate));
-      if (_mailTemplate.getIsSuccess() && _mailTemplate.getData() != null) {
-        JHapyMainView3.get()
-            .displayInfoMessage(getTranslation("message.global.recordSavedMessage"));
-        mailTemplate = _mailTemplate.getData();
-        if (isNew) {
-          JHapyMainView3.get()
-              .displayViewFromParentView(
-                  this,
-                  getParameter(),
-                  MailTemplateAdminView.class,
-                  mailTemplate.getId().toString());
-        } else {
-          binder.readBean(mailTemplate);
-        }
-      } else {
-        JHapyMainView3.get()
-            .displayErrorMessage(
-                getTranslation("message.global.error", _mailTemplate.getMessage()));
-        // Notification.show(getTranslation("message.global.error", _user.getMessage()), 3000,
-        // Position.MIDDLE);
-      }
-    } else {
-      JHapyMainView3.get()
-          .displayErrorMessage(getTranslation("message.global.validationErrorMessage"));
-      // Notification.show(getTranslation("message.global.validationErrorMessage"), 3000,
-      // Notification.Position.BOTTOM_CENTER);
-    }
-  }
-
-  protected void cancel() {
-    binder.readBean(mailTemplate);
+    return editingForm;
   }
 
   @Override
   public void setParameter(BeforeEvent event, String viewParameters) {
     super.setParameter(event, viewParameters);
-    if (StringUtils.isBlank(viewParameters) || "-1".equals(viewParameters)) {
-      mailTemplate = new MailTemplate();
-    } else {
-      mailTemplate =
-          NotificationServices.getMailTemplateService()
-              .getById(new GetByIdQuery(UUID.fromString(viewParameters)))
+    currentEditing = null;
+    var id = viewParameters.equals("-1") ? null : UUID.fromString(viewParameters);
+    if (id != null) {
+      var mailTemplateDTO =
+          queryGateway
+              .query(
+                  new GetMailTemplateByIdQuery(UUID.fromString(viewParameters)),
+                  ResponseTypes.instanceOf(GetMailTemplateByIdResponse.class))
+              .join()
               .getData();
-      if (mailTemplate == null) {
-        mailTemplate = new MailTemplate();
+      if (mailTemplateDTO != null) {
+        currentEditing = mailTemplateDTO;
       }
     }
-
-    binder.setBean(mailTemplate);
-  }
-
-  private void goBack() {
-    UI.getCurrent().navigate(MailTemplatesAdminView.class);
+    if (currentEditing == null) {
+      currentEditing = new MailTemplateDTO();
+    }
   }
 }

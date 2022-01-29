@@ -32,7 +32,10 @@ import org.jhapy.frontend.components.events.CustomListFieldStrIdValueChangeEvent
 import org.jhapy.frontend.dataproviders.DefaultBackendStrId;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author jHapy Lead Dev.
@@ -160,26 +163,17 @@ public abstract class DefaultCustomListFieldStrId<C extends BaseEntityUUIDId> ex
 
     @Override
     public Object getId(C item) {
-      return item.getTemporaryId();
+      return item.getId();
     }
 
     public void setValues(Collection<C> values) {
       fieldsMap.clear();
-      values.forEach(
-          value -> {
-            if (value.getTemporaryId() == null) {
-              value.setTemporaryId(UUID.randomUUID());
-            }
-          });
       fieldsMap.addAll(values);
     }
 
     public void persist(C value) {
       List<C> previousValues = new ArrayList<>(fieldsMap);
 
-      if (value.getTemporaryId() == null) {
-        value.setTemporaryId(UUID.randomUUID());
-      }
       if (!fieldsMap.contains(value)) {
         fieldsMap.add(value);
       }

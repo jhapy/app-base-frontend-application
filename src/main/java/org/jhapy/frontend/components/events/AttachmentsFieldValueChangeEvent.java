@@ -19,24 +19,25 @@
 package org.jhapy.frontend.components.events;
 
 import com.vaadin.flow.component.HasValue;
-import org.jhapy.dto.utils.StoredFile;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.frontend.customFields.AttachmentField;
 
-public class AttachmentsFieldValueChangeEvent implements HasValue.ValueChangeEvent<StoredFile[]> {
+public class AttachmentsFieldValueChangeEvent
+    implements HasValue.ValueChangeEvent<StoredFileDTO[]> {
 
-  private final StoredFile[] oldValue;
-  private final StoredFile[] value;
+  private final StoredFileDTO[] oldValue;
+  private final StoredFileDTO[] value;
   private final AttachmentField src;
 
   public AttachmentsFieldValueChangeEvent(
-      StoredFile[] oldValue, StoredFile[] value, AttachmentField src) {
+      StoredFileDTO[] oldValue, StoredFileDTO[] value, AttachmentField src) {
     this.oldValue = oldValue;
     this.value = value;
     this.src = src;
   }
 
   @Override
-  public HasValue<?, StoredFile[]> getHasValue() {
+  public HasValue<?, StoredFileDTO[]> getHasValue() {
     return src;
   }
 
@@ -46,12 +47,12 @@ public class AttachmentsFieldValueChangeEvent implements HasValue.ValueChangeEve
   }
 
   @Override
-  public StoredFile[] getOldValue() {
+  public StoredFileDTO[] getOldValue() {
     return oldValue;
   }
 
   @Override
-  public StoredFile[] getValue() {
+  public StoredFileDTO[] getValue() {
     return value;
   }
 }

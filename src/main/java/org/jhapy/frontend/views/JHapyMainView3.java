@@ -50,16 +50,16 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import de.codecamp.vaadin.components.messagedialog.MessageDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.commons.utils.HasLoggerStatic;
+import org.jhapy.cqrs.command.audit.LoginCommand;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.dto.domain.security.SecurityUser;
-import org.jhapy.dto.messageQueue.NewSession;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.AppContext;
-import org.jhapy.dto.utils.StoredFile;
-import org.jhapy.frontend.client.audit.AuditServices;
 import org.jhapy.frontend.components.AppCookieConsent;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.navigation.menubar.*;
@@ -90,7 +90,6 @@ import javax.servlet.http.Cookie;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -122,7 +121,8 @@ import static org.springframework.security.oauth2.client.web.OAuth2Authorization
 public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger, RouterLayout {
 
   private static final String CLASS_NAME = "root";
-
+  protected final CommandGateway commandGateway;
+  protected final QueryGateway queryGateway;
   private final List<View> allViews = new ArrayList<>();
   private final Tabs appTabs = new Tabs();
   private final List<ModuleTab> allTabs = new ArrayList<>();
@@ -132,7 +132,6 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
   private final MyI18NProvider myI18NProvider;
   private final Div header = new Div();
   private final ModuleTabAdd newTabButton = new ModuleTabAdd();
-  private final CommandGateway commandGateway;
   protected FlexBoxLayout viewContainer;
   protected AppProperties appProperties;
   private Div appHeaderOuter;
@@ -151,8 +150,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
       AppProperties appProperties,
       boolean hasGlobalSearch,
       boolean hasGlobalNotification,
-      CommandGateway commandGateway) {
+      CommandGateway commandGateway,
+      QueryGateway queryGateway) {
     this.commandGateway = commandGateway;
+    this.queryGateway = queryGateway;
     String loggerPrefix = getLoggerPrefix("JHapyMainView3");
     this.hazelcastInstance = hazelcastInstance;
     this.appProperties = appProperties;
@@ -312,7 +313,7 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     return Locale.ENGLISH;
   }
 
-  public StoredFile getLoggedUserAvatar(SecurityUser securityUser) {
+  public StoredFileDTO getLoggedUserAvatar(SecurityUser securityUser) {
     return null;
   }
 
@@ -351,15 +352,13 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
                 loggerPrefix
                     + "Create remote session, Session ID = "
                     + currentSession.getSession().getId());
-        AuditServices.getAuditServiceQueue()
-            .newSession(
-                new NewSession(
-                    currentSession.getSession().getId(),
-                    currentSecurityUser.getUsername(),
-                    currentRequest.getRemoteAddr(),
-                    Instant.now(),
-                    true,
-                    null));
+
+        LoginCommand loginCommand = new LoginCommand();
+        loginCommand.setJsessionId(currentSession.getSession().getId());
+        loginCommand.setUsername(currentSecurityUser.getUsername());
+        loginCommand.setSourceIp(currentRequest.getRemoteAddr());
+        loginCommand.setSuccess(true);
+        commandGateway.send(loginCommand);
 
         var sessionInfo = new SessionInfo();
         sessionInfo.setJSessionId(currentSession.getSession().getId());
@@ -725,7 +724,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
     var languageMenu = mainMenu.getSubMenu().addItem(languageButton);
 
     List<MenuItem> menuItems = new ArrayList<>();
-    MyI18NProvider.getAvailableLanguagesInDB(getLocale())
+    getMyI18NProvider()
+        .getAvailableLanguagesInDB(getLocale())
         .forEach(
             locale -> {
               MenuItem menu =
@@ -780,8 +780,8 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
       Avatar ownAvatar = new Avatar();
       ownAvatar.setName((String) VaadinSession.getCurrent().getAttribute(NICKNAME_ATTRIBUTE));
       UUID userId = (UUID) VaadinSession.getCurrent().getAttribute(USER_ID_ATTRIBUTE);
-      StoredFile storedFile =
-          ((StoredFile) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
+      StoredFileDTO storedFile =
+          ((StoredFileDTO) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
       if (storedFile != null) {
         StreamResource streamResource =
             new StreamResource(
@@ -846,6 +846,10 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
 
     UIUtils.setTheme(Lumo.DARK, header);
     return header;
+  }
+
+  protected MyI18NProvider getMyI18NProvider() {
+    return (MyI18NProvider) VaadinService.getCurrent().getInstantiator().getI18NProvider();
   }
 
   private void setLanguage(Locale language) {
@@ -1401,12 +1405,22 @@ public abstract class JHapyMainView3 extends FlexBoxLayout implements HasLogger,
           IllegalAccessException {
     var constructors = newView.getDeclaredConstructors();
     for (Constructor<?> constructor : constructors) {
-      if (constructor.getParameterCount() == 2
+      if (constructor.getParameterCount() == 1
+          && constructor.getParameterTypes()[0].equals(QueryGateway.class))
+        return newView.getDeclaredConstructor(QueryGateway.class).newInstance(queryGateway);
+      else if (constructor.getParameterCount() == 2
           && constructor.getParameterTypes()[0].equals(MyI18NProvider.class)
           && constructor.getParameterTypes()[1].equals(CommandGateway.class)) {
         return newView
             .getDeclaredConstructor(MyI18NProvider.class, CommandGateway.class)
             .newInstance(myI18NProvider, commandGateway);
+      } else if (constructor.getParameterCount() == 3
+          && constructor.getParameterTypes()[0].equals(MyI18NProvider.class)
+          && constructor.getParameterTypes()[1].equals(CommandGateway.class)
+          && constructor.getParameterTypes()[2].equals(QueryGateway.class)) {
+        return newView
+            .getDeclaredConstructor(MyI18NProvider.class, CommandGateway.class, QueryGateway.class)
+            .newInstance(myI18NProvider, commandGateway, queryGateway);
       }
     }
     for (Constructor<?> constructor : constructors) {

@@ -101,11 +101,11 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
   protected DetailsDrawerHeader detailsDrawerHeader;
   protected DetailsDrawerFooter detailsDrawerFooter;
   protected ModuleToolbar moduleToolbar;
+  protected Tabs tabs;
   private Function<T, ServiceResult<T>> saveHandler;
   private Class parentViewClassname;
-  protected Tabs tabs;
 
-  public DefaultDetailsView(
+  protected DefaultDetailsView(
       String I18N_PREFIX,
       Class<T> entityType,
       Class parentViewClassname,
@@ -120,7 +120,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
     this.myI18NProvider = myI18NProvider;
   }
 
-  public DefaultDetailsView(
+  protected DefaultDetailsView(
       String I18N_PREFIX,
       Class<T> entityType,
       Class parentViewClassname,
@@ -174,7 +174,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
 
     moduleToolbar.addGoBackListener(
         () -> {
-          if ( displayInANewTab() ) {
+          if (displayInANewTab()) {
             getParentTab().closeTab();
             return;
           }
@@ -377,7 +377,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
     binder.bind(
         idField, entity1 -> entity1.getId() == null ? null : entity1.getId().toString(), null);
     binder.bind(clientNameField, BaseEntity::getClientName, null);
-    binder.bind(isActiveField, BaseEntity::getIsActive, BaseEntity::setIsActive);
+    binder.bind(isActiveField, BaseEntity::isActive, BaseEntity::setActive);
     binder.bind(
         createdField,
         entity1 ->

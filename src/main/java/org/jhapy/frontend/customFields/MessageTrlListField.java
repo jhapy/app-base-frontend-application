@@ -69,7 +69,7 @@ public class MessageTrlListField extends DefaultCustomListField<MessageTrlDTO>
   protected Component initContent() {
     Grid<MessageTrlDTO> grid = new Grid<>();
 
-    gridCrud = new Crud(MessageTrlDTO.class, grid, createInterfaceTrlEditor());
+    gridCrud = new Crud<>(MessageTrlDTO.class, grid, createInterfaceTrlEditor());
     gridCrud.setMinHeight("300px");
     gridCrud.setWidth("100%");
     gridCrud.setI18n(createI18n());
@@ -94,7 +94,7 @@ public class MessageTrlListField extends DefaultCustomListField<MessageTrlDTO>
                         : (new Locale(row.getIso3Language())).getDisplayLanguage(getLocale())))
         .setHeader(getTranslation("element." + i18nPrefix + "language"));
 
-    grid.addColumn(new BooleanOkRenderer<>(MessageTrlDTO::getIsDefault))
+    grid.addColumn(new BooleanOkRenderer<>(MessageTrlDTO::isDefault))
         .setHeader(getTranslation("element." + i18nPrefix + "isDefault"));
 
     newButton = new Button(getTranslation("action.global.addButton"));
@@ -119,12 +119,14 @@ public class MessageTrlListField extends DefaultCustomListField<MessageTrlDTO>
     language.setItemLabelGenerator(Locale::getDisplayLanguage);
 
     Checkbox isDefault = new Checkbox(getTranslation("element." + i18nPrefix + "isDefault"));
+    Checkbox translated = new Checkbox(getTranslation("element." + i18nPrefix + "translated"));
 
-    FormLayout form = new FormLayout(value, isDefault, language);
+    FormLayout form = new FormLayout(value, isDefault, translated, language);
 
     Binder<MessageTrlDTO> binder = new BeanValidationBinder<>(MessageTrlDTO.class);
     binder.forField(value).asRequired().bind(MessageTrlDTO::getValue, MessageTrlDTO::setValue);
-    binder.forField(isDefault).bind(MessageTrlDTO::getIsDefault, MessageTrlDTO::setIsDefault);
+    binder.forField(isDefault).bind(MessageTrlDTO::isDefault, MessageTrlDTO::setDefault);
+    binder.forField(translated).bind(MessageTrlDTO::isTranslated, MessageTrlDTO::setTranslated);
     binder
         .forField(language)
         .asRequired()

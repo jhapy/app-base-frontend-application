@@ -150,7 +150,7 @@ public class DbTablesView
         isSecurityEnabledField, DbTableDTO::getIsSecurityEnabled, DbTableDTO::setIsSecurityEnabled);
     binder.bind(accessLevelField, DbTableDTO::getAccessLevel, DbTableDTO::setAccessLevel);
 
-    binder.bind(isActiveField, DbTableDTO::getIsActive, DbTableDTO::setIsActive);
+    binder.bind(isActiveField, DbTableDTO::isActive, DbTableDTO::setActive);
 
     return editingForm;
   }

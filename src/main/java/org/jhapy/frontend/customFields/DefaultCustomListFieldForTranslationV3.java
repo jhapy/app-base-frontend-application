@@ -189,7 +189,6 @@ public abstract class DefaultCustomListFieldForTranslationV3<C extends EntityTra
 
       if (value.getId() == null) {
         value.setId(UUID.randomUUID());
-        value.setIsNew(true);
       }
       if (!fieldsMap.containsKey(value.getIso3Language())) {
         fieldsMap.put(value.getIso3Language(), value);

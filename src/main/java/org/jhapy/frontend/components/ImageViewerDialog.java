@@ -10,11 +10,12 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
 import org.jhapy.commons.utils.HasLogger;
-import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.generic.GetByIdQuery;
-import org.jhapy.dto.utils.StoredFile;
-import org.jhapy.frontend.client.BaseServices;
+import org.jhapy.cqrs.query.resource.GetStoredFileByIdQuery;
+import org.jhapy.cqrs.query.resource.GetStoredFileByIdResponse;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.frontend.component.cropperjs.CropperConfiguration;
 import org.jhapy.frontend.component.cropperjs.CropperJs;
 import org.jhapy.frontend.component.cropperjs.model.Data;
@@ -32,20 +33,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ImageViewerDialog extends AbstractDialog implements HasLogger {
 
-  private final StoredFile storedFile;
+  private final StoredFileDTO storedFile;
   private final Boolean isReadOnly;
+private final QueryGateway queryGateway;
   private FlexBoxLayout contentLayout;
   private CropperJs cropperJs;
 
-  public ImageViewerDialog(StoredFile storedFile, boolean isReadOnly) {
+  public ImageViewerDialog(StoredFileDTO storedFile, boolean isReadOnly, QueryGateway queryGateway) {
     this.storedFile = storedFile;
+    this.queryGateway = queryGateway;
     if (storedFile != null && storedFile.getId() != null) {
-      ServiceResult<StoredFile> _storedFile = BaseServices
-          .getResourceService().getById(new GetByIdQuery(storedFile.getId()));
-      if (_storedFile.getIsSuccess() && _storedFile.getData() != null) {
-        storedFile.setContent(_storedFile.getData().getContent());
-        storedFile.setOrginalContent(_storedFile.getData().getOrginalContent());
-      }
+      queryGateway.query(new GetStoredFileByIdQuery(storedFile.getId()), ResponseTypes.instanceOf(GetStoredFileByIdResponse.class)).whenComplete( (getStoredFileByIdResponse, throwable) -> {
+        if (throwable == null) {
+          storedFile.setContent(getStoredFileByIdResponse.getData().getContent());
+          storedFile.setOriginalContent(getStoredFileByIdResponse.getData().getOriginalContent());
+        }
+      });
     }
 
     this.isReadOnly = isReadOnly;
@@ -56,7 +59,7 @@ public class ImageViewerDialog extends AbstractDialog implements HasLogger {
     return getTranslation("element.global.viewOrEditImage");
   }
 
-  public StoredFile getStoredFile() {
+  public StoredFileDTO getStoredFile() {
     return storedFile;
   }
 
@@ -68,7 +71,7 @@ public class ImageViewerDialog extends AbstractDialog implements HasLogger {
     contentLayout.setFlexDirection(FlexDirection.COLUMN);
 
     if (storedFile != null && !isReadOnly) {
-      buildCropper(storedFile.getOrginalContent(), storedFile.getFilename(),
+      buildCropper(storedFile.getOriginalContent(), storedFile.getFilename(),
           storedFile != null ? storedFile.getMetadata().get("copperData") : null);
     } else {
       contentLayout.add(new Image(new StreamResource(
@@ -86,7 +89,7 @@ public class ImageViewerDialog extends AbstractDialog implements HasLogger {
 
       logger().debug(loggerPrefix + "Data = " + data);
 
-      javaxt.io.Image imagext = new javaxt.io.Image(storedFile.getOrginalContent());
+      javaxt.io.Image imagext = new javaxt.io.Image(storedFile.getOriginalContent());
       //dumpImageInfo(imagext, loggerPrefix);
 
       if (data.getRotate() != 0) {

@@ -18,19 +18,29 @@
 
 package org.jhapy.frontend.dataproviders;
 
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.jhapy.dto.domain.notification.SmsTemplate;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.PageDTO;
-import org.jhapy.dto.utils.Pageable;
-import org.jhapy.frontend.client.notification.NotificationServices;
-import org.jhapy.frontend.utils.AppConst;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Synchronized;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
+import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.cqrs.CountChangedUpdate;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingSmsTemplateQuery;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingSmsTemplateResponse;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingSmsTemplateQuery;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingSmsTemplateResponse;
+import org.jhapy.dto.domain.notification.SmsTemplateDTO;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author jHapy Lead Dev.
@@ -39,35 +49,108 @@ import java.io.Serializable;
  */
 @SpringComponent
 @UIScope
-public class SmsTemplateDataProvider extends DefaultDataProvider<SmsTemplate, DefaultFilter>
-    implements Serializable {
+public class SmsTemplateDataProvider extends JHapyAbstractDataProvider<SmsTemplateDTO>
+    implements Serializable, HasLogger {
 
-  @Autowired
-  public SmsTemplateDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
+  private transient SubscriptionQueryResult<FindAnyMatchingSmsTemplateResponse, SmsTemplateDTO>
+      fetchQueryResult;
+
+  private transient SubscriptionQueryResult<CountAnyMatchingSmsTemplateResponse, CountChangedUpdate>
+      countQueryResult;
+
+  public SmsTemplateDataProvider(QueryGateway queryGateway) {
+    super(queryGateway);
   }
 
   @Override
-  protected PageDTO<SmsTemplate> fetchFromBackEnd(
-      Query<SmsTemplate, DefaultFilter> query, Pageable pageable) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    PageDTO<SmsTemplate> page =
-        NotificationServices.getSmsTemplateService()
-            .findAnyMatching(
-                new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))
-            .getData();
-    if (getPageObserver() != null) {
-      getPageObserver().accept(page);
+  @Synchronized
+  protected Stream<SmsTemplateDTO> fetchFromBackEnd(Query<SmsTemplateDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("fetchFromBackEnd");
+
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
     }
-    return page;
+
+    FindAnyMatchingSmsTemplateQuery fetchCardSummariesQuery =
+        new FindAnyMatchingSmsTemplateQuery(filter.getFilter(), null, getPageable(query));
+
+    fetchQueryResult =
+        queryGateway.subscriptionQuery(
+            fetchCardSummariesQuery,
+            ResponseTypes.instanceOf(FindAnyMatchingSmsTemplateResponse.class),
+            ResponseTypes.instanceOf(SmsTemplateDTO.class));
+
+    fetchQueryResult
+        .updates()
+        .subscribe(
+            cardSummary -> {
+              trace(
+                  loggerPrefix,
+                  "processing query update for {0}: {1}",
+                  fetchCardSummariesQuery,
+                  cardSummary);
+              fireEvent(new DataChangeEvent.DataRefreshEvent<>(this, cardSummary));
+            });
+
+    return fetchQueryResult
+        .initialResult()
+        .onErrorResume(
+            e -> Mono.just(new FindAnyMatchingSmsTemplateResponse(Collections.emptyList())))
+        .blockOptional()
+        .orElse(new FindAnyMatchingSmsTemplateResponse(Collections.emptyList()))
+        .getData()
+        .stream();
   }
 
   @Override
-  protected int sizeInBackEnd(Query<SmsTemplate, DefaultFilter> query) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    return NotificationServices.getSmsTemplateService()
-        .countAnyMatching(new CountAnyMatchingQuery(filter.getFilter(), filter.isShowInactive()))
-        .getData()
-        .intValue();
+  @Synchronized
+  protected int sizeInBackEnd(Query<SmsTemplateDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("sizeInBackEnd");
+
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+
+    CountAnyMatchingSmsTemplateQuery countQuery =
+        new CountAnyMatchingSmsTemplateQuery(filter.getFilter(), null);
+    countQueryResult =
+        queryGateway.subscriptionQuery(
+            countQuery,
+            ResponseTypes.instanceOf(CountAnyMatchingSmsTemplateResponse.class),
+            ResponseTypes.instanceOf(CountChangedUpdate.class));
+
+    countQueryResult
+        .updates()
+        .buffer(Duration.ofMillis(250))
+        .subscribe(
+            countChanged -> {
+              trace(loggerPrefix, "Processing query update for {0}: {1}", countQuery, countChanged);
+              executorService.execute(() -> fireEvent(new DataChangeEvent<>(this)));
+            });
+    return Math.toIntExact(
+        countQueryResult
+            .initialResult()
+            .onErrorResume(e -> Mono.just(new CountAnyMatchingSmsTemplateResponse(0L)))
+            .blockOptional()
+            .orElse(new CountAnyMatchingSmsTemplateResponse(0L))
+            .getCount());
+  }
+
+  @Synchronized
+  void shutDown() {
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
+    }
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+  }
+
+  protected List<QuerySortOrder> getDefaultSortOrders() {
+    return QuerySortOrder.asc("smsAction").build();
   }
 }

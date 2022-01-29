@@ -82,8 +82,10 @@ public class SecurityConfiguration extends VaadinSecurityConfigurerAdapter imple
   private final boolean forceHttpsForRealm;
   private final ClientRegistrationRepository clientRegistrationRepository;
   private final RestTemplate restTemplate = new RestTemplate();
+
   @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
   private String issuerUri;
+
   @Autowired private KeycloakOauth2UserService keycloakOidcUserService;
 
   public SecurityConfiguration(

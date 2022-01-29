@@ -28,11 +28,20 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.notification.Sms;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.AbstractBaseCommand;
+import org.jhapy.cqrs.command.notification.CreateSmsCommand;
+import org.jhapy.cqrs.command.notification.DeleteSmsCommand;
+import org.jhapy.cqrs.command.notification.UpdateSmsCommand;
+import org.jhapy.cqrs.query.notification.GetSmsByIdQuery;
+import org.jhapy.cqrs.query.notification.GetSmsByIdResponse;
 import org.jhapy.dto.domain.notification.SmsActionEnum;
+import org.jhapy.dto.domain.notification.SmsDTO;
 import org.jhapy.dto.domain.notification.SmsStatusEnum;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
+import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.SmsDataProvider;
@@ -43,28 +52,67 @@ import org.jhapy.frontend.utils.i18n.I18NPageTitle;
 import org.jhapy.frontend.utils.i18n.MyI18NProvider;
 import org.jhapy.frontend.views.DefaultMasterDetailsView;
 
+import java.util.UUID;
+
 @I18NPageTitle(messageKey = AppConst.TITLE_SMS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class SmsAdminView
-    extends DefaultMasterDetailsView<Sms, DefaultFilter, SearchQuery, SearchQueryResult> {
+    extends DefaultMasterDetailsView<SmsDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
-  public SmsAdminView(MyI18NProvider myI18NProvider) {
-    super("sms.", Sms.class, new SmsDataProvider(), myI18NProvider);
+  public SmsAdminView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
+    super(
+        "sms.",
+        SmsDTO.class,
+        null,
+        false,
+        e -> {
+          AbstractBaseCommand command;
+          if (e.getId() == null) {
+            command = new CreateSmsCommand(e);
+          } else {
+            command = new UpdateSmsCommand(e.getId(), e);
+          }
+          UUID uuid = commandGateway.sendAndWait(command);
+          var response =
+              queryGateway
+                  .query(
+                      new GetSmsByIdQuery(e.getId() == null ? uuid : e.getId()),
+                      GetSmsByIdResponse.class)
+                  .join();
+          return new ServiceResult<>(response.getData());
+        },
+        e -> {
+          commandGateway.sendAndWait(new DeleteSmsCommand(e.getId()));
+          return new ServiceResult<>();
+        },
+        myI18NProvider);
+    lazyDataProvider = new SmsDataProvider(queryGateway);
+    this.queryGateway = queryGateway;
   }
 
-  protected Grid createGrid() {
+  @Override
+  protected void afterSave(SmsDTO entity) {
+    lazyDataProvider.refreshItem(entity);
+  }
+
+  @Override
+  protected void afterDelete() {
+    lazyDataProvider.refreshAll();
+  }
+
+  protected Grid<SmsDTO> createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
     grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+    grid.setItems(lazyDataProvider);
+    grid.setHeightFull();
 
-    grid.setDataProvider(dataProvider);
-    grid.setHeight("100%");
-
-    grid.addColumn(Sms::getCreated).setKey("created");
+    grid.addColumn(SmsDTO::getCreated).setKey("created");
     // grid.addColumn(Sms::getSmsAction).setKey("action");
-    grid.addColumn(Sms::getPhoneNumber).setKey("phoneNumber");
-    grid.addColumn(Sms::getSmsStatus).setKey("smsStatus");
+    grid.addColumn(SmsDTO::getPhoneNumber).setKey("phoneNumber");
+    grid.addColumn(SmsDTO::getSmsStatus).setKey("smsStatus");
 
     grid.getColumns()
         .forEach(
@@ -77,8 +125,8 @@ public class SmsAdminView
     return grid;
   }
 
-  protected Component createDetails(Sms sms) {
-    boolean isNew = sms.getId() == null;
+  protected Component createDetails(SmsDTO sms) {
+    var isNew = sms.getId() == null;
     detailsDrawerHeader.setTitle(
         isNew
             ? getTranslation("element.global.new") + " : "
@@ -86,55 +134,57 @@ public class SmsAdminView
 
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
-    TextField phoneNumberField = new TextField();
-    phoneNumberField.setWidth("100%");
+    var phoneNumberField = new TextField();
+    phoneNumberField.setWidthFull();
 
-    TextArea bodyField = new TextArea();
-    bodyField.setWidth("100%");
+    var bodyField = new TextArea();
+    bodyField.setWidthFull();
 
-    ComboBox<SmsActionEnum> smsActionField = new ComboBox<>();
+    var smsActionField = new ComboBox<>();
     smsActionField.setItems(SmsActionEnum.values());
 
-    ComboBox<SmsStatusEnum> smsStatusField = new ComboBox<>();
+    var smsStatusField = new ComboBox<>();
     smsStatusField.setItems(SmsStatusEnum.values());
 
-    TextArea errorMessageField = new TextArea();
-    errorMessageField.setWidth("100%");
+    var errorMessageField = new TextArea();
+    errorMessageField.setWidthFull();
 
-    NumberField nbRetryField = new NumberField();
+    var nbRetryField = new NumberField();
 
     // Form layout
-    FormLayout editingForm = new FormLayout();
+    var editingForm = new FormLayout();
     editingForm.addClassNames(
         LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
         new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
         new FormLayout.ResponsiveStep("26em", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-    FormLayout.FormItem phoneNumberFieldItem =
-        editingForm.addFormItem(
-            phoneNumberField, getTranslation("element." + I18N_PREFIX + "phoneNumber"));
-    FormLayout.FormItem bodyFieldItem =
+
+    editingForm.addFormItem(
+        phoneNumberField, getTranslation("element." + I18N_PREFIX + "phoneNumber"));
+    var bodyFieldItem =
         editingForm.addFormItem(bodyField, getTranslation("element." + I18N_PREFIX + "body"));
     editingForm.addFormItem(smsActionField, getTranslation("element." + I18N_PREFIX + "smsAction"));
     editingForm.addFormItem(smsStatusField, getTranslation("element." + I18N_PREFIX + "smsStatus"));
     editingForm.addFormItem(
         errorMessageField, getTranslation("element." + I18N_PREFIX + "errorMessage"));
+    editingForm.addFormItem(nbRetryField, getTranslation("element." + I18N_PREFIX + "nbRetry"));
 
     UIUtils.setColSpan(2, phoneNumberField, bodyFieldItem);
 
     binder.setBean(sms);
 
-    binder.bind(phoneNumberField, Sms::getPhoneNumber, null);
-    binder.bind(bodyField, Sms::getBody, null);
+    binder.bind(phoneNumberField, SmsDTO::getPhoneNumber, null);
+    binder.bind(bodyField, SmsDTO::getBody, null);
     // binder.bind(smsActionField, Sms::getSmsAction, null);
-    binder.bind(smsStatusField, Sms::getSmsStatus, null);
-    binder.bind(errorMessageField, Sms::getErrorMessage, null);
+    binder.bind(smsStatusField, SmsDTO::getSmsStatus, null);
+    binder.bind(errorMessageField, SmsDTO::getErrorMessage, null);
 
     return editingForm;
   }
 
-  protected void filter(String filter) {
-    dataProvider.setFilter(
-        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", Boolean.TRUE));
+  protected void filter(String filter, Boolean showInactive) {
+    lazyDataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", showInactive));
+    lazyDataProvider.refreshAll();
   }
 }

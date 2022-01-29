@@ -26,9 +26,13 @@ import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.textfield.TextField;
 import de.codecamp.vaadin.security.spring.access.rules.RequiresRole;
 import org.apache.commons.lang3.StringUtils;
-import org.jhapy.dto.domain.audit.Session;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
+import org.jhapy.cqrs.command.audit.DeleteSessionCommand;
+import org.jhapy.dto.domain.audit.SessionDTO;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
+import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.utils.SecurityConst;
 import org.jhapy.frontend.dataproviders.DefaultFilter;
 import org.jhapy.frontend.dataproviders.SessionDataProvider;
@@ -42,23 +46,45 @@ import org.jhapy.frontend.views.DefaultMasterDetailsView;
 @I18NPageTitle(messageKey = AppConst.TITLE_SESSIONS_ADMIN)
 @RequiresRole(SecurityConst.ROLE_ADMIN)
 public class SessionView
-    extends DefaultMasterDetailsView<Session, DefaultFilter, SearchQuery, SearchQueryResult> {
+    extends DefaultMasterDetailsView<SessionDTO, DefaultFilter, SearchQuery, SearchQueryResult> {
 
-  public SessionView(MyI18NProvider myI18NProvider) {
-    super("session.", Session.class, new SessionDataProvider(), myI18NProvider);
+  public SessionView(
+      MyI18NProvider myI18NProvider, CommandGateway commandGateway, QueryGateway queryGateway) {
+    super(
+        "session.",
+        SessionDTO.class,
+        null,
+        false,
+        e -> null,
+        e -> {
+          commandGateway.sendAndWait(new DeleteSessionCommand(e.getId()));
+          return new ServiceResult<>();
+        },
+        myI18NProvider);
+    lazyDataProvider = new SessionDataProvider(queryGateway);
+    this.queryGateway = queryGateway;
   }
 
-  protected Grid createGrid() {
+  @Override
+  protected boolean canCreateRecord() {
+    return false;
+  }
+
+  @Override
+  protected void afterDelete() {
+    lazyDataProvider.refreshAll();
+  }
+
+  protected Grid<SessionDTO> createGrid() {
     grid = new Grid<>();
     grid.setSelectionMode(SelectionMode.SINGLE);
 
     grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+    grid.setItems(lazyDataProvider);
+    grid.setHeightFull();
 
-    grid.setDataProvider(dataProvider);
-    grid.setHeight("100%");
-
-    grid.addColumn(Session::getUsername).setKey("username");
-    grid.addColumn(Session::getSourceIp).setKey("sourceIp");
+    grid.addColumn(SessionDTO::getUsername).setKey("username");
+    grid.addColumn(SessionDTO::getSourceIp).setKey("sourceIp");
     grid.addColumn(session -> DateTimeFormatter.format(session.getSessionStart(), getLocale()))
         .setKey("sessionStart");
     grid.addColumn(session -> DateTimeFormatter.format(session.getSessionEnd(), getLocale()))
@@ -74,12 +100,12 @@ public class SessionView
                 column.setAutoWidth(true);
               }
             });
-    grid.addColumn(Session::getJsessionId).setKey("jsessionId");
+    grid.addColumn(SessionDTO::getJsessionId).setKey("jsessionId");
     return grid;
   }
 
-  protected Component createDetails(Session session) {
-    boolean isNew = session.getId() == null;
+  protected Component createDetails(SessionDTO session) {
+    var isNew = session.getId() == null;
     detailsDrawerHeader.setTitle(
         isNew
             ? getTranslation("element.global.new") + " : "
@@ -87,31 +113,31 @@ public class SessionView
 
     detailsDrawerFooter.setDeleteButtonVisible(false);
 
-    TextField usernameField = new TextField();
+    var usernameField = new TextField();
     usernameField.setWidth("100%");
 
-    TextField sourceIpField = new TextField();
+    var sourceIpField = new TextField();
     sourceIpField.setWidth("100%");
 
-    TextField sessionStartField = new TextField();
+    var sessionStartField = new TextField();
     sessionStartField.setWidth("100%");
 
-    TextField sessionEndField = new TextField();
+    var sessionEndField = new TextField();
     sessionEndField.setWidth("100%");
 
-    TextField sessionDurationField = new TextField();
+    var sessionDurationField = new TextField();
     sessionDurationField.setWidth("100%");
 
-    Checkbox isSuccessField = new Checkbox();
+    var isSuccessField = new Checkbox();
 
-    TextField errorField = new TextField();
+    var errorField = new TextField();
     errorField.setWidth("100%");
 
-    TextField jSessionIdField = new TextField();
+    var jSessionIdField = new TextField();
     jSessionIdField.setWidth("100%");
 
     // Form layout
-    FormLayout editingForm = new FormLayout();
+    var editingForm = new FormLayout();
     editingForm.addClassNames(
         LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
     editingForm.setResponsiveSteps(
@@ -133,8 +159,8 @@ public class SessionView
 
     binder.setBean(session);
 
-    binder.bind(usernameField, Session::getUsername, null);
-    binder.bind(sourceIpField, Session::getSourceIp, null);
+    binder.bind(usernameField, SessionDTO::getUsername, null);
+    binder.bind(sourceIpField, SessionDTO::getSourceIp, null);
     binder.bind(
         sessionStartField,
         entity1 ->
@@ -153,15 +179,16 @@ public class SessionView
         sessionDurationField,
         (e) -> e.getSessionDuration() == null ? null : e.getSessionDuration().toString(),
         null);
-    binder.bind(isSuccessField, Session::getIsSuccess, null);
-    binder.bind(errorField, Session::getError, null);
-    binder.bind(jSessionIdField, Session::getJsessionId, null);
+    binder.bind(isSuccessField, SessionDTO::isSuccess, null);
+    binder.bind(errorField, SessionDTO::getError, null);
+    binder.bind(jSessionIdField, SessionDTO::getJsessionId, null);
 
     return editingForm;
   }
 
-  protected void filter(String filter) {
-    dataProvider.setFilter(
-        new DefaultFilter(StringUtils.isBlank(filter) ? null : ".*" + filter + ".*", Boolean.TRUE));
+  protected void filter(String filter, Boolean showInactive) {
+    lazyDataProvider.setFilter(
+        new DefaultFilter(StringUtils.isBlank(filter) ? null : "*" + filter + "*", showInactive));
+    lazyDataProvider.refreshAll();
   }
 }

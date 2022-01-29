@@ -252,7 +252,7 @@ public class CountriesView
     // binder.bind(translations, country1 -> new ArrayList<>(country1.getTranslations()), (country1,
     // countryTrls) -> country1.setTranslations(new HashSet<>(countryTrls)));
 
-    binder.bind(isActive, CountryDTO::getIsActive, CountryDTO::setIsActive);
+    binder.bind(isActive, CountryDTO::isActive, CountryDTO::setActive);
 
     return editingForm;
   }

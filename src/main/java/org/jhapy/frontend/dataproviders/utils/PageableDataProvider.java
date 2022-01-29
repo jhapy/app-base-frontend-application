@@ -50,28 +50,6 @@ public abstract class PageableDataProvider<T extends Serializable, F>
   }
 
   public static Pair<Integer, Integer> limitAndOffsetToPageSizeAndNumber(int offset, int limit) {
-    /*
-       int precision = 1000000;
-       int pageSize = limit;
-       int page = (offset + limit) / limit -1;
-       page = Math.round(page * precision) / precision;
-       return Pair.of(pageSize, page);
-
-    */
-    /*
-        int window, leftShift;
-        for (window = limit; window <= offset + limit; window++) {
-          for (leftShift = 0; leftShift <= window - limit; leftShift++) {
-            if ((offset - leftShift) % window == 0) {
-              int size = (offset - leftShift) / window;
-              int page = window;
-              return Pair.of(page, size);
-            }
-          }
-        }
-        return Pair.of(offset + limit , 0);
-    */
-
     int lastIndex = offset + limit - 1;
     int maxPageSize = lastIndex + 1;
 

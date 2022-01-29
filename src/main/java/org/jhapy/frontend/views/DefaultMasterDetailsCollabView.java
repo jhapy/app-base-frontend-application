@@ -53,12 +53,12 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.jhapy.dto.domain.BaseEntity;
 import org.jhapy.dto.domain.EntityCommentDTO;
+import org.jhapy.dto.domain.resource.StoredFileDTO;
 import org.jhapy.dto.serviceQuery.SearchQuery;
 import org.jhapy.dto.serviceQuery.SearchQueryResult;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.generic.GetEntityCommentsQuery;
 import org.jhapy.dto.serviceQuery.generic.SaveQuery;
-import org.jhapy.dto.utils.StoredFile;
 import org.jhapy.frontend.client.BaseServices;
 import org.jhapy.frontend.components.FlexBoxLayout;
 import org.jhapy.frontend.components.detailsdrawers.DetailsDrawer;
@@ -409,8 +409,8 @@ public abstract class DefaultMasterDetailsCollabView<
     if (VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE) != null) {
       avatarGroup.setImageProvider(
           userInfo -> {
-            StoredFile storedFile =
-                ((StoredFile) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
+            StoredFileDTO storedFile =
+                ((StoredFileDTO) VaadinSession.getCurrent().getAttribute(AVATAR_ATTRIBUTE));
             StreamResource streamResource =
                 new StreamResource(
                     "avatar_" + userInfo.getId(),

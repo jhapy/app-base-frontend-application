@@ -21,19 +21,23 @@ package org.jhapy.frontend.utils.i18n;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.I18NProvider;
 import org.apache.commons.lang3.StringUtils;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.common.AxonException;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.NoHandlerForQueryException;
+import org.axonframework.queryhandling.QueryGateway;
 import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.cqrs.command.i18n.CreateActionCommand;
+import org.jhapy.cqrs.command.i18n.CreateElementCommand;
+import org.jhapy.cqrs.command.i18n.CreateMessageCommand;
+import org.jhapy.cqrs.query.i18n.*;
 import org.jhapy.dto.domain.i18n.*;
 import org.jhapy.dto.messageQueue.I18NUpdateTypeEnum;
-import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
-import org.jhapy.dto.serviceQuery.ServiceResult;
-import org.jhapy.dto.serviceQuery.i18n.FindByIso3Query;
-import org.jhapy.dto.serviceQuery.i18n.GetByNameAndIso3Query;
 import org.jhapy.frontend.client.i18n.I18NServices;
 import org.jhapy.frontend.utils.AppConst;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author jHapy Lead Dev.
@@ -44,24 +48,19 @@ import java.util.stream.Collectors;
 public class MyI18NProvider implements I18NProvider, HasLogger {
 
   private static Locale[] availableLanguages = null;
+
+  protected final transient QueryGateway queryGateway;
+  protected final transient CommandGateway commandGateway;
+
   private Map<String, ElementTrlDTO> elementMap = new HashMap<>();
   private Map<String, ActionTrlDTO> actionMap = new HashMap<>();
   private Map<String, MessageTrlDTO> messageMap = new HashMap<>();
+
   private String loadedLocale;
 
-  public static List<Locale> getAvailableLanguagesInDB(Locale currentLanguage) {
-    ServiceResult<List<String>> _languages =
-        I18NServices.getI18NService().getExistingLanguages(new BaseRemoteQuery());
-    if (_languages.getIsSuccess() && _languages.getData() != null) {
-      List<Locale> result = new ArrayList<>();
-      _languages.getData().forEach(s -> result.add(new Locale(s)));
-
-      return result.stream()
-          .sorted(Comparator.comparing(o -> o.getDisplayLanguage(currentLanguage)))
-          .collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
+  public MyI18NProvider(QueryGateway queryGateway, CommandGateway commandGateway) {
+    this.queryGateway = queryGateway;
+    this.commandGateway = commandGateway;
   }
 
   public static Locale[] getAvailableLanguages() {
@@ -87,6 +86,17 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     return localeList.stream()
         .sorted(Comparator.comparing(o -> o.getDisplayLanguage(currentLanguage)))
         .toArray(Locale[]::new);
+  }
+
+  public List<Locale> getAvailableLanguagesInDB(Locale currentLanguage) {
+    GetExistingLanguagesResponse result =
+        I18NServices.getI18NService()
+            .getExistingLanguages(new GetExistingLanguagesQuery())
+            .getData();
+    return result.getData().stream()
+        .map(Locale::new)
+        .sorted(Comparator.comparing(o -> o.getDisplayLanguage(currentLanguage)))
+        .toList();
   }
 
   @Override
@@ -132,7 +142,7 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     } else if (s.startsWith("message.")) {
       return getMessageTranslation(s.substring(s.indexOf('.') + 1), iso3Language, objects);
     } else {
-      logger().error(loggerPrefix + "Translation do not have a correct prefix : " + s);
+      error(loggerPrefix, "Translation do not have a correct prefix : {0}", s);
       return s;
     }
   }
@@ -161,82 +171,112 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
         return val;
       }
     } else {
-      logger().error(loggerPrefix + "Tooltip do not have a correct prefix : " + s);
+      error(loggerPrefix, "Tooltip do not have a correct prefix : {0}", s);
       return s;
     }
   }
 
   protected String getElementTranslation(String s, String iso3Language, Object... objects) {
     var loggerPrefix = getLoggerPrefix("getElementTranslation", s, iso3Language);
-    ElementTrlDTO elementTrl = getElementTrl(s, iso3Language);
-
+    ElementTrlDTO elementTrl;
+    try {
+      elementTrl = getElementTrl(s, iso3Language);
+    } catch (AxonException e) {
+      error(loggerPrefix, "Element Translation not found for {0} in {1}", s, iso3Language);
+      elementTrl = null;
+    }
     if (elementTrl != null) {
       if (objects.length > 0) {
-        return String.format(elementTrl.getValue(), objects);
+        return String.format(
+            Objects.requireNonNull(elementTrl.getValue(), "Translation value cnn"), objects);
       } else {
         return elementTrl.getValue();
       }
     } else {
-      logger()
-          .debug(loggerPrefix + "Translation for '" + s + "' in " + iso3Language + " not found");
+      debug(loggerPrefix, "Translation for {0} in {1}", s, iso3Language);
       return s;
     }
   }
 
   protected String getElementTooltip(String s, String iso3Language) {
     var loggerPrefix = getLoggerPrefix("getElementTooltip", s, iso3Language);
-    ElementTrlDTO elementTrl = getElementTrl(s, iso3Language);
+    ElementTrlDTO elementTrl;
+    try {
+      elementTrl = getElementTrl(s, iso3Language);
+    } catch (AxonException e) {
+      error(loggerPrefix, "Element Translation not found for {0} in {1}", s, iso3Language);
+      elementTrl = null;
+    }
 
     if (elementTrl != null) {
       return elementTrl.getTooltip();
     } else {
-      logger().debug(loggerPrefix + "Tooltip for '" + s + "' in " + iso3Language + " not found");
+      debug(loggerPrefix, "Tooltip for {0} in {1} not found", s, iso3Language);
       return s;
     }
   }
 
   protected String getActionTranslation(String s, String iso3Language, Object... objects) {
     var loggerPrefix = getLoggerPrefix("getActionTranslation", s, iso3Language);
-    ActionTrlDTO actionTrl = getActionTrl(s, iso3Language);
+    ActionTrlDTO actionTrl;
+
+    try {
+      actionTrl = getActionTrl(s, iso3Language);
+    } catch (AxonException e) {
+      error(loggerPrefix, "Action Translation not found for {0} in {1}", s, iso3Language);
+      actionTrl = null;
+    }
 
     if (actionTrl != null) {
-      if (objects.length > 0) {
+      if (StringUtils.isNotBlank(actionTrl.getValue()) && objects.length > 0) {
         return String.format(actionTrl.getValue(), objects);
       } else {
         return actionTrl.getValue();
       }
     } else {
-      logger()
-          .debug(loggerPrefix + "Translation for '" + s + "' in " + iso3Language + " not found");
+      debug(loggerPrefix, "Translation for {0} in {1}", s, iso3Language);
       return s;
     }
   }
 
   protected String getActionTooltip(String s, String iso3Language) {
     var loggerPrefix = getLoggerPrefix("getActionTooltip", s, iso3Language);
-    ActionTrlDTO actionTrl = getActionTrl(s, iso3Language);
+    ActionTrlDTO actionTrl;
+
+    try {
+      actionTrl = getActionTrl(s, iso3Language);
+    } catch (AxonException e) {
+      error(loggerPrefix, "Action Translation not found for {0} in {1}", s, iso3Language);
+      actionTrl = null;
+    }
 
     if (actionTrl != null) {
       return actionTrl.getTooltip();
     } else {
-      logger().debug(loggerPrefix + "Tooltip for '" + s + "' in " + iso3Language + " not found");
+      debug(loggerPrefix, "Tooltip for {0} in {1} not found", s, iso3Language);
       return s;
     }
   }
 
   protected String getMessageTranslation(String s, String iso3Language, Object... objects) {
     var loggerPrefix = getLoggerPrefix("getMessageTranslation", s, iso3Language);
-    MessageTrlDTO messageTrl = getMessageTrl(s, iso3Language);
+    MessageTrlDTO messageTrl;
+
+    try {
+      messageTrl = getMessageTrl(s, iso3Language);
+    } catch (AxonException e) {
+      error(loggerPrefix, "Message Translation not found for {0} in {1}", s, iso3Language);
+      messageTrl = null;
+    }
 
     if (messageTrl != null) {
-      if (objects.length > 0) {
+      if (StringUtils.isNotBlank(messageTrl.getValue()) && objects.length > 0) {
         return String.format(messageTrl.getValue(), objects);
       } else {
         return messageTrl.getValue();
       }
     } else {
-      logger()
-          .debug(loggerPrefix + "Translation for '" + s + "' in " + iso3Language + " not found");
+      debug(loggerPrefix, "Translation for {0} in {1}", s, iso3Language);
       return s;
     }
   }
@@ -248,54 +288,67 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
       return;
     }
 
-    logger().debug(loggerPrefix + "Bootstrap " + iso3Language);
-    elementMap.clear();
-    ServiceResult<List<ElementTrlDTO>> _elements =
-        I18NServices.getElementService().findByIso3(new FindByIso3Query(iso3Language));
-    if (_elements != null && _elements.getIsSuccess() && _elements.getData() != null) {
-      List<ElementTrlDTO> elements = _elements.getData();
-      elements.forEach(element -> elementMap.put(element.getName(), element));
-      logger().debug(loggerPrefix + elements.size() + " elements loaded");
-    } else {
-      logger()
-          .error(
-              loggerPrefix
-                  + "Cannot get elements "
-                  + (_elements != null ? _elements.getMessage() : "Null service"));
-    }
+    debug(loggerPrefix, "Bootstrap {0}", iso3Language);
 
-    actionMap.clear();
-    ServiceResult<List<ActionTrlDTO>> _actions =
-        I18NServices.getActionService().findByIso3(new FindByIso3Query(iso3Language));
-    if (_actions != null && _actions.getIsSuccess() && _actions.getData() != null) {
-      List<ActionTrlDTO> actions = _actions.getData();
-      actions.forEach(action -> actionMap.put(action.getName(), action));
-      logger().debug(loggerPrefix + actions.size() + " actions loaded");
-    } else {
-      logger()
-          .error(
-              loggerPrefix
-                  + "Cannot get actions "
-                  + (_actions != null ? _actions.getMessage() : "Null service"));
-    }
+    try {
+      elementMap.clear();
+      queryGateway
+          .query(
+              new GetElementTrlsByIso3LanguageQuery(iso3Language),
+              ResponseTypes.instanceOf(GetElementTrlsByIso3LanguageQuery.Response.class))
+          .whenComplete(
+              (response, throwable) -> {
+                if (throwable == null) {
+                  response
+                      .getData()
+                      .forEach(
+                          elementTrlDTO -> elementMap.put(elementTrlDTO.getName(), elementTrlDTO));
+                  debug(loggerPrefix, "{0} elements loaded", response.getData().size());
+                } else {
+                  error(loggerPrefix, throwable, "Unexpected error {0}", throwable.getMessage());
+                }
+              });
 
-    messageMap.clear();
-    ServiceResult<List<MessageTrlDTO>> _messages =
-        I18NServices.getMessageService().findByIso3(new FindByIso3Query(iso3Language));
-    if (_messages != null && _messages.getIsSuccess() && _messages.getData() != null) {
-      List<MessageTrlDTO> messages = _messages.getData();
-      messages.forEach(message -> messageMap.put(message.getName(), message));
-      logger().debug(loggerPrefix + messages.size() + " messages loaded");
-    } else {
-      logger()
-          .error(
-              loggerPrefix
-                  + "Cannot get messages "
-                  + (_messages != null ? _messages.getMessage() : "Null service"));
-    }
-    loadedLocale = iso3Language;
+      actionMap.clear();
+      queryGateway
+          .query(
+              new GetActionTrlsByIso3LanguageQuery(iso3Language),
+              ResponseTypes.instanceOf(GetActionTrlsByIso3LanguageQuery.Response.class))
+          .whenComplete(
+              (response, throwable) -> {
+                if (throwable == null) {
+                  response
+                      .getData()
+                      .forEach(actionTrlDTO -> actionMap.put(actionTrlDTO.getName(), actionTrlDTO));
+                  debug(loggerPrefix, "{0} actions loaded", response.getData().size());
+                } else {
+                  error(loggerPrefix, throwable, "Unexpected error {0}", throwable.getMessage());
+                }
+              });
 
-    logger().debug(loggerPrefix + "Bootstrap " + iso3Language + " done");
+      messageMap.clear();
+      queryGateway
+          .query(
+              new GetMessageTrlsByIso3LanguageQuery(iso3Language),
+              ResponseTypes.instanceOf(GetMessageTrlsByIso3LanguageQuery.Response.class))
+          .whenComplete(
+              (response, throwable) -> {
+                if (throwable == null) {
+                  response
+                      .getData()
+                      .forEach(
+                          messageTrlDTO -> messageMap.put(messageTrlDTO.getName(), messageTrlDTO));
+                  debug(loggerPrefix, "{0} messages loaded", response.getData().size());
+                } else {
+                  error(loggerPrefix, throwable, "Unexpected error {0}", throwable.getMessage());
+                }
+              });
+
+      loadedLocale = iso3Language;
+    } catch (NoHandlerForQueryException e) {
+      error(loggerPrefix, e, "No handler found..., try later");
+    }
+    debug(loggerPrefix, "Bootstrap {0} done", iso3Language);
   }
 
   private ElementTrlDTO getElementTrl(String name, String iso3Language) {
@@ -312,18 +365,51 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     }
 
     if (element == null) {
-      logger().warn(loggerPrefix + "Element '" + name + "' not found locally, check on the server");
-      ServiceResult<ElementTrlDTO> _elementTrl =
-          I18NServices.getElementService()
-              .getElementTrlByNameAndIso3(new GetByNameAndIso3Query(name, iso3Language));
-      if (_elementTrl != null && _elementTrl.getIsSuccess() && _elementTrl.getData() != null) {
-        element = _elementTrl.getData();
+      warn(loggerPrefix, "Element {0} not found locally, check on the server", name);
+      element =
+          queryGateway
+              .query(
+                  new GetElementTrlByNameAndIso3LanguageQuery(name, iso3Language),
+                  ResponseTypes.instanceOf(GetElementTrlByNameAndIso3LanguageQuery.Response.class))
+              .exceptionally(t -> new GetElementTrlByNameAndIso3LanguageQuery.Response(null))
+              .join()
+              .getData();
+      if (element != null) {
         elementMap.put(name, element);
 
         return element;
       } else {
-        logger().error(loggerPrefix + "Element '" + name + "' not found on the server");
-        return null;
+        warn(loggerPrefix, "Element {0} not found on the server, create a new one", name);
+
+        ElementDTO elementDTO = new ElementDTO();
+        elementDTO.setName(name);
+        elementDTO.setTranslated(false);
+
+        ElementTrlDTO elementTrlDTO = new ElementTrlDTO();
+        elementTrlDTO.setValue(name);
+        elementTrlDTO.setIso3Language(iso3Language);
+        elementTrlDTO.setTranslated(false);
+        elementDTO.getTranslations().add(elementTrlDTO);
+
+        var command = new CreateElementCommand(elementDTO);
+
+        UUID elementId = commandGateway.sendAndWait(command);
+        element =
+            queryGateway
+                .query(
+                    new GetElementTrlByElementIdAndIso3LanguageQuery(elementId, iso3Language),
+                    ResponseTypes.instanceOf(
+                        GetElementTrlByElementIdAndIso3LanguageQuery.Response.class))
+                .exceptionally(t -> new GetElementTrlByElementIdAndIso3LanguageQuery.Response(null))
+                .join()
+                .getData();
+        if (element != null) {
+          elementMap.put(name, element);
+
+          return element;
+        } else {
+          return null;
+        }
       }
     } else {
       return element;
@@ -340,18 +426,51 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     ActionTrlDTO action = actionMap.get(name);
 
     if (action == null) {
-      logger().warn(loggerPrefix + "Action '" + name + "' not found locally, check on the server");
-      ServiceResult<ActionTrlDTO> _actionTrl =
-          I18NServices.getActionService()
-              .getActionTrlByNameAndIso3(new GetByNameAndIso3Query(name, iso3Language));
-      if (_actionTrl != null && _actionTrl.getIsSuccess() && _actionTrl.getData() != null) {
-        action = _actionTrl.getData();
+      warn(loggerPrefix, "Action {0} not found locally, check on the server", name);
+      action =
+          queryGateway
+              .query(
+                  new GetActionTrlByNameAndIso3LanguageQuery(name, iso3Language),
+                  ResponseTypes.instanceOf(GetActionTrlByNameAndIso3LanguageQuery.Response.class))
+              .exceptionally(t -> new GetActionTrlByNameAndIso3LanguageQuery.Response(null))
+              .join()
+              .getData();
+      if (action != null) {
         actionMap.put(name, action);
 
         return action;
       } else {
-        logger().error(loggerPrefix + "Action '" + name + "' not found on the server");
-        return null;
+        warn(loggerPrefix, "Action {0} not found on the server, create a new one", name);
+
+        ActionDTO actionDTO = new ActionDTO();
+        actionDTO.setName(name);
+        actionDTO.setTranslated(false);
+
+        ActionTrlDTO actionTrlDTO = new ActionTrlDTO();
+        actionTrlDTO.setValue(name);
+        actionTrlDTO.setIso3Language(iso3Language);
+        actionTrlDTO.setTranslated(false);
+        actionDTO.getTranslations().add(actionTrlDTO);
+
+        var command = new CreateActionCommand(actionDTO);
+
+        UUID actionId = commandGateway.sendAndWait(command);
+        action =
+            queryGateway
+                .query(
+                    new GetActionTrlByActionIdAndIso3LanguageQuery(actionId, iso3Language),
+                    ResponseTypes.instanceOf(
+                        GetActionTrlByActionIdAndIso3LanguageQuery.Response.class))
+                .exceptionally(t -> new GetActionTrlByActionIdAndIso3LanguageQuery.Response(null))
+                .join()
+                .getData();
+        if (action != null) {
+          actionMap.put(name, action);
+
+          return action;
+        } else {
+          return null;
+        }
       }
     } else {
       return action;
@@ -372,18 +491,51 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     }
 
     if (message == null) {
-      logger().warn(loggerPrefix + "Message '" + name + "' not found locally, check on the server");
-      ServiceResult<MessageTrlDTO> _messageTrl =
-          I18NServices.getMessageService()
-              .getMessageTrlByNameAndIso3(new GetByNameAndIso3Query(name, iso3Language));
-      if (_messageTrl != null && _messageTrl.getIsSuccess() && _messageTrl.getData() != null) {
-        message = _messageTrl.getData();
+      warn(loggerPrefix, "Message {0} not found locally, check on the server", name);
+      message =
+          queryGateway
+              .query(
+                  new GetMessageTrlByNameAndIso3LanguageQuery(name, iso3Language),
+                  ResponseTypes.instanceOf(GetMessageTrlByNameAndIso3LanguageQuery.Response.class))
+              .exceptionally(t -> new GetMessageTrlByNameAndIso3LanguageQuery.Response(null))
+              .join()
+              .getData();
+      if (message != null) {
         messageMap.put(name, message);
 
         return message;
       } else {
-        logger().error(loggerPrefix + "Message '" + name + "' not found on the server");
-        return null;
+        warn(loggerPrefix, "Message {0} not found on the server, create a new one", name);
+
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setName(name);
+        messageDTO.setTranslated(false);
+
+        MessageTrlDTO messageTrlDTO = new MessageTrlDTO();
+        messageTrlDTO.setValue(name);
+        messageTrlDTO.setIso3Language(iso3Language);
+        messageTrlDTO.setTranslated(false);
+        messageDTO.getTranslations().add(messageTrlDTO);
+
+        var command = new CreateMessageCommand(messageDTO);
+
+        UUID messageId = commandGateway.sendAndWait(command);
+        message =
+            queryGateway
+                .query(
+                    new GetMessageTrlByMessageIdAndIso3LanguageQuery(messageId, iso3Language),
+                    ResponseTypes.instanceOf(
+                        GetMessageTrlByMessageIdAndIso3LanguageQuery.Response.class))
+                .exceptionally(t -> new GetMessageTrlByMessageIdAndIso3LanguageQuery.Response(null))
+                .join()
+                .getData();
+        if (message != null) {
+          messageMap.put(name, message);
+
+          return message;
+        } else {
+          return null;
+        }
       }
     } else {
       return message;
@@ -398,7 +550,7 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     var loggerPrefix = getLoggerPrefix("elementUpdate", updateType, element);
 
     if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-      logger().debug(loggerPrefix + "Delete record");
+      debug(loggerPrefix, "Delete record");
       elementMap.remove(element.getName());
     }
   }
@@ -408,10 +560,10 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
 
     if (loadedLocale != null && loadedLocale.equalsIgnoreCase(elementTrl.getIso3Language())) {
       if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-        logger().debug(loggerPrefix + "Delete record");
+        debug(loggerPrefix, "Delete record");
         elementMap.remove(elementTrl.getName());
       } else {
-        logger().debug(loggerPrefix + "Create or Update record");
+        debug(loggerPrefix, "Create or Update record");
         elementMap.put(elementTrl.getName(), elementTrl);
       }
     }
@@ -421,7 +573,7 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     var loggerPrefix = getLoggerPrefix("actionUpdate", updateType, action);
 
     if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-      logger().debug(loggerPrefix + "Delete record");
+      debug(loggerPrefix, "Delete record");
       actionMap.remove(action.getName());
     }
   }
@@ -431,10 +583,10 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
 
     if (loadedLocale != null && loadedLocale.equalsIgnoreCase(actionTrl.getIso3Language())) {
       if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-        logger().debug(loggerPrefix + "Delete record");
+        debug(loggerPrefix, "Delete record");
         actionMap.remove(actionTrl.getName());
       } else {
-        logger().debug(loggerPrefix + "Create or Update record");
+        debug(loggerPrefix, "Create or Update record");
         actionMap.put(actionTrl.getName(), actionTrl);
       }
     }
@@ -444,7 +596,7 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
     var loggerPrefix = getLoggerPrefix("messageUpdate", updateType, message);
 
     if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-      logger().debug(loggerPrefix + "Delete record");
+      debug(loggerPrefix, "Delete record");
       messageMap.remove(message.getName());
     }
   }
@@ -454,10 +606,10 @@ public class MyI18NProvider implements I18NProvider, HasLogger {
 
     if (loadedLocale != null && loadedLocale.equalsIgnoreCase(messageTrl.getIso3Language())) {
       if (updateType.equals(I18NUpdateTypeEnum.DELETE)) {
-        logger().debug(loggerPrefix + "Delete record");
+        debug(loggerPrefix, "Delete record");
         messageMap.remove(messageTrl.getName());
       } else {
-        logger().debug(loggerPrefix + "Create or Update record");
+        debug(loggerPrefix, "Create or Update record");
         messageMap.put(messageTrl.getName(), messageTrl);
       }
     }

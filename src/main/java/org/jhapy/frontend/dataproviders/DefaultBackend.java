@@ -26,8 +26,6 @@ import org.jhapy.dto.domain.BaseEntity;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,13 +37,12 @@ public abstract class DefaultBackend<C extends BaseEntity>
     extends AbstractBackEndDataProvider<C, CrudFilter> implements Serializable {
 
   protected final List<C> fieldsMap = new ArrayList<>();
-  protected final AtomicLong uniqueLong = new AtomicLong();
   private Comparator<C> comparator;
   private SerializablePredicate<C> filter;
 
-  public DefaultBackend() {}
+  protected DefaultBackend() {}
 
-  public DefaultBackend(Comparator<C> comparator) {
+  protected DefaultBackend(Comparator<C> comparator) {
     this.comparator = comparator;
   }
 
@@ -54,7 +51,7 @@ public abstract class DefaultBackend<C extends BaseEntity>
 
   public Collection<C> getValues() {
     if (comparator != null) {
-      return fieldsMap.stream().sorted(comparator).collect(Collectors.toList());
+      return fieldsMap.stream().sorted(comparator).toList();
     } else {
       return fieldsMap;
     }
@@ -81,7 +78,7 @@ public abstract class DefaultBackend<C extends BaseEntity>
       this.setFilter(filter);
     } else {
       SerializablePredicate<C> oldFilter = this.getFilter();
-      this.setFilter((item) -> oldFilter.test(item) && filter.test(item));
+      this.setFilter(item -> oldFilter.test(item) && filter.test(item));
     }
   }
 
@@ -101,14 +98,7 @@ public abstract class DefaultBackend<C extends BaseEntity>
     if (comparing.isPresent()) {
       stream = stream.sorted();
     }
-    long maxId = 0;
-    List<C> result = stream.collect(Collectors.toList());
-    for (C c : result) {
-      if ((long) c.getId() > maxId) {
-        maxId = (long) c.getId();
-      }
-    }
-    uniqueLong.set(maxId + 1);
+    List<C> result = stream.toList();
     return result.stream().skip(query.getOffset()).limit(query.getLimit());
   }
 }

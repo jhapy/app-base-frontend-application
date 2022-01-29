@@ -19,6 +19,8 @@
 package org.jhapy.frontend.client.i18n;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.jhapy.cqrs.query.i18n.GetExistingLanguagesQuery;
+import org.jhapy.cqrs.query.i18n.GetExistingLanguagesResponse;
 import org.jhapy.dto.serviceQuery.BaseRemoteQuery;
 import org.jhapy.dto.serviceQuery.ServiceResult;
 import org.jhapy.dto.serviceQuery.i18n.ImportI18NFileQuery;
@@ -27,9 +29,6 @@ import org.jhapy.frontend.client.RemoteServiceHandler;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author jHapy Lead Dev.
@@ -62,11 +61,12 @@ public interface I18NService extends RemoteServiceHandler {
   @CircuitBreaker(
       name = "defaultServiceCircuitBreaker",
       fallbackMethod = "getExistingLanguagesFallback")
-  ServiceResult<List<String>> getExistingLanguages(@RequestBody BaseRemoteQuery query);
+  ServiceResult<GetExistingLanguagesResponse> getExistingLanguages(
+      @RequestBody GetExistingLanguagesQuery query);
 
-  default ServiceResult<List<String>> getExistingLanguagesFallback(
-      BaseRemoteQuery query, Exception e) {
+  default ServiceResult<GetExistingLanguagesResponse> getExistingLanguagesFallback(
+      GetExistingLanguagesQuery query, Exception e) {
     return defaultFallback(
-        getLoggerPrefix("getExistingLanguagesFallback"), e, Collections.emptyList());
+        getLoggerPrefix("getExistingLanguagesFallback"), e, new GetExistingLanguagesResponse());
   }
 }

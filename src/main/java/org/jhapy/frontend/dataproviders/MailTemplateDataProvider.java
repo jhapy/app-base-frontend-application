@@ -18,19 +18,29 @@
 
 package org.jhapy.frontend.dataproviders;
 
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.jhapy.dto.domain.notification.MailTemplate;
-import org.jhapy.dto.serviceQuery.generic.CountAnyMatchingQuery;
-import org.jhapy.dto.serviceQuery.generic.FindAnyMatchingQuery;
-import org.jhapy.dto.utils.PageDTO;
-import org.jhapy.dto.utils.Pageable;
-import org.jhapy.frontend.client.notification.NotificationServices;
-import org.jhapy.frontend.utils.AppConst;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Synchronized;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.SubscriptionQueryResult;
+import org.jhapy.commons.utils.HasLogger;
+import org.jhapy.cqrs.CountChangedUpdate;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingMailTemplateQuery;
+import org.jhapy.cqrs.query.notification.CountAnyMatchingMailTemplateResponse;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingMailTemplateQuery;
+import org.jhapy.cqrs.query.notification.FindAnyMatchingMailTemplateResponse;
+import org.jhapy.dto.domain.notification.MailTemplateDTO;
+import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author jHapy Lead Dev.
@@ -39,35 +49,109 @@ import java.io.Serializable;
  */
 @SpringComponent
 @UIScope
-public class MailTemplateDataProvider extends DefaultDataProvider<MailTemplate, DefaultFilter>
-    implements Serializable {
+public class MailTemplateDataProvider extends JHapyAbstractDataProvider<MailTemplateDTO>
+    implements Serializable, HasLogger {
 
-  @Autowired
-  public MailTemplateDataProvider() {
-    super(AppConst.DEFAULT_SORT_DIRECTION, AppConst.DEFAULT_SORT_FIELDS);
+  private transient SubscriptionQueryResult<FindAnyMatchingMailTemplateResponse, MailTemplateDTO>
+      fetchQueryResult;
+
+  private transient SubscriptionQueryResult<
+          CountAnyMatchingMailTemplateResponse, CountChangedUpdate>
+      countQueryResult;
+
+  public MailTemplateDataProvider(QueryGateway queryGateway) {
+    super(queryGateway);
   }
 
   @Override
-  protected PageDTO<MailTemplate> fetchFromBackEnd(
-      Query<MailTemplate, DefaultFilter> query, Pageable pageable) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    PageDTO<MailTemplate> page =
-        NotificationServices.getMailTemplateService()
-            .findAnyMatching(
-                new FindAnyMatchingQuery(filter.getFilter(), filter.isShowInactive(), pageable))
-            .getData();
-    if (getPageObserver() != null) {
-      getPageObserver().accept(page);
+  @Synchronized
+  protected Stream<MailTemplateDTO> fetchFromBackEnd(Query<MailTemplateDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("fetchFromBackEnd");
+
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
     }
-    return page;
+
+    FindAnyMatchingMailTemplateQuery fetchCardSummariesQuery =
+        new FindAnyMatchingMailTemplateQuery(filter.getFilter(), null, getPageable(query));
+
+    fetchQueryResult =
+        queryGateway.subscriptionQuery(
+            fetchCardSummariesQuery,
+            ResponseTypes.instanceOf(FindAnyMatchingMailTemplateResponse.class),
+            ResponseTypes.instanceOf(MailTemplateDTO.class));
+
+    fetchQueryResult
+        .updates()
+        .subscribe(
+            cardSummary -> {
+              trace(
+                  loggerPrefix,
+                  "processing query update for {0}: {1}",
+                  fetchCardSummariesQuery,
+                  cardSummary);
+              fireEvent(new DataChangeEvent.DataRefreshEvent<>(this, cardSummary));
+            });
+
+    return fetchQueryResult
+        .initialResult()
+        .onErrorResume(
+            e -> Mono.just(new FindAnyMatchingMailTemplateResponse(Collections.emptyList())))
+        .blockOptional()
+        .orElse(new FindAnyMatchingMailTemplateResponse(Collections.emptyList()))
+        .getData()
+        .stream();
   }
 
   @Override
-  protected int sizeInBackEnd(Query<MailTemplate, DefaultFilter> query) {
-    DefaultFilter filter = query.getFilter().orElse(DefaultFilter.getEmptyFilter());
-    return NotificationServices.getMailTemplateService()
-        .countAnyMatching(new CountAnyMatchingQuery(filter.getFilter(), filter.isShowInactive()))
-        .getData()
-        .intValue();
+  @Synchronized
+  protected int sizeInBackEnd(Query<MailTemplateDTO, Void> query) {
+    String loggerPrefix = getLoggerPrefix("sizeInBackEnd");
+
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+
+    CountAnyMatchingMailTemplateQuery countQuery =
+        new CountAnyMatchingMailTemplateQuery(filter.getFilter(), null);
+    countQueryResult =
+        queryGateway.subscriptionQuery(
+            countQuery,
+            ResponseTypes.instanceOf(CountAnyMatchingMailTemplateResponse.class),
+            ResponseTypes.instanceOf(CountChangedUpdate.class));
+
+    countQueryResult
+        .updates()
+        .buffer(Duration.ofMillis(250))
+        .subscribe(
+            countChanged -> {
+              trace(loggerPrefix, "Processing query update for {0}: {1}", countQuery, countChanged);
+              executorService.execute(() -> fireEvent(new DataChangeEvent<>(this)));
+            });
+    return Math.toIntExact(
+        countQueryResult
+            .initialResult()
+            .onErrorResume(e -> Mono.just(new CountAnyMatchingMailTemplateResponse(0L)))
+            .blockOptional()
+            .orElse(new CountAnyMatchingMailTemplateResponse(0L))
+            .getCount());
+  }
+
+  @Synchronized
+  void shutDown() {
+    if (fetchQueryResult != null) {
+      fetchQueryResult.cancel();
+      fetchQueryResult = null;
+    }
+    if (countQueryResult != null) {
+      countQueryResult.cancel();
+      countQueryResult = null;
+    }
+  }
+
+  protected List<QuerySortOrder> getDefaultSortOrders() {
+    return QuerySortOrder.asc("mailAction").build();
   }
 }

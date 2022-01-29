@@ -37,18 +37,6 @@ public class I18NServices {
     return getApplicationContext().getBean(I18NService.class);
   }
 
-  public static ActionService getActionService() {
-    return getApplicationContext().getBean(ActionService.class);
-  }
-
-  public static ElementService getElementService() {
-    return getApplicationContext().getBean(ElementService.class);
-  }
-
-  public static MessageService getMessageService() {
-    return getApplicationContext().getBean(MessageService.class);
-  }
-
   public static ApplicationContext getApplicationContext() {
     ServletContext servletContext = SpringServlet.getCurrent().getServletContext();
     return WebApplicationContextUtils.getWebApplicationContext(servletContext);

@@ -42,7 +42,7 @@ public class MenuContainerView extends View {
   private final List<CaptionChangedListener> captionChangedListeners = new ArrayList<>();
   private final List<ModuleSelectedListener> moduleSelectedListeners = new ArrayList<>();
   private final List<Menu> menuList;
-  private long parentMenuId;
+  private final long parentMenuId;
   private List<TopMenuItem> topMenuList;
   private BaseDashboardView menuDefaultContent;
 
@@ -53,7 +53,7 @@ public class MenuContainerView extends View {
   }
 
   public MenuContainerView(
-          List<Menu> menuList, long parentMenuId, List<TopMenuItem> topMenuList, ModuleTab parentTab) {
+      List<Menu> menuList, long parentMenuId, List<TopMenuItem> topMenuList, ModuleTab parentTab) {
     setParentTab(parentTab);
     this.menuList = menuList;
     this.parentMenuId = parentMenuId;
@@ -135,7 +135,12 @@ public class MenuContainerView extends View {
       if (menu == null) return;
 
       for (ModuleSelectedListener listener : moduleSelectedListeners) {
-        listener.moduleSelected(menu.getBrowser(), menu.getMenuName(), menu.getParentId(), this, menu.getNewViewParams());
+        listener.moduleSelected(
+            menu.getBrowser(),
+            menu.getMenuName(),
+            menu.getParentId(),
+            this,
+            menu.getNewViewParams());
       }
 
       return;
@@ -266,6 +271,11 @@ public class MenuContainerView extends View {
   }
 
   public interface ModuleSelectedListener {
-    boolean moduleSelected(Class<? extends View> browser, String menuName, long menuParentId, MenuContainerView currentMenu, String newViewParams);
+    boolean moduleSelected(
+        Class<? extends View> browser,
+        String menuName,
+        long menuParentId,
+        MenuContainerView currentMenu,
+        String newViewParams);
   }
 }

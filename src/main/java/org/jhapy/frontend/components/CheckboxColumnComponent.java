@@ -29,6 +29,6 @@ public class CheckboxColumnComponent extends Checkbox {
 
   public CheckboxColumnComponent(boolean initialValue) {
     super(initialValue);
-    setReadOnly(false);
+    setReadOnly(true);
   }
 }

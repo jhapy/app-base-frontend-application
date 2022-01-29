@@ -128,7 +128,7 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
     moduleToolbar = new ModuleToolbar(entityType.getSimpleName(), this);
     moduleToolbar.addGoBackListener(
         () -> {
-          if ( displayInANewTab() ) {
+          if (displayInANewTab()) {
             getParentTab().closeTab();
             return;
           }
@@ -211,7 +211,7 @@ public abstract class DefaultMasterView<T extends BaseEntity, F extends DefaultF
             this,
             currentViewParams,
             entityViewClass,
-            entity.getId() == null ? "-1" : entity.getId().toString());
+            Boolean.FALSE.equals(entity.getPersisted()) ? "-1" : entity.getId().toString());
   }
 
   protected void filter(String filter, Boolean showInactive) {
