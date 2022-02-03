@@ -40,6 +40,7 @@ import com.vaadin.flow.shared.Registration;
 import dev.mett.vaadin.tooltip.Tooltips;
 import dev.mett.vaadin.tooltip.config.TC_HIDE_ON_CLICK;
 import dev.mett.vaadin.tooltip.config.TooltipConfiguration;
+import org.axonframework.queryhandling.QueryGateway;
 import org.claspina.confirmdialog.ButtonOption;
 import org.jhapy.commons.utils.HasLogger;
 import org.jhapy.dto.domain.BaseEntity;
@@ -104,6 +105,7 @@ public abstract class DefaultDetailsView<T extends BaseEntity> extends ViewFrame
   protected Tabs tabs;
   private Function<T, ServiceResult<T>> saveHandler;
   private Class parentViewClassname;
+protected QueryGateway queryGateway;
 
   protected DefaultDetailsView(
       String I18N_PREFIX,
